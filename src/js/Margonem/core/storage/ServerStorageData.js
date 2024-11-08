@@ -1,0 +1,30 @@
+module.exports = {
+    QUICK_ITEMS: "QUICK_ITEMS",
+    GREAT_MERCHAMP: "greatMerchamp",
+    ENCHANT_AUTOFILLER: "ENCHANT_AUTOFILLER",
+    CHAT: "CHAT",
+    HOTKEYS: "hotKeys",
+    SOUND_NOTIFICATION_MOBILE: "soundNotification_mobile",
+    SOUND_NOTIFICATION_PC: "soundNotification_pc",
+    MARGO_SOUNDS_MOBILE: "margoSounds_mobile",
+    MARGO_SOUNDS_PC: "margoSounds_pc",
+    ADDONS: "addons",
+    HOT_WIDGET_MOBILE: "hotWidget_mobile",
+    HOT_WIDGET_PC: "hotWidget_pc",
+    WHO_IS_HERE: "whoIsHere",
+    STORAGE_CONFIG: "storageConfig",
+    WINDOW_DATA: "WINDOW_DATA",
+    LAST_WIDGET_CLICK: "LAST_WIDGET_CLICK",
+    M_CLIENT_DATA: "M_CLIENT_DATA",
+    LN_SETTINGS: "LN_SETTINGS",
+    CD_SETTINGS: "CD_SETTINGS",
+    RAINBOW_GROUPS: "RAINBOW_GROUPS",
+
+
+    ADDON_17: "addon_17",
+    ADDON_20: "addon_20",
+    ADDON_27: "addon_27",
+    ADDON_24: "addon_24",
+
+    SI_STORAGE_CONFIG: "siStorageConfig",
+}

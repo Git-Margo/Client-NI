@@ -1,0 +1,4 @@
+module.exports = {
+    ON_START_FIGHT_WITH_NPC: "ON_START_FIGHT_WITH_NPC",
+    ON_DIE_NPC: "ON_DIE_NPC"
+}
