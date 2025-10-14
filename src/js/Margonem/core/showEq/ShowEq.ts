@@ -2,9 +2,9 @@ import {
     showProfile
 } from '../HelpersTS';
 
-const Tpl = require('core/Templates');
-const ItemData = require('core/items/data/ItemData');
-const OthersContextMenuData = require('core/characters/OthersContextMenuData');
+const Tpl = require('@core/Templates');
+const ItemData = require('@core/items/data/ItemData');
+const OthersContextMenuData = require('@core/characters/OthersContextMenuData');
 
 declare const CFG: any;
 declare const _t: any;
@@ -34,9 +34,8 @@ export default class ShowEq {
 
     setItems(i: any) {
         if (i.own != this.playerData.id) return;
-        // const iconEl = this.getEngine().items.createViewIcon(i.id, 'show-eq-item')[0][0];
         const iconEl = this.getEngine().items.createViewIcon(i.id, this.getEngine().itemsViewData.SHOW_EQ_ITEM_VIEW)[0][0];
-        const itemSlotEl = this.contentEl.querySelector(`.other-eq-slot.st-${i._st}`) as HTMLElement;
+        const itemSlotEl = this.contentEl.querySelector(`[data-st="${i.st}"]`) as HTMLElement;
 
         itemSlotEl.appendChild(iconEl);
         iconEl.addEventListener('contextmenu', (e: any, mE: any) => {
@@ -91,6 +90,13 @@ export default class ShowEq {
 
     initWindow() {
         this.contentEl = Tpl.get('show-eq')[0];
+        let equipment = Tpl.get('interface-element-equipment-with-additional-bag')[0] as HTMLElement;
+
+        equipment.classList.add('other-items-wrapper');
+
+        let otherItemsWrapper = this.contentEl.querySelector('.other-items-wrapper') as HTMLElement;
+        otherItemsWrapper.replaceWith(equipment);
+
 
         this.getEngine().windowManager.add({
             content: this.contentEl,
@@ -117,8 +123,6 @@ export default class ShowEq {
         for (let k in items) {
             items[k].loc = 'otherEqItem';
             items[k].own = playerId;
-            items[k]._st = items[k].st; // it's a fix for tips compare
-            items[k].st = ItemData.ST.IN_BAG;
             this.allItemsId.push(parseInt(k));
         }
     }

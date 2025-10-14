@@ -1,6 +1,6 @@
-//var wnd = require('core/Window');
-var tpl = require('core/Templates');
-//var Items = require('core/items/ItemsManager');
+//var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
+//var Items = require('@core/items/ItemsManager');
 
 module.exports = function(Par) {
     var content;

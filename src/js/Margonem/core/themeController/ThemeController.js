@@ -1,6 +1,6 @@
-let ThemeData = require('core/themeController/ThemeData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+let ThemeData = require('@core/themeController/ThemeData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 
@@ -33,11 +33,9 @@ module.exports = function() {
             moduleData.fileName, {
                 createFunc: createAction,
                 clearFunc: clearAction,
-                createRequire: {
-                    name: {
-                        specificVal: ['redscale', 'grayscale', 'bluescale', "neuro"]
-                    }
-                }
+                //createRequire   : {
+                //	name: {specificVal : ['redscale', 'grayscale', 'bluescale', "neuro"]}
+                //}
             },
             RajActionData.GROUP_NAME.OVERRIDE_OBJECT
         );

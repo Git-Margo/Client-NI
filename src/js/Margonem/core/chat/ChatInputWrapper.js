@@ -1,9 +1,9 @@
-const tpl = require('core/Templates');
-var ChatData = require('core/chat/ChatData');
-var MagicInput3 = require('core/chat/MagicInput3');
-var ChatNotificationView = require('core/chat/ChatNotificationView');
-var ChatNotificationManager = require('core/chat/ChatNotificationManager');
-var ChatConfigureWindow = require('core/chat/ChatConfigureWindow');
+const tpl = require('@core/Templates');
+var ChatData = require('@core/chat/ChatData');
+var MagicInput3 = require('@core/chat/MagicInput3');
+var ChatNotificationView = require('@core/chat/ChatNotificationView');
+var ChatNotificationManager = require('@core/chat/ChatNotificationManager');
+var ChatConfigureWindow = require('@core/chat/ChatConfigureWindow');
 
 module.exports = function() {
 
@@ -53,7 +53,9 @@ module.exports = function() {
     const initRemoveMessage = () => {
         let clearCrossWrapper;
 
+        const $closeIcon = $('<div>').addClass('ie-icon ie-icon-close');
         $clearCross = $('<div>').addClass('clear-cross');
+        $clearCross.append($closeIcon);
         $clearCross.tip(_t('reset', null, 'ah_filter_history'));
 
         $clearCross.on('click', () => {

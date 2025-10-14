@@ -1,6 +1,6 @@
 const Templates = require('../Templates');
-const BuildsData = require('core/builds/BuildsData.js');
-const OneBuild = require('core/builds/OneBuild.js');
+const BuildsData = require('@core/builds/BuildsData.js');
+const OneBuild = require('@core/builds/OneBuild.js');
 
 
 module.exports = function() {
@@ -63,14 +63,17 @@ module.exports = function() {
 
     const createOneBuildToBuy = (data, active) => {
         let $oneBuildToBuy = Templates.get("one-build-to-buy");
+        let equipment = Templates.get('interface-element-equipment');
         let id = data.id;
         let $buildWrapper = $oneBuildToBuy.find(".build-buttons-wrapper");
-        let goldData = roundParser(data.cost.z);
+        let goldData = roundParser(data.cost.gold);
         let goldText = goldData.val + goldData.postfix;
-        let slVal = data.cost.s;
+        let slVal = data.cost.credits;
 
-        const SL = BuildsData.REQUEST.CURRENCY_S;
-        const GOLD = BuildsData.REQUEST.CURRENCY_Z;
+        $oneBuildToBuy.find('.build-items-wrapper').prepend(equipment);
+
+        const CREDITS = BuildsData.REQUEST.CURRENCY_CREDITS;
+        const GOLD = BuildsData.REQUEST.CURRENCY_GOLD;
 
         let $buttonGold = createButton(goldText, ['small', 'green', "background-gold"], () => {
 
@@ -89,9 +92,9 @@ module.exports = function() {
                 "%id%": id,
                 "%cost%": slVal
             }, "builds");
-            let req = getEngine().buildsManager.getBuildsRequests().buyBuildStr(id, SL);
+            let req = getEngine().buildsManager.getBuildsRequests().buyBuildStr(id, CREDITS);
 
-            confirmWithCallbackAcceptCost(msg, req, SL, slVal);
+            confirmWithCallbackAcceptCost(msg, req, CREDITS, slVal);
         });
 
         if (active) {
@@ -236,7 +239,7 @@ module.exports = function() {
     };
 
     const openPanel = () => {
-        if (getEngine().hero.getLvl() < 25) {
+        if (getHeroLevel() < 25) {
             message(_t('too_low_lvl'));
             return
         }

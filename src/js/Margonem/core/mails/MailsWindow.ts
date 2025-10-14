@@ -1,7 +1,7 @@
 import Tabs from '../components/Tabs';
 import MailsData from './MailsData';
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 declare const _t: any;
 declare const _g: any;

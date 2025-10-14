@@ -1,5 +1,5 @@
-const ColorInterfaceNotificationData = require('core/colorInterfaceNotification/ColorInterfaceNotificationData');
-const ColorInterfaceNotification = require('core/colorInterfaceNotification/ColorInterfaceNotification');
+const ColorInterfaceNotificationData = require('@core/colorInterfaceNotification/ColorInterfaceNotificationData');
+const ColorInterfaceNotification = require('@core/colorInterfaceNotification/ColorInterfaceNotification');
 
 module.exports = function() {
 

@@ -1,22 +1,37 @@
 module.exports = function() {
     var bloodFrame = 0;
     var $hpIndicator;
+    var $hpLightMode;
+    var $hpTopLightMode;
+    var $expTopLightMode;
     var $xp;
+    var $expLightMode;
     var $battleBars;
     var $expBars;
     var $extendedStats;
     var $lagemetr;
+    var $lagemetrLightMode;
+    var $lagemetrValLightMode;
     let lagInterval;
 
     const LAG_METER_TIP_CLASS = "lag-meter-tip";
 
     this.init = function() {
-        $hpIndicator = Engine.interface.get$interfaceLayer().find('.hp-indicator');
-        $xp = Engine.interface.get$interfaceLayer().find('.exp-progress .progress .inner');
-        $battleBars = Engine.interface.get$interfaceLayer().find('.battle-bars-wrapper');
-        $expBars = Engine.interface.get$interfaceLayer().find('.exp-bar-wrapper');
-        $extendedStats = Engine.interface.get$interfaceLayer().find('.extended-stats');
-        $lagemetr = Engine.interface.get$interfaceLayer().find('.lag', '.lagmeter')
+
+        let $interfaceLayer = Engine.interface.get$interfaceLayer();
+
+        $hpIndicator = $interfaceLayer.find('.hp-indicator');
+        $hpLightMode = $interfaceLayer.find('.progress-bars-light-mode').find('.hero-hp-progress-bar');
+        $hpTopLightMode = $interfaceLayer.find('.hero-hp-top-progress-bar-light-mode');
+        $xp = $interfaceLayer.find('.exp-progress .progress .inner');
+        $expLightMode = $interfaceLayer.find('.progress-bars-light-mode').find('.hero-exp-progress-bar');
+        $expTopLightMode = $interfaceLayer.find('.hero-exp-top-progress-bar-light-mode');
+        $battleBars = $interfaceLayer.find('.battle-bars-wrapper');
+        $expBars = $interfaceLayer.find('.exp-bar-wrapper');
+        $extendedStats = $interfaceLayer.find('.extended-stats');
+        $lagemetr = $interfaceLayer.find('.lagmeter').find('.lag');
+        $lagemetrLightMode = $interfaceLayer.find('.lagmeter-light-mode').find('.lag');
+        $lagemetrValLightMode = $interfaceLayer.find('.lagmeter-light-mode').find('.lag-val');
 
         //this.initTipLag();
         setTipLag(0);
@@ -49,9 +64,16 @@ module.exports = function() {
 
         var tip = '<strong>' + _t('life_points', null, 'player') + ':</strong><br>' + round(hp, 10) + ' / ' + round(maxhp, 10);
         $('.bottom-panel .glass').tip(tip, 't_static');
+
+
+        setPercentProgressBar($hpLightMode.find('.inner'), Math.round(percent));
+        $hpLightMode.find('.value').html(Math.round(percent) + '%').tip(tip);
+
+        setPercentProgressBar($hpTopLightMode.find('.inner'), Math.round(percent));
+        $hpTopLightMode.find('.value').html(Math.round(percent) + '%').tip(tip);
     };
 
-    this.checkAndSetEndGamePanel = function(lvl = Engine.hero.d.lvl) {
+    this.checkAndSetEndGamePanel = function(lvl = getHeroLevel()) {
         if (/aldous|tempest/.test(location.hostname)) {
             if (lvl <= 299) return;
         } else {
@@ -62,6 +84,8 @@ module.exports = function() {
         $bP.find('.exp-progress.left>.overlay').addClass('end-game-overlay');
         $bP.find('.exp-progress.right>.overlay').addClass('end-game-overlay');
         $bP.find('.ribbon').addClass('end-game-ribbon');
+        $bP.find('.ribbon-up').addClass('end-game-ribbon');
+        $bP.find('.ribbon-down').addClass('end-game-ribbon');
         $bP.find('.glass').addClass('end-game-glass');
     };
 
@@ -94,7 +118,16 @@ module.exports = function() {
         setPercentProgressBar($($xp[0]), 100 * v1);
         setPercentProgressBar($($xp[1]), 100 * v2);
 
-        if (lvl < 500) {
+        let str = (Math.round(v * 10000) / 100) + '%';
+
+        setPercentProgressBar($expLightMode.find('.inner'), Math.round(v * 100));
+        $expLightMode.find('.value').html(str);
+
+        setPercentProgressBar($expTopLightMode.find('.inner'), Math.round(v * 100));
+        $expTopLightMode.find('.value').html(str);
+
+        //if (lvl < 500) {
+        if (!heroHasEndGameLevel()) {
             tip = '<strong>' + _t('experience', null, 'player') + ':</strong><br>' +
                 round(exp, (Math.ceil(exp.toString().length / 3) < 2 ? 2 : Math.ceil(exp.toString().length / 3))) +
                 ' / ' +
@@ -104,7 +137,9 @@ module.exports = function() {
                     '%exp%': round(next - exp, 10)
                 }, 'player');
         }
-        Engine.interface.get$interfaceLayer().find('.exp-progress').tip(tip, 't_static')
+        Engine.interface.get$interfaceLayer().find('.exp-progress').tip(tip, 't_static');
+        $expLightMode.tip(tip);
+        $expTopLightMode.tip(tip);
     };
 
     this.setEnergy = function(energy, energyMax) {
@@ -116,7 +151,13 @@ module.exports = function() {
 
         $('.energy > .values', $battleBars).html(newEnergy);
 
+        //let energyLightMode = $battleBars.find('.energy-battle-bar-light-mode');
+        let $energyLightMode = getEngine().battle.getEnergyBarLightMode();
+
+        $energyLightMode.find('.value').html(newEnergy + "/" + energyMax)
+
         setPercentProgressBar($('.energy .inner', $battleBars), value);
+        setPercentProgressBar($energyLightMode.find('.inner'), value);
     };
 
     this.setMana = function(mana, manaMax) {
@@ -128,14 +169,21 @@ module.exports = function() {
 
         $('.mana > .values', $battleBars).html(newMana);
 
+        //let manaLightMode = $battleBars.find('.mana-battle-bar-light-mode')
+        let $manaLightMode = getEngine().battle.getManaBarLightMode();
+        $manaLightMode.find('.value').html(newMana + "/" + manaMax)
+
         setPercentProgressBar($('.mana .inner', $battleBars), value);
+        setPercentProgressBar($manaLightMode.find('.inner'), value);
     };
 
     this.showElements = function(name) {
         switch (name) {
             case 'battle':
                 $battleBars.show();
-                $expBars.hide();
+                if (!heroHasEndGameLevel()) {
+                    $expBars.hide();
+                }
                 break;
             case 'game':
                 $battleBars.hide();
@@ -143,6 +191,10 @@ module.exports = function() {
                 break;
         }
     };
+
+    const heroHasEndGameLevel = () => {
+        return getHeroLevel() == 500;
+    }
 
     const setTipLag = function(lagVal) {
         let str = `<span class="${LAG_METER_TIP_CLASS}">${lagVal}ms</span>`;
@@ -155,6 +207,14 @@ module.exports = function() {
 
         if (Engine.lag != lag2) {
             $lagemetr.attr('class', 'lag lag-' + lag2)
+            $lagemetrLightMode.attr('class', 'lag lag-' + lag2)
+        }
+
+        let val = $lagemetrValLightMode.html();
+        let lagVal = (Math.round(lag / 10) * 10) + 'ms';
+
+        if (val != lagVal) {
+            $lagemetrValLightMode.html(lagVal);
         }
 
         if (window.TIPS.checkTipExist() && window.TIPS.checkTipHasClass(`${LAG_METER_TIP_CLASS}`)) {
@@ -188,4 +248,15 @@ module.exports = function() {
 
         update()
     };
+
+    const get$expLightMode = () => {
+        return $expLightMode
+    }
+
+    const get$expTopLightMode = () => {
+        return $expTopLightMode
+    }
+
+    this.get$expLightMode = get$expLightMode;
+    this.get$expTopLightMode = get$expTopLightMode;
 };

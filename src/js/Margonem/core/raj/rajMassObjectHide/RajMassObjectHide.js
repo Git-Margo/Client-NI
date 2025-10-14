@@ -1,6 +1,6 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 
@@ -50,7 +50,45 @@ module.exports = function() {
                 createRequire: {
                     name: {
                         specificVal: [OTHER, NPC]
-                    }
+                    },
+                    types: {
+                        type: TYPE.OBJECT,
+                        optional: true,
+                        elementInObject: {
+                            0: {
+                                type: TYPE.BOOL,
+                                optional: true
+                            },
+                            1: {
+                                type: TYPE.BOOL,
+                                optional: true
+                            },
+                            2: {
+                                type: TYPE.BOOL,
+                                optional: true
+                            },
+                            3: {
+                                type: TYPE.BOOL,
+                                optional: true
+                            },
+                            4: {
+                                type: TYPE.BOOL,
+                                optional: true
+                            },
+                            5: {
+                                type: TYPE.BOOL,
+                                optional: true
+                            },
+                            6: {
+                                type: TYPE.BOOL,
+                                optional: true
+                            },
+                            7: {
+                                type: TYPE.BOOL,
+                                optional: true
+                            }
+                        }
+                    },
                 },
                 removeRequire: {
                     name: {
@@ -75,7 +113,10 @@ module.exports = function() {
 
     const createAction = (data, additionalData) => {
         let name = data.name;
-        addMassObjectHide(name);
+        let types = data.types;
+        let displayEmo = data.displayEmo;
+
+        addMassObjectHide(name, displayEmo, types);
     }
 
     const removeAction = (data, additionalData) => {
@@ -87,13 +128,19 @@ module.exports = function() {
         return isset(massObjectsHide[name]);
     }
 
-    const addMassObjectHide = (name) => {
+    const addMassObjectHide = (name, displayEmo, types) => {
         if (!checkCorrectName(name)) {
             errorReport(moduleData.fileName, "addObjectHide", "Undefined name", name);
             return;
         }
 
-        massObjectsHide[name] = {};
+        massObjectsHide[name] = {
+            displayEmo: isset(displayEmo) ? displayEmo : false
+        };
+
+        if (types) {
+            massObjectsHide[name].types = types;
+        }
     }
 
     const removeMassObjectHide = (name) => {
@@ -118,8 +165,48 @@ module.exports = function() {
             return;
         }
 
-        return massObjectsHide[name] ? true : false;
+
+        let hide = massObjectsHide[name];
+
+        if (hide) {
+
+            if (!hide.types) {
+                return true
+            } else {
+                let type = canvasObject.getType();
+
+                return hide.types[type] ? true : false;
+            }
+
+        } else {
+            return false
+        }
+
+        //return massObjectsHide[name] ? true : false;
     }
+
+    const checkDisplayEmo = (character) => {
+        let kind = character.canvasObjectType;
+
+        if (!kind) return true;
+
+        switch (kind) {
+            case CanvasObjectTypeData.NPC:
+                return checkNpcDisplayEmo(character);
+            case CanvasObjectTypeData.OTHER:
+                return false;
+        }
+
+        return true;
+    }
+
+    const checkNpcDisplayEmo = (character) => {
+        if (!checkMassObjectsHide(character)) return true;
+
+        let kind = character.canvasObjectType;
+
+        return massObjectsHide[kind].displayEmo;
+    };
 
     const checkShowTip = (character) => {
         let kind = character.canvasObjectType;
@@ -140,5 +227,6 @@ module.exports = function() {
     this.updateData = updateData;
     this.onClear = onClear;
     this.checkMassObjectsHide = checkMassObjectsHide;
+    this.checkDisplayEmo = checkDisplayEmo;
     this.checkShowTip = checkShowTip;
 }

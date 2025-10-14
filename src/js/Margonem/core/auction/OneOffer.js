@@ -1,5 +1,8 @@
 let Templates = require('../Templates');
-let AuctionData = require('core/auction/AuctionData');
+let AuctionData = require('@core/auction/AuctionData');
+const {
+    getIconClose
+} = require("@core/HelpersTS");
 
 module.exports = function() {
 
@@ -74,7 +77,7 @@ module.exports = function() {
     };
 
     const getItemInSlot = (id) => {
-        let $itemSlot = $('<div>').addClass('item-slot');
+        let $itemSlot = $('<div>').addClass('item-slot interface-element-one-item-slot');
 
         return $itemSlot
     };
@@ -201,7 +204,7 @@ module.exports = function() {
         let tip = d.bidder ? canNotRemoveAuction : removeAuction;
         let addCl = d.bidder ? 'inactive' : '';
 
-        let b = createSmallButtonWithBackground(['remove'], ['green'], function() {
+        let b = createSmallButtonWithBackground([], ['green'], function() {
             if ($(b).hasClass('inactive')) return;
 
             let str = Engine.auctions.tLang('removeAuctionConfirm');
@@ -218,6 +221,8 @@ module.exports = function() {
 
         let $b = $(b);
 
+        const $closeIcon = getIconClose(false);
+        $b.append($closeIcon);
         $b.tip(tip);
         $b.addClass(addCl);
 

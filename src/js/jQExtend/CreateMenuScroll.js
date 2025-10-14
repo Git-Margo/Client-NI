@@ -1,4 +1,4 @@
-var Templates = require('core/Templates');
+var Templates = require('@core/Templates');
 module.exports = new(function() {
     /**
      * add dropdown menu to <div class="menu">
@@ -267,6 +267,7 @@ module.exports = new(function() {
             if (isset(data.disableSelected)) $menuItem.attr('disableSelected', true);
             if (isset(data.blockClick)) $menuItem.attr('blockClick', true);
             if (isset(data.tip)) $menuItem.tip(data.tip);
+            if (data.isRed) $menuItem.addClass('option--red');
 
             if (isset(data.remove) && checkRemoveDataIsCorrect(data.remove)) fillMenuItemFromRemoveData($menuItem, data);
 
@@ -334,6 +335,11 @@ module.exports = new(function() {
 
             $menuOption.html(text);
             $menuOption.attr('value', v.attr('value'));
+            if (v.hasClass('option--red')) {
+                $menuOption.closest('.button').removeClass('green');
+            } else {
+                $menuOption.closest('.button').addClass('green');
+            }
         }
 
         function stopProp(event) {
@@ -358,7 +364,7 @@ module.exports = new(function() {
             }
             setChosen(option);
 
-            console.log(option)
+            //console.log(option)
 
             postSelect(e)
         }

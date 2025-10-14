@@ -1,7 +1,7 @@
-var tpl = require('core/Templates');
-var Item = require('core/items/Item');
-let ProfData = require('core/characters/ProfData');
-var TutorialData = require('core/tutorial/TutorialData');
+var tpl = require('@core/Templates');
+var Item = require('@core/items/Item');
+let ProfData = require('@core/characters/ProfData');
+var TutorialData = require('@core/tutorial/TutorialData');
 const {
     setOnlyPositiveNumberInInput
 } = require('../../HelpersTS');
@@ -15,8 +15,8 @@ module.exports = function() {
     this.recipes = [];
     this.items = {};
 
-    this.init = function() {
-        this.initWindow();
+    this.init = function(wndEl) {
+        this.initWindow(wndEl);
         this.initLabels();
         this.initSelect();
         this.initSearch();
@@ -153,12 +153,12 @@ module.exports = function() {
     //	Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
     //};
 
-    this.initWindow = function() {
+    this.initWindow = function(wndEl) {
         content = tpl.get('left-grouped-list-and-right-description-window');
         content.addClass('recipes-manager');
 
 
-        $('.crafting__contents:first .recipes-content').html(content);
+        $(wndEl).find('.recipes-content').html(content);
 
         //callCheckCanFinishExternalTutorialOpenModule();
         //
@@ -261,7 +261,7 @@ module.exports = function() {
     };
 
     this.createRecipesList = function(recipeData, id, categorySort, nameSortAllCategory) {
-        var enabled = recipeData.enabled ? 'enabled' : 'disabled';
+        var enabled = recipeData.enabled ? 'enabled' : '';
         var $one = tpl.get('one-item-on-divide-list').addClass('crafting-recipe-in-list ' + enabled);
         $one.addClass(`recipe-id-${id}`);
         $one.find('.name').html(recipeData.name);
@@ -277,10 +277,18 @@ module.exports = function() {
         let typeItem = 'all';
         let cls = ['unique', 'heroic', 'legendary'];
         let itemCl = item.cl;
-        let stats = item._cachedStats;
+        //let stats     = item._cachedStats;
 
-        if (isset(stats.lvl)) $recipe.attr('lvl', stats.lvl);
-        if (isset(stats.reqp)) reqp = stats.reqp;
+        //if (isset(stats.lvl)) $recipe.attr('lvl', stats.lvl);
+        //if (isset(stats.reqp)) reqp = stats.reqp;
+
+        if (item.issetLvlStat()) {
+            $recipe.attr('lvl', item.getLvlStat());
+        }
+
+        if (item.issetReqpStat()) {
+            reqp = item.getReqpStat();
+        }
 
         for (const cl of cls) { // @ToDo - remove this loop after rarity changes
             if (item.itemTypeName === cl) typeItem = cl;
@@ -348,7 +356,7 @@ module.exports = function() {
             const item = this.items[tplId];
             let have;
             const $reagent = tpl.get('crafting-reagent');
-            const $itemSlot = $reagent.find('.item-slot');
+            const $itemSlot = $reagent.find('.item-reagent');
             const foundMiss = miss && miss.find(el => el[0] === tplId);
             if (foundMiss) {
                 const [missTplId, missAmount] = foundMiss;
@@ -403,7 +411,8 @@ module.exports = function() {
             idRecipe
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.callCheckCanFinishExternalTutorialClickRecipeOnList = (idRecipe) => {
@@ -413,7 +422,8 @@ module.exports = function() {
             idRecipe
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.recipeClick = function(recipe, id) {
@@ -429,8 +439,8 @@ module.exports = function() {
         var o = allRecipe[id];
         showId = id;
 
-        $w.find('.mark-offer').removeClass('mark-offer');
-        $w.find('.recipe-id-' + id).addClass('mark-offer');
+        $w.find('.one-item-on-divide-list.active').removeClass('active');
+        $w.find('.recipe-id-' + id).addClass('active');
         $w.find('.board').css('display', 'block');
         $w.find('.right-column-header .crafting-description-header').detach();
         $w.find('.right-column-header').html(o.header);
@@ -524,7 +534,7 @@ module.exports = function() {
         Engine.tutorialManager.tutorialStart(CFG.LANG.PL, 23);
         //Engine.tutorialManager.tutorialStart(CFG.LANG.EN, 23);
 
-        Engine.crafting.wnd.updateWindowTrigger();
+        Engine.crafting.window.wnd.updateWindowTrigger();
 
         //Engine.tutorialManager.tutorialStart('pl', 24);
         //Engine.tutorialManager.tutorialStart('en', 24);

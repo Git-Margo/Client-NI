@@ -98,7 +98,7 @@ module.exports = function() {
     this.draw = (ctx) => {
         if (!draw) return;
 
-        ctx.save();
+        //ctx.save();
         ctx.fillStyle = "white";
         ctx.shadowColor = "black";
         ctx.shadowOffsetX = 3;
@@ -107,7 +107,12 @@ module.exports = function() {
         ctx.font = "14px Arimo";
 
         ctx.fillText(`(${mouse_pos.mapX}, ${mouse_pos.mapY})`, mouse_pos.tipPosX, mouse_pos.tipPosY);
-        ctx.restore();
+
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.shadowBlur = 0;
+
+        //ctx.restore();
     }
 
     function addToRenderer() {

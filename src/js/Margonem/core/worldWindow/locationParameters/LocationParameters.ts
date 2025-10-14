@@ -5,7 +5,7 @@ import {
 
 export {};
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 declare const _t: (name: string, val ? : string | {} | null, category ? : string) => string;
 
@@ -94,7 +94,7 @@ export default class LocationParameters {
                     },
                     {
                         name: 'isQuestFogEnabled',
-                        value: this.setOnOff(Engine.map.config.getIsQuestFogEnabled()),
+                        value: this.setOnOff(Engine.map.config.getQuestFog()),
                     },
                     {
                         name: 'locationLvlAccess',
@@ -120,6 +120,10 @@ export default class LocationParameters {
                         name: 'isPvpLvlAdvantageDisabled',
                         value: this.setOnOff(!Engine.map.config.getIsPvpLvlAdvantageDisabled()),
                     },
+                    {
+                        name: 'isWantedDisabled',
+                        value: this.setOnOff(!Engine.map.config.getIsWantedDisabled() && Engine.map.d.pvp !== 4),
+                    },
                     ...Engine.map.config.getPvnBattleTurnTimes() ? [{
                         name: 'pvnBattleTurnTimes',
                         value: Engine.map.config.getPvnBattleTurnTimes().map((el: number) => --el).join(' / '),
@@ -128,6 +132,19 @@ export default class LocationParameters {
                         name: 'pvpBattleTurnTimes',
                         value: Engine.map.config.getPvpBattleTurnTimes().map((el: number) => --el).join(' / '),
                     }] : [],
+                    ...Engine.map.config.getBattlePoolTimeLimits() ? [{
+                            name: 'battlePoolTimeLimitsTotal',
+                            value: Engine.map.config.getBattlePoolTimeLimits().total + 's',
+                        },
+                        {
+                            name: 'battlePoolTimeLimitsMinimum',
+                            value: Engine.map.config.getBattlePoolTimeLimits().minimum + 's',
+                        },
+                        {
+                            name: 'battlePoolTimeLimitsPenalty',
+                            value: Engine.map.config.getBattlePoolTimeLimits().penalty + 's',
+                        }
+                    ] : [],
                 ],
             },
         ];

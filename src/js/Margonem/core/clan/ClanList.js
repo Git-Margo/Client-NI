@@ -1,5 +1,5 @@
-// var wnd = require('core/Window');
-var tpl = require('core/Templates');
+// var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
 module.exports = function(Par) {
     var self = this;
     var content;
@@ -74,7 +74,7 @@ module.exports = function(Par) {
         if (v == 0) return _t('close_recruit');
         else {
             let tip;
-            let heroLvl = Engine.hero.d.lvl;
+            let heroLvl = getHeroLevel();
             let toLowLev = heroLvl < minLev ? true : false;
             let inClan = typeof Engine.hero.d.clan !== 'undefined' ? true : false;
 

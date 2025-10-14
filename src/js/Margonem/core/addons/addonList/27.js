@@ -1,4 +1,4 @@
-var StorageFuncWindow = require('core/window/StorageFuncWindow');
+var StorageFuncWindow = require('@core/window/StorageFuncWindow');
 const {
     copyToClipboard
 } = require('../../HelpersTS');
@@ -306,7 +306,7 @@ module.exports = function() {
             </div>
             <div class="row row-add tw-list-item" @click="addNew">
                 <div class="add do-action-cursor">
-                    <div class="btn-add"></div>
+                    <div class="btn-add">+</div>
                 </div>
             </div>
         </div>
@@ -671,18 +671,6 @@ module.exports = function() {
                 [data-item-type="t-upgraded"] &::after { background-position-x: -96px; }
                 [data-item-type="t-leg"] &::after { background-position-x: -128px; }
                 [data-item-type="t-art"] &::after { background-position-x: -160px; }
-            }
-            .tw-tabs {
-                display: flex;
-                > div {
-                    width: 100%;
-                    text-align: center;
-                    color: #8b8b8b;
-                    &.is-active {
-                        color: gold;
-                    }
-                }
-               
             }
         </style>
     `;

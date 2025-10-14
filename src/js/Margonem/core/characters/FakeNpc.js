@@ -1,14 +1,14 @@
-var Character = require('core/characters/Character');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-let FakeNpcData = require('core/characters/FakeNpcData');
-var SearchPath = require('core/searchPath/SearchPath');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let RajBehaviorCommons = require('core/raj/RajBehaviorCommons');
-let BehaviorManager = require('core/raj/BehaviorManager');
-let RajData = require('core/raj/RajData');
-let RajObjectInterface = require('core/raj/RajObjectInterface');
-//let RajObject      			= require('core/raj/RajObject');
+var Character = require('@core/characters/Character');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+let FakeNpcData = require('@core/characters/FakeNpcData');
+var SearchPath = require('@core/searchPath/SearchPath');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let RajBehaviorCommons = require('@core/raj/RajBehaviorCommons');
+let BehaviorManager = require('@core/raj/BehaviorManager');
+let RajData = require('@core/raj/RajData');
+let RajObjectInterface = require('@core/raj/RajObjectInterface');
+//let RajObject      			= require('@core/raj/RajObject');
 
 let FakeNpc = function() {
 
@@ -30,8 +30,8 @@ let FakeNpc = function() {
     //this.duration = null;
 
     //this.destiny = false;
-    this.destinyX = false;
-    this.destinyY = false;
+    this.destinyX; // = false;
+    this.destinyY; // = false;
 
     this.destinyNextTile = null;
 
@@ -63,6 +63,8 @@ let FakeNpc = function() {
 
     let inMove = false;
 
+    let icon = null
+
     //let tempBehaviourIndex	= null;
     //let switchBehavior 		= false;
     //let breakBehaviour 		= false;
@@ -74,9 +76,10 @@ let FakeNpc = function() {
 
     let allIgnorePositions = [];
 
-    let notUpdatedRoad = null;
+    let notUpdatedRoad = [];
 
     const init = () => {
+        setDestiny(null, null);
         self.createPlaceHolderCharacter();
         implementRajInterface();
         initBehaviorManager();
@@ -84,6 +87,11 @@ let FakeNpc = function() {
         this.initDynamicLightCharacterManager();
         //setSpeed(1);
     };
+
+    const setDestiny = (_x, _y) => {
+        this.destinyX = _x;
+        this.destinyY = _y;
+    }
 
     const implementRajInterface = () => {
         (new RajObjectInterface()).implementRajObject(this, RajData.FAKE_NPC);
@@ -352,6 +360,20 @@ let FakeNpc = function() {
         };
     }
 
+    const getActualBehaviorIgnoreStartCollisionData = () => {
+        let b = getActualBehavior();
+        if (!b) return null;
+
+        return b.ignoreStartCollision ? true : false
+    }
+
+    const getActualBehaviorIgnoreEndCollisionData = () => {
+        let b = getActualBehavior();
+        if (!b) return null;
+
+        return b.ignoreEndCollision ? true : false
+    }
+
     //const getActualBehaviorExternal_propertiesData = () => {
     //	let b = getActualBehavior();
     //	if (!b) return null;
@@ -589,6 +611,15 @@ let FakeNpc = function() {
     const checkRoadExist = () => {
         let count;
 
+        //if (ignoreUpdateCollisionAndStartEndPos) {
+        //
+        //	if (!notUpdatedRoad) 	count = 0;						// #59047
+        //	else 					count = notUpdatedRoad.length;
+        //
+        //} else {
+        //	count = this.autoPath.count();
+        //}
+
         if (ignoreUpdateCollisionAndStartEndPos) count = notUpdatedRoad.length;
         else count = this.autoPath.count();
 
@@ -599,12 +630,16 @@ let FakeNpc = function() {
         return this.rx == this.destinyX && this.ry == this.destinyY;
     }
 
+    const checkShouldClear = () => {
+        return this.autoPath.count() || notUpdatedRoad.length;
+    }
+
     const clearRoad = () => {
         this.autoPath.clear();
 
         if (!ignoreUpdateCollisionAndStartEndPos) return;
 
-        notUpdatedRoad = null;
+        notUpdatedRoad = [];
     }
 
     const createAutoPath = (to) => {
@@ -653,6 +688,13 @@ let FakeNpc = function() {
         if (collisionsToMute.length) SearchPath.reload();
 
         createAutoPath(to);
+
+        let roadLength = this.autoPath.road.length;
+
+        if (roadLength) {
+            let roadDestinyElement = this.autoPath.road[0];
+            setDestiny(roadDestinyElement.x, roadDestinyElement.y)
+        }
 
         for (let i = 0; i < collisionsToMute.length; i++) {
             let c = collisionsToMute[i];
@@ -805,42 +847,62 @@ let FakeNpc = function() {
         }
     }
 
-    const manageIgnorePositions = (startBehaviourTileX, startBehaviourTileY, endBehaviorTileX, endBehaviorTileY) => {
+    const manageIgnorePositions = (startBehaviourTileX, startBehaviourTileY, endBehaviorTileX, endBehaviorTileY, startCollisionData, endCollisionData) => {
         resetAllIgnorePositions();
 
         if (!ignoreUpdateCollisionAndStartEndPos) return;
 
-        addIgnorePositions(this.startX, this.startY);
-        addIgnorePositions(startBehaviourTileX, startBehaviourTileY);
-        addIgnorePositions(endBehaviorTileX, endBehaviorTileY);
+        //addIgnorePositions(this.startX, this.startY);
+        if (startCollisionData) addIgnorePositions(startBehaviourTileX, startBehaviourTileY);
+        if (endCollisionData) addIgnorePositions(endBehaviorTileX, endBehaviorTileY);
 
-    }
+    };
 
     const startWalkBehavior = () => {
         let destinyData = getActualBehaviorDestinyData();
         let speedData = getActualBehaviorSpeedData();
+        let startCollisionData = getActualBehaviorIgnoreStartCollisionData();
+        let endCollisionData = getActualBehaviorIgnoreEndCollisionData();
         let pos = getRxRyFromSrajData({
             x: destinyData.x,
             y: destinyData.y
         });
 
-        manageIgnorePositions(this.rx, this.ry, pos.rx, pos.ry);
+        setIgnoreUpdateCollisionAndStartEndPos(false);
 
-        let tile = lookForFreeTile(pos.rx, pos.ry);
-
-        if (!tile) {
-            console.log('can crash?', tile);
-            return;
+        if (startCollisionData || endCollisionData) {
+            setIgnoreUpdateCollisionAndStartEndPos(true)
         }
 
-        this.destinyX = tile.x;
-        this.destinyY = tile.y;
+        manageIgnorePositions(this.rx, this.ry, pos.rx, pos.ry, startCollisionData, endCollisionData);
+
+
+        //let tile 		= lookForFreeTile(pos.rx, pos.ry);
+
+
+        //if (!tile) {
+        //	console.log('can crash?', tile);
+        //	return;
+        //}
+
+        //this.destinyX = tile.x;
+        //this.destinyY = tile.y;
 
         if (speedData != null) setSpeed(speedData);
 
+        if (this.rx == pos.rx && this.ry == pos.ry) {
+            if (checkShouldClear()) {
+                console.log('clearRoad')
+                clearRoad();
+                behaviorManager.callBehavior();
+            }
+            return;
+        }
+
+        //searchPath({x:this.destinyX, y:this.destinyY});
         searchPath({
-            x: this.destinyX,
-            y: this.destinyY
+            x: pos.rx,
+            y: pos.ry
         });
     };
 
@@ -922,8 +984,9 @@ let FakeNpc = function() {
     }
 
     const clearStates = () => {
-        this.destinyX = null;
-        this.destinyY = null;
+        //this.destinyX = null;
+        //this.destinyY = null;
+        setDestiny(null, null);
         this.tpX = null;
         this.tpY = null;
         //this.duration = 5;
@@ -951,7 +1014,7 @@ let FakeNpc = function() {
             this.clickData = val;
         };
         this.img = function(val, old) {
-            setImg(val)
+            //setImg(val)
         };
         this.dir = function(val, old) {
             this.dir = val;
@@ -1010,13 +1073,16 @@ let FakeNpc = function() {
         return newBehaviorList;
     }
 
-    const setImg = (val) => {
+    const setSprite = (val, additionalData) => {
 
-        let v = RajGetSpecificData.getCharacterData(val);
+        let v = RajGetSpecificData.getCharacterData(val, additionalData);
 
         if (v == null) return;
 
-        let path = CFG.r_opath + fixSrc(v);
+        setImg(v);
+
+        //let path = CFG.r_opath + fixSrc(v);
+        let path = getPath();
 
         self.setPlaceHolderIcon();
         //self.setStaticAnimation(Engine.opt(8), Engine.hero.d.opt);
@@ -1030,12 +1096,30 @@ let FakeNpc = function() {
                 beforeOnload(f, i);
             },
             (i) => {
+                updateFilterImage();
                 afterLoadImage();
             },
             () => {
                 self.fetchError();
             }
         );
+    }
+
+    const getPath = () => {
+        return CFG.r_opath + fixSrc(getImg());
+    }
+
+    const setImg = (_img) => {
+        icon = _img;
+    }
+
+    const getImg = () => {
+        return icon;
+    };
+
+    const updateFilterImage = () => {
+        let path = getPath();
+        this.sprite = getEngine().canvasFilter.updateFilter(path, this.sprite, true);
     }
 
     const beforeUpdate = (data, old, allData, additionalData) => {
@@ -1052,16 +1136,19 @@ let FakeNpc = function() {
         this.startX = this.rx;
         this.startY = this.ry;
 
-
-        if (data.ignoreUpdateCollisionAndStartEndPos) {
-            setIgnoreUpdateCollisionAndStartEndPos(true);
-            addIgnorePositions(this.startX, this.startY)
+        if (data.img) {
+            setSprite(data.img, additionalData)
         }
 
-        if (checkCollision(this.startX, this.startY)) {
-            console.log('can crash?')
-            return
-        }
+        //if (data.ignoreUpdateCollisionAndStartEndPos) {
+        //	setIgnoreUpdateCollisionAndStartEndPos(true);
+        //	addIgnorePositions(this.startX, this.startY)
+        //}
+
+        //if (checkCollision(this.startX, this.startY)) {
+        //	console.log('can crash?')
+        //	return
+        //}
 
         this.updateDataRajObject(data, additionalData);
     };
@@ -1176,6 +1263,7 @@ let FakeNpc = function() {
     this.startBehavior = startBehavior;
     this.serverRayControllerData = serverRayControllerData;
     this.prepareBehaviorList = prepareBehaviorList;
+    this.updateFilterImage = updateFilterImage;
 
 };
 

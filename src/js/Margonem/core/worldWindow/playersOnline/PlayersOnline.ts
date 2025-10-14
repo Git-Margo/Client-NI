@@ -8,19 +8,21 @@ import {
     esc
 } from '../../HelpersTS';
 import {
+    Rank,
     ranks
 } from '../../characterRanks/CharacterRanks';
 import Button from '../../components/Button';
-const ProfData = require('core/characters/ProfData');
+const ProfData = require('@core/characters/ProfData');
 
 export {};
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 declare const _t: (name: string, val ? : string | {} | null, category ? : string) => string;
 declare const _g: (query: string) => void;
 declare const createNiInput: (data: {}) => JQuery;
 declare const strtotime: (date: string) => number;
+declare const getE: (e: Partial < MouseEvent > ) => MouseEvent;
 
 type Player = {
     a: number; // account id
@@ -121,8 +123,8 @@ export default class PlayersOnline {
             nickEl = itemEl.querySelector('.players-online__nick') as HTMLElement,
             lvlEl = itemEl.querySelector('.players-online__lvl') as HTMLElement,
             profEl = itemEl.querySelector('.players-online__prof') as HTMLElement,
-
-            shortName = ranks[rank].shortName !== '' ? `(${ranks[rank].shortName})` : '';
+            playerRank = this.findHighestRank(Number(rank)),
+            shortName = playerRank.shortName !== '' ? `(${playerRank.shortName})` : '';
 
         nickEl.innerHTML = nick + shortName;
         lvlEl.innerHTML = lvl.toString();
@@ -134,12 +136,18 @@ export default class PlayersOnline {
             prof
         });
 
-        if (ranks[rank]) {
-            itemEl.style.color = ranks[rank].color;
+        if (playerRank) {
+            itemEl.style.color = playerRank.color;
         }
 
         itemEl.addEventListener('contextmenu', (e: MouseEvent) => {
-            this.createContextMenu(e, player);
+            const event = {
+                clientY: e.clientY,
+                clientX: e.clientX,
+                preventDefault: () => {},
+                stopPropagation: () => {}
+            } // for no need jQuery to override event in getE
+            this.createContextMenu(getE(event), player);
         });
 
         itemEl.addEventListener('click', () => {
@@ -201,6 +209,17 @@ export default class PlayersOnline {
             return true;
         }
         return false;
+    }
+
+    findHighestRank(rights: number): Rank {
+        if (rights === 0) return ranks[0];
+
+        const activeRanks = Object.keys(ranks)
+            .map(Number)
+            .filter(key => key !== 0 && (rights & key) === key);
+
+        const minRankKey = Math.min(...activeRanks);
+        return ranks[minRankKey];
     }
 
     updateInfo(playersAmount: number, date: string) {

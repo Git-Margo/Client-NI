@@ -1,32 +1,38 @@
 module.exports = function() {
-    let running = false;
-    let $style = null;
 
     const diff = 14;
-    const multiplier = !Engine.worldConfig.getPrivWorld() ? 1.2 : 1.4;
+    const min = 1;
+    const preMax = 300;
+    const max = 500;
 
-    const countLowerLimit = (lvl) => {
-        return Math.round((lvl - 4) / multiplier);
-    }
+    let running = false;
+    let $style = null;
+    //let multiplier 	= null;
 
-    const countUpperLimit = (lvl) => {
-        return Math.round(lvl * multiplier) + 4;
-    }
+    const countLowerLimit = (lvl) => Math.round((Math.min(preMax, lvl) - 4) / getMultiplier());
+    const countUpperLimit = (lvl) => Math.round(lvl * getMultiplier()) + 4;
+
+    const getMultiplier = () => {
+        return Engine.worldConfig.getPrivWorld() || Engine.worldConfig.getRpg() ? 1.4 : 1.2;
+    };
 
     function loot(lvl) {
-        let low;
+        let low = countLowerLimit(lvl);
+        let high = countUpperLimit(lvl);
         if (Engine.worldConfig.getPrivWorld()) {
-            low = countLowerLimit(lvl);
             let countedLvl = countUpperLimit(low);
-            low = lvl - countedLvl === 1 ? low + 1 : low;
-        } else {
-            low = countLowerLimit(lvl);
+            if (Math.min(preMax, lvl) - countedLvl === 1) low++;
         }
         low = Math.min(low, lvl - diff);
-        // const low = Math.min(countLowerLimit(lvl), lvl - diff);
-        const high = Math.max(countUpperLimit(lvl), lvl + diff);
+        high = Math.max(high, lvl + diff)
 
-        return [Math.max(low, 1), Math.min(high, 500)];
+        return adjustLimits(low, high);
+    }
+
+    function adjustLimits(low, high) {
+        low = Math.min(low, preMax);
+        high = high >= preMax ? max : high;
+        return [Math.max(low, min), Math.min(high, max)];
     }
 
     function rangeText(a, b) {
@@ -40,8 +46,32 @@ module.exports = function() {
     function restoreTip(character) {
         if (Engine.hero === character) {
             character.updateTip();
+
+            let miniMapHeroController = Engine.miniMapController.handHeldMiniMapController.getMiniMapHeroController();
+            let heroObject = miniMapHeroController.getObject();
+
+            miniMapHeroController.createTipToHero(heroObject);
+
         } else {
             character.tipUpdate();
+
+            let charId = character.getId();
+            let whoIsHere = Engine.whoIsHere;
+            let whoIsHereOther = whoIsHere.getWhoIsHereOther(charId);
+            let miniMapOtherController = Engine.miniMapController.handHeldMiniMapController.getMiniMapOtherController();
+            let other = miniMapOtherController.getObject(charId);
+
+            if (!whoIsHereOther || !other) {
+                return
+            }
+
+            let $whoIsHereOther = whoIsHereOther.$;
+            let $tipContainer = $whoIsHereOther.find('.tip-container');
+
+            Engine.whoIsHere.createTipWrapper($tipContainer, character);
+
+            miniMapOtherController.createTipToOther(other);
+
         }
     }
 
@@ -52,10 +82,11 @@ module.exports = function() {
     }
 
     function changeTip(tipObj) {
-        if (tipObj.object.d.lvl === 0)
+
+        if (tipObj.object.getLevel() === 0)
             return;
 
-        var range = loot(tipObj.object.d.lvl);
+        var range = loot(tipObj.object.getLevel());
         var txt = rangeText(range[0], range[1]);
         tipObj.text += '<div class="info_tooltip_cont">' +
             '<div class="line"></div>' +
@@ -104,6 +135,7 @@ module.exports = function() {
     };
 
     const initAddon = () => {
+
         $style = $("<style>" +
             ".info_tooltip_cont{" +
             "display: block;" +

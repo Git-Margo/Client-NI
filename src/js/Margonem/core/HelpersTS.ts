@@ -8,6 +8,26 @@ declare const _t: any;
 declare const CFG: any;
 declare const askAlert: any;
 
+declare global {
+    interface HTMLElement {
+        setContent(content: string | HTMLElement): void;
+    }
+}
+
+type AnyObject = Record < string, unknown > ;
+
+HTMLElement.prototype.setContent = function(content: string | HTMLElement): void {
+    this.innerHTML = '';
+
+    if (typeof content === 'string') {
+        this.innerHTML = content;
+    } else {
+        this.appendChild(content);
+    }
+};
+
+export const getEngine = () => Engine;
+
 export const clGroups: Record < string, number[] > = {
     weapons: [1, 2, 3, 4, 5, 6, 7, 29],
     armors: [8, 9, 10, 11, 14],
@@ -64,7 +84,7 @@ export const zero = function(x: number, z: number = 2) {
 
 export const setAttributes = (el: HTMLElement, attrs: any) => {
     for (const key in attrs) {
-        el.setAttribute(key, attrs[key]);
+        el.setAttribute(key, String(attrs[key]));
     }
 };
 
@@ -72,10 +92,10 @@ export const setOnlyPositiveNumberInInput = function($input: JQuery) {
     $input.mask('0#');
 }
 
-export const decodeHtmlEntities = function(html: string) {
-    const txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
+export const decodeHtmlEntities = function(text: string) {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
 }
 
 export const isDevOrExpe = function() {
@@ -106,30 +126,38 @@ export const roundToPrevStep = function(x: number, step: number) {
     return Math.floor(x / step) * step;
 }
 
-export const count = (operator: string, a: number, b: number | []) => {
-    switch (operator) {
-        case '<':
-            return a < b;
-        case '<=':
-            return a <= b;
-        case '>':
-            return a > b;
-        case '>=':
-            return a >= b;
-        case '==':
-            return a == b;
-        case '===':
-            return a === b;
-        case '!==':
-            return a !== b;
-        case 'includes':
-            return (b as Array < number | string > ).includes(a);
+export const count = (operator: string, a: number | string, b: number | string | Array < number | string > ) => {
+    if (operator === 'includes') {
+        return Array.isArray(b) && b.includes(a);
+    } else {
+        switch (operator) {
+            case '<':
+                return a < b;
+            case '<=':
+                return a <= b;
+            case '>':
+                return a > b;
+            case '>=':
+                return a >= b;
+            case '==':
+                return a == b;
+            case '===':
+                return a === b;
+            case '!==':
+                return a !== b;
+            default:
+                return false;
+        }
     }
 }
 
 export const errorReport = (file: string, method: string, message: string, optionalData ? : any) => {
     optionalData = optionalData ? optionalData : '';
     console.error(`[${file}, ${method}] ${message}`, optionalData);
+};
+
+export const throwError = (file: string, method: string, message: string) => {
+    throw new Error(`[${file}, ${method}] ${message}`);
 };
 
 export const configIcon = () => {
@@ -227,10 +255,12 @@ export const checkReducedRequirementItems = (items: number[] | Item) => {
     if (Array.isArray(items)) {
         for (const itemId of items) {
             const i = < Item > Engine.items.getItemById(itemId);
-            if (isset(i) && isset(i._cachedStats["lowreq"])) return true;
+            // if (isset(i) && isset(i._cachedStats["lowreq"])) return true;
+            if (isset(i) && i.issetLowreqStat()) return true;
         }
     } else {
-        if (isset(items._cachedStats["lowreq"])) return true;
+        // if (isset(items._cachedStats["lowreq"])) return true;
+        if (items.issetLowreqStat()) return true;
     }
 
     return false;
@@ -240,10 +270,11 @@ export const checkEnhancedItems = (item: number[] | Item) => {
     if (Array.isArray(item)) {
         for (const itemId of item) {
             const i = < Item > Engine.items.getItemById(itemId);
-            if (isset(i) && isset(i._cachedStats["enhancement_upgrade_lvl"])) return true;
+            // if (isset(i) && isset(i._cachedStats["enhancement_upgrade_lvl"])) return true;
+            if (isset(i) && i.issetEnhancement_upgrade_lvlStat()) return true;
         }
     } else {
-        if (isset(item._cachedStats["enhancement_upgrade_lvl"])) return true;
+        if (item.issetEnhancement_upgrade_lvlStat()) return true;
     }
 
     return false;
@@ -253,10 +284,12 @@ export const checkPersonalItems = (item: number[] | Item) => {
     if (Array.isArray(item)) {
         for (const itemId of item) {
             const i = < Item > Engine.items.getItemById(itemId);
-            if (isset(i) && isset(i._cachedStats["personal"])) return true;
+            // if (isset(i) && isset(i._cachedStats["personal"])) return true;
+            if (isset(i) && i.issetPersonalStat()) return true;
         }
     } else {
-        if (isset(item._cachedStats["personal"])) return true;
+        // if (isset(item._cachedStats["personal"])) return true;
+        if (item.issetPersonalStat()) return true;
     }
 
     return false;
@@ -311,6 +344,7 @@ export const debounce = function(callback: CallbackFunction, wait: number, immed
 };
 
 export const isMobileApp = () => window.navigator.userAgent.includes('MargonemMobile');
+//export const isMobileApp = () => true
 
 export const createTransVal = (val: string | number, unit = '', prefix = '', suffix = '', key = '%val%') => ({
     [key]: `${prefix}${val}${unit}${suffix}`
@@ -350,7 +384,9 @@ export const mergeObjects = (a: any, b: any, keyForMergeArrays: string) => {
     return result;
 }
 
-export const isOwnItem = (item: Item) => item.own === Engine.hero.d.id;
+export const getHeroId = () => Engine.hero.d.id;
+export const isOwnItem = (item: Item) => item.own === getHeroId();
+export const isHero = (characterId: number) => characterId === getHeroId();
 
 export const hex2rgb = (hex: string) => {
     const [r, g, b] = hex.match(/\w\w/g) !.map((x: string) => parseInt(x, 16));
@@ -359,6 +395,219 @@ export const hex2rgb = (hex: string) => {
         g,
         b
     }
+}
+
+export const getParsedPetData = (petData: string) => {
+    const petClasses = ['elite', 'quest', 'legendary', 'heroic'] as
+    const;
+
+    type PetClass = typeof petClasses[number]; // Type from table elements
+
+    type PetObj = {
+        name: string;
+        outfit: string;
+        action: number;
+        actions ? : string;
+    } & Partial < Record < PetClass, boolean >> ; // dynamic keys for pet classes
+
+    const tmplist = petData.split(',');
+
+    const petObj: PetObj = {
+        name: tmplist[0],
+        outfit: tmplist[1],
+        action: 0
+    };
+
+    for (let j = 2; j < tmplist.length; j++) {
+        if (petClasses.includes(tmplist[j] as PetClass)) {
+            petObj[tmplist[j] as PetClass] = true;
+            continue;
+        }
+        petObj.actions = tmplist[j];
+    }
+
+    return petObj;
+};
+
+export const setContent = (container: HTMLElement, content: string | HTMLElement): void => {
+    container.innerHTML = '';
+
+    if (typeof content === 'string') {
+        container.innerHTML = content;
+    } else {
+        container.appendChild(content);
+    }
+}
+
+export const stringToHtml = < T extends HTMLElement > (htmlString: string): T | null => {
+    const template = document.createElement("template");
+    template.innerHTML = htmlString.trim();
+    return template.content.firstElementChild as T | null;
+}
+
+export const convertStringNumbers = < T extends AnyObject > (obj: T): T =>
+    Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => [key, typeof value === "string" && !isNaN(Number(value)) ? Number(value) : value])
+    ) as T;
+
+export enum Icons {
+    CLOSE = 'close',
+        MENU = 'menu'
+}
+export const getIcon = (iconName: Icons, hasHover: boolean = true) => {
+    const iconEl = document.createElement('div');
+    iconEl.classList.add('ie-icon', `ie-icon-${iconName}`);
+    if (!hasHover) iconEl.classList.add('ie-icon--no-hover');
+    return $(iconEl);
+}
+
+export const getIconClose = (hasHover: boolean) => getIcon(Icons.CLOSE, hasHover);
+
+export const highlightElement = (selector: string, duration = 300) => {
+    document.querySelectorAll(selector).forEach(el => {
+        el.classList.add('ie-highlight-animation');
+        setTimeout(() => {
+            el.classList.remove('ie-highlight-animation');
+        }, 2000);
+    });
+}
+export const attachItemToSlot = (opts: {
+    itemId: number;
+    slotEl: HTMLElement;
+    viewName: string;
+    movedName: string;
+    clearSlotBeforeAppend ? : boolean;
+    correctItemCheck ? : (item: Item) => boolean;
+    onClick ? : (item: Item) => void;
+    onDelete ? : () => void;
+    onSuccess ? : () => void;
+}) => {
+    const {
+        itemId,
+        slotEl,
+        viewName,
+        movedName,
+        clearSlotBeforeAppend = true,
+        correctItemCheck,
+        onClick,
+        onDelete,
+        onSuccess
+    } = opts;
+
+    const item = Engine.items.getItemById(itemId);
+    if (!isset(item)) return;
+    if (correctItemCheck && !correctItemCheck(item)) {
+        errorReport("Helpers.ts", "attachItemToSlot", "Incorrect item:", item);
+        return;
+    }
+
+    const itemEl = Engine.items.createViewIcon(item.id, viewName)[0][0];
+
+    if (onClick) {
+        itemEl.addEventListener("click", () => onClick(item));
+        Engine.itemsMovedManager.addItem(item, movedName, () => onClick(item));
+    }
+
+    if (onDelete) item.on("delete", () => onDelete());
+
+    if (clearSlotBeforeAppend) slotEl.innerHTML = "";
+    slotEl.appendChild(itemEl);
+
+    if (onSuccess) onSuccess();
+}
+
+export const removeItemFromSlot = (opts: {
+    itemId: number | null;
+    viewName: string;
+    movedName: string;
+    onDelete ? : () => void;
+    onSuccess ? : () => void;
+    onMissing ? : () => void;
+}) => {
+    const {
+        itemId,
+        viewName,
+        movedName,
+        onDelete,
+        onSuccess,
+        onMissing
+    } = opts;
+
+    if (itemId == null) {
+        if (onMissing) onMissing();
+        return;
+    }
+
+    const item = Engine.items.getItemById(itemId);
+    if (!isset(item)) {
+        if (onMissing) onMissing();
+        return;
+    }
+
+    // Engine.items.deleteAllViewsByViewName(viewName);
+    Engine.items.deleteViewIconIfExist(itemId, viewName)
+    // Engine.itemsMovedManager.removeItemsByTarget(movedName);
+    Engine.itemsMovedManager.removeItem(itemId);
+
+    if (onDelete) item.unregisterCallback("delete", () => onDelete());
+
+    if (onSuccess) onSuccess();
+}
+
+export type SecToParsedTimeOptions = {
+    showSec ? : boolean;
+    color ? : boolean;
+    showDays ? : boolean;
+};
+
+export const secToParsedTime = (
+    sec: number,
+    options: SecToParsedTimeOptions = {}
+): string => {
+    const {
+        showSec = true,
+            color = true,
+            showDays = true
+    } = options;
+
+    let hours: number, minutes: number, seconds: number, days: number;
+
+    if (!showDays) {
+        hours = Math.floor(sec / 3600);
+        minutes = Math.floor((sec % 3600) / 60);
+        seconds = Math.floor(sec % 60);
+        days = 0;
+    } else {
+        days = Math.floor(sec / 86400);
+        hours = Math.floor((sec % 86400) / 3600);
+        minutes = Math.floor((sec % 3600) / 60);
+        seconds = Math.floor(sec % 60);
+    }
+
+    const dayHidden = !showDays || days < 1;
+    const hourHidden = dayHidden && hours < 1;
+    const secHidden = (showDays && days > 0) || !showSec;
+
+    let classes = '';
+    if (color) {
+        classes = 'green';
+        if (hourHidden && minutes > 4) classes = 'orange';
+        if (hourHidden && minutes <= 4) classes = 'red';
+    }
+
+    return `
+    <span class="${classes}">
+      ${!dayHidden ? _t('time_days_short %val%', { '%val%': days }, 'time_diff') : ''}
+      ${!hourHidden ? _t('time_h_short %val%', { '%val%': hours }, 'time_diff') : ''}
+      ${_t('time_min_short %val%', { '%val%': minutes }, 'time_diff')}
+      ${!secHidden ? _t('time_sec_short %val%', { '%val%': seconds }, 'time_diff') : ''}
+    </span>
+  `;
+}
+
+export const isTestWorld = () => {
+    const testWorlds = ['dev', 'tabaluga', 'experimental'];
+    return testWorlds.includes(Engine.worldConfig.getWorldName());
 }
 
 // if (window) {

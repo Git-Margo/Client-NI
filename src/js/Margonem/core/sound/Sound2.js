@@ -1,9 +1,9 @@
-var SOUND_DATA = require('core/sound/SoundData');
-var SocietyData = require('core/society/SocietyData');
+var SOUND_DATA = require('@core/sound/SoundData');
+var SocietyData = require('@core/society/SocietyData');
 module.exports = function() {
 
     const moduleData = {
-        fileName: "Sound.js"
+        fileName: "Sound2.js"
     };
 
     const playSoundsList = {
@@ -12,6 +12,7 @@ module.exports = function() {
         [SOUND_DATA.TYPE.BATTLE_EFFECT]: {},
         [SOUND_DATA.TYPE.SRAJ]: {},
         [SOUND_DATA.TYPE.TMP]: {},
+        [SOUND_DATA.TYPE.ITEM]: {},
     };
 
     const volumeSoundsList = {
@@ -20,6 +21,7 @@ module.exports = function() {
         [SOUND_DATA.TYPE.BATTLE_EFFECT]: 20,
         [SOUND_DATA.TYPE.SRAJ]: 80,
         [SOUND_DATA.TYPE.TMP]: 80,
+        [SOUND_DATA.TYPE.ITEM]: 80,
     }
 
     let MUSIC_DATA = {
@@ -234,6 +236,8 @@ module.exports = function() {
         "-1": 'owacje_VOLUME_TEST_DONT_REMOVE.mp3'
     }
 
+    const ITEM_DATA = {};
+
     const fadeLength = 4000;
     let userClicked = false;
     let soundSystemIsReady = false;
@@ -244,12 +248,14 @@ module.exports = function() {
         play: !mobileCheck(),
         shuffle: false,
         quality: SOUND_DATA.QUALITY.HQ,
+        mainVolume: 100,
         volume: {
             [SOUND_DATA.TYPE.MUSIC]: 100,
             [SOUND_DATA.TYPE.NOTIFICATION]: 100,
             [SOUND_DATA.TYPE.BATTLE_EFFECT]: 100,
             [SOUND_DATA.TYPE.SRAJ]: 100,
-            [SOUND_DATA.TYPE.TMP]: 100
+            [SOUND_DATA.TYPE.TMP]: 100,
+            [SOUND_DATA.TYPE.ITEM]: 100
         }
     }
 
@@ -259,6 +265,10 @@ module.exports = function() {
 
     const addToSRAJ_DATA = (key, fileName) => {
         if (!SRAJ_DATA[key]) SRAJ_DATA[key] = fileName;
+    }
+
+    const addToITEM_DATA = (key, fileName) => {
+        if (!ITEM_DATA[key]) ITEM_DATA[key] = fileName;
     }
 
     const loadToCache = (key, type) => {
@@ -272,6 +282,10 @@ module.exports = function() {
     }
 
     const setDataSettingQuality = (val) => {
+        if (![SOUND_DATA.QUALITY.HQ, SOUND_DATA.QUALITY.LQ].includes(val)) {
+            return;
+        }
+
         dataSettings.quality = val
     }
 
@@ -279,8 +293,23 @@ module.exports = function() {
         dataSettings.shuffle = val
     }
 
+    const setDataSettingMainVolume = (val) => {
+        if (!isNumberFunc(val)) {
+            return;
+        }
+
+        dataSettings.mainVolume = val
+    }
+
     const setDataSettingVolume = (val, type) => {
-        if (!checkAvailableSoundType(type)) return
+        if (!checkAvailableSoundType(type)) {
+            return;
+        }
+
+        if (!isNumberFunc(val)) {
+            return;
+        }
+
         dataSettings.volume[type] = val
     }
 
@@ -288,6 +317,10 @@ module.exports = function() {
         if (!checkAvailableSoundType(type)) return
 
         return dataSettings.volume[type];
+    }
+
+    const getDataSettingMainVolume = () => {
+        return dataSettings.mainVolume;
     }
 
     const getDataSettingQuality = () => {
@@ -509,6 +542,42 @@ module.exports = function() {
         return firstKey;
     }
 
+    const testMainSound = () => {
+        const TEST_MAIN_SOUND = "TEST_MAIN_SOUND";
+
+        if (soundManager.getSoundById(TEST_MAIN_SOUND)) {
+            return;
+        }
+
+        let testSound = null;
+        let o = {
+            soundData: null
+        };
+        let name = 1;
+        let type = SOUND_DATA.TYPE.NOTIFICATION;
+        let url = getSoundUrl(name, type);
+
+        console.log(url);
+
+        let soundData = {
+            id: "TEST_MAIN_SOUND",
+            position: 0,
+            url: `${url}?v=${__build.version}`,
+            volume: dataSettings.mainVolume,
+            onfinish: () => {
+                removeSound(o)
+            },
+            whileplaying: () => {
+                o.soundData.setVolume(dataSettings.mainVolume);
+            }
+        };
+
+
+        o.soundData = soundManager.createSound(soundData);
+
+        autoPlayFix(o);
+    };
+
     const createSound = (id, type, soundKey, url, additionalData) => {
 
         if (!checkAvailableSoundType(type)) return
@@ -544,6 +613,7 @@ module.exports = function() {
 
             case SOUND_DATA.TYPE.BATTLE_EFFECT:
             case SOUND_DATA.TYPE.NOTIFICATION:
+            case SOUND_DATA.TYPE.ITEM:
             case SOUND_DATA.TYPE.TMP:
                 soundData.onfinish = () => {
                     onFinishSound(o)
@@ -570,7 +640,7 @@ module.exports = function() {
         return o;
     };
 
-    removeSound = (o) => {
+    const removeSound = (o) => {
         o.soundData.destruct();
     }
 
@@ -578,11 +648,14 @@ module.exports = function() {
 
         if (!checkAvailableSoundType(type)) return null;
 
+        const FUNC = "getSoundUrl";
+        const fileName = moduleData.fileName;
+
         switch (type) {
             case SOUND_DATA.TYPE.MUSIC:
 
                 if (!MUSIC_DATA[soundKey]) {
-                    errorReport('Sound.js', "getSoundUrl", "MUSIC_DATA sound not exist: " + soundKey);
+                    errorReport(fileName, FUNC, "MUSIC_DATA sound not exist: " + soundKey);
                     return null;
                 }
 
@@ -596,7 +669,7 @@ module.exports = function() {
             case SOUND_DATA.TYPE.BATTLE_EFFECT:
 
                 if (!BATTLE_EFFECT_DATA[soundKey]) {
-                    errorReport('Sound.js', "getSoundUrl", "BATTLE_EFFECT_DATA sound not exist: " + soundKey);
+                    errorReport(fileName, FUNC, "BATTLE_EFFECT_DATA sound not exist: " + soundKey);
                     return null;
                 }
                 return cdncrUrl + CFG.r_battleEffectsSound + BATTLE_EFFECT_DATA[soundKey];
@@ -605,18 +678,24 @@ module.exports = function() {
                 if (options.keyAsUrl) return soundKey;
 
                 if (!NOTIFICATION_DATA[soundKey]) {
-                    errorReport('Sound.js', "getSoundUrl", "NOTIFICATION_DATA sound not exist: " + soundKey);
+                    errorReport(fileName, FUNC, "NOTIFICATION_DATA sound not exist: " + soundKey);
                     return null;
                 }
                 return "/sounds/" + NOTIFICATION_DATA[soundKey];
             case SOUND_DATA.TYPE.SRAJ:
                 if (!SRAJ_DATA[soundKey]) {
-                    errorReport(moduleData, "getSoundUrl", "SRAJ_DATA sound not exist: " + soundKey);
+                    errorReport(fileName, FUNC, "SRAJ_DATA sound not exist: " + soundKey);
                     return null;
                 }
                 return cdnUrl + CFG.r_srajSound + SRAJ_DATA[soundKey];
             case SOUND_DATA.TYPE.TMP:
                 return cdnUrl + "/obrazki/" + soundKey;
+            case SOUND_DATA.TYPE.ITEM:
+                if (!ITEM_DATA[soundKey]) {
+                    errorReport(fileName, FUNC, "ITEM_DATA sound not exist: " + soundKey);
+                    return null;
+                }
+                return soundKey;
         }
     }
 
@@ -647,6 +726,7 @@ module.exports = function() {
                 break;
             case SOUND_DATA.TYPE.NOTIFICATION:
             case SOUND_DATA.TYPE.BATTLE_EFFECT:
+            case SOUND_DATA.TYPE.ITEM:
                 break;
             case SOUND_DATA.TYPE.SRAJ:
                 o.rajSound.finishSound();
@@ -669,6 +749,7 @@ module.exports = function() {
             case SOUND_DATA.TYPE.BATTLE_EFFECT:
             case SOUND_DATA.TYPE.NOTIFICATION:
             case SOUND_DATA.TYPE.TMP:
+            case SOUND_DATA.TYPE.ITEM:
                 volume = getUpdatedSoundVolume(type);
                 break;
             case SOUND_DATA.TYPE.SRAJ:
@@ -683,8 +764,8 @@ module.exports = function() {
                 break;
         }
 
-        o.soundData.setVolume(volume);
-    }
+        o.soundData.setVolume(volume * dataSettings.mainVolume / 100);
+    };
 
     const getUpdatedMusicVolume = (o) => {
 
@@ -752,8 +833,8 @@ module.exports = function() {
     }
 
     const manageOtherNotifications = (other) => {
-        let enemyHere = !getStateSoundNotifById(1);
-        let friendHere = !getStateSoundNotifById(2);
+        let enemyHere = getStateSoundNotifById(1);
+        let friendHere = getStateSoundNotifById(2);
 
         //if (enemyHere && other.relation == 'en') 	return createNotifSound(1);
         //if (friendHere && other.relation == 'fr') 	return createNotifSound(2);
@@ -763,8 +844,8 @@ module.exports = function() {
     };
 
     const manageNpcNotifications = (npc) => {
-        let e2Here = !getStateSoundNotifById(3);
-        let titanOrHerosHere = !getStateSoundNotifById(4);
+        let e2Here = getStateSoundNotifById(3);
+        let titanOrHerosHere = getStateSoundNotifById(4);
         let attackNpc = npc.type == 2 || npc.type == 3;
 
         if (!attackNpc) {
@@ -861,6 +942,37 @@ module.exports = function() {
         onFinishSound(sound);
     }
 
+    const createItemSound = (newKey, id) => {
+        let type = SOUND_DATA.TYPE.ITEM;
+        let url = getSoundUrl(newKey, type);
+
+        if (url == null) return;
+
+        let sound = createSound(id, type, newKey, url);
+
+        addToPlaySound(sound, type);
+        autoPlayFix(sound);
+    };
+
+    const prepareItemSound = (url) => {
+        addToITEM_DATA(url, url);
+        loadToCache(url, SOUND_DATA.TYPE.ITEM);
+    };
+
+    const checkItemSoundIsPlaying = (soundId) => {
+        for (let _soundId in playSoundsList[SOUND_DATA.TYPE.ITEM]) {
+            if (soundId == _soundId) return true
+        }
+
+        return false;
+    };
+
+    const finishPlayingItemSound = (id) => {
+        let sound = playSoundsList[SOUND_DATA.TYPE.ITEM][id];
+
+        onFinishSound(sound);
+    };
+
     const finishPlayingTmpSound = () => {
         const sound = playSoundsList[SOUND_DATA.TYPE.TMP][0];
         onFinishSound(sound);
@@ -943,6 +1055,8 @@ module.exports = function() {
         volumeSoundsList[SOUND_DATA.TYPE.NOTIFICATION] = dataSettings.volume[SOUND_DATA.TYPE.NOTIFICATION];
         volumeSoundsList[SOUND_DATA.TYPE.BATTLE_EFFECT] = dataSettings.volume[SOUND_DATA.TYPE.BATTLE_EFFECT];
         volumeSoundsList[SOUND_DATA.TYPE.SRAJ] = dataSettings.volume[SOUND_DATA.TYPE.SRAJ];
+        volumeSoundsList[SOUND_DATA.TYPE.TMP] = dataSettings.volume[SOUND_DATA.TYPE.TMP];
+        volumeSoundsList[SOUND_DATA.TYPE.ITEM] = dataSettings.volume[SOUND_DATA.TYPE.ITEM];
     }
 
     const initMusicDataSettings = () => {
@@ -950,15 +1064,20 @@ module.exports = function() {
 
         if (!storage) return
 
+        //console.log(storage);
+
         if (isset(storage.play)) setDataSettingPlay(storage.play);
         if (isset(storage.shuffle)) setDataSettingShuffle(storage.shuffle);
         if (isset(storage.quality)) setDataSettingQuality(storage.quality);
+        if (isset(storage.mainVolume)) setDataSettingMainVolume(storage.mainVolume);
 
         if (isset(storage.volume)) {
             if (isset(storage.volume[SOUND_DATA.TYPE.MUSIC])) setDataSettingVolume(storage.volume[SOUND_DATA.TYPE.MUSIC], SOUND_DATA.TYPE.MUSIC);
             if (isset(storage.volume[SOUND_DATA.TYPE.NOTIFICATION])) setDataSettingVolume(storage.volume[SOUND_DATA.TYPE.NOTIFICATION], SOUND_DATA.TYPE.NOTIFICATION);
             if (isset(storage.volume[SOUND_DATA.TYPE.BATTLE_EFFECT])) setDataSettingVolume(storage.volume[SOUND_DATA.TYPE.BATTLE_EFFECT], SOUND_DATA.TYPE.BATTLE_EFFECT);
             if (isset(storage.volume[SOUND_DATA.TYPE.SRAJ])) setDataSettingVolume(storage.volume[SOUND_DATA.TYPE.SRAJ], SOUND_DATA.TYPE.SRAJ);
+            if (isset(storage.volume[SOUND_DATA.TYPE.TMP])) setDataSettingVolume(storage.volume[SOUND_DATA.TYPE.TMP], SOUND_DATA.TYPE.TMP);
+            if (isset(storage.volume[SOUND_DATA.TYPE.ITEM])) setDataSettingVolume(storage.volume[SOUND_DATA.TYPE.ITEM], SOUND_DATA.TYPE.ITEM);
         }
 
     }
@@ -976,10 +1095,31 @@ module.exports = function() {
 
     const setVolumeWithSaveInServerStorage = (volume, type) => {
 
-        if (!checkAvailableSoundType(type)) return;
-        setVolumeWithoutSaveInServerStorage(volume, type);
+        for (let index in type) {
+            let oneType = type[index];
 
-        setDataSettingVolume(volumeSoundsList[type], type);
+            if (!checkAvailableSoundType(oneType)) {
+                return;
+            }
+
+            setVolumeWithoutSaveInServerStorage(volume, oneType);
+            setDataSettingVolume(volumeSoundsList[oneType], oneType);
+        }
+
+        saveSettings();
+    };
+
+    const setMainVolumeWithoutSaveInServerStorage = (volume) => {
+        let _volume = parseInt(volume < 0 ? 0 : volume > 100 ? 100 : volume);
+
+        setDataSettingMainVolume(_volume);
+    };
+
+    const setMainVolumeWithSaveInServerStorage = (volume) => {
+
+        //if (!checkAvailableSoundType(type)) return;
+        setMainVolumeWithoutSaveInServerStorage(volume);
+
 
         saveSettings();
     };
@@ -988,6 +1128,7 @@ module.exports = function() {
         let objToSend = {};
         objToSend[getSoundParametersPatch()] = {
             play: getDataSettingPlay(),
+            mainVolume: getDataSettingMainVolume(),
             volume: dataSettings.volume,
             shuffle: getDataSettingShuffle(),
             quality: getDataSettingQuality()
@@ -1034,6 +1175,16 @@ module.exports = function() {
 
 
 
+    this.finishPlayingItemSound = finishPlayingItemSound;
+    this.checkItemSoundIsPlaying = checkItemSoundIsPlaying;
+    this.createItemSound = createItemSound;
+    this.prepareItemSound = prepareItemSound;
+
+
+    this.setMainVolumeWithoutSaveInServerStorage = setMainVolumeWithoutSaveInServerStorage;
+    this.setMainVolumeWithSaveInServerStorage = setMainVolumeWithSaveInServerStorage;
+    this.testMainSound = testMainSound;
+
     this.checkSrajSoundIsPlaying = checkSrajSoundIsPlaying;
     this.prepareSrajSound = prepareSrajSound;
     this.createSrajSound = createSrajSound;
@@ -1054,6 +1205,7 @@ module.exports = function() {
     this.getDataSettingShuffle = getDataSettingShuffle;
     this.getDataSettingPlay = getDataSettingPlay
 
+    this.getDataSettingMainVolume = getDataSettingMainVolume;
     this.getDataSettingVolume = getDataSettingVolume;
     this.setMusicFadeOut = setMusicFadeOut;
     this.createBattleEffectSound = createBattleEffectSound;

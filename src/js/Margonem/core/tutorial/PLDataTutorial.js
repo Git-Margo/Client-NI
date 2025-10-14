@@ -1,6 +1,6 @@
-var ProfData = require('core/characters/ProfData');
-var TutorialData = require('core/tutorial/TutorialData');
-var SkillsData = require('core/skills/SkillsData');
+var ProfData = require('@core/characters/ProfData');
+var TutorialData = require('@core/tutorial/TutorialData');
+var SkillsData = require('@core/skills/SkillsData');
 
 module.exports = function() {
 
@@ -11,6 +11,9 @@ module.exports = function() {
 
     let eqcolumnshowWidget = 'eq-show-icon';
     let quickFightWidget = 'auto-fight-near-mob';
+
+
+    const HIDDEN_WINDOW = "hidden-window"
 
     this.init = () => {
         this.addPlDataToList();
@@ -484,6 +487,8 @@ module.exports = function() {
                 headerPc: "t_header_1_ni_pl",
                 headerMobile: "t_header_1_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/6.gif',
                 idMaps: [1456],
                 htmlFocus: '.echh-layer',
@@ -505,9 +510,11 @@ module.exports = function() {
                 headerPc: "t_header_2_ni_pl",
                 headerMobile: "t_header_2_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/8.gif',
                 //htmlFocus: '.echh-layer',
-                htmlMultiGlow: ['.widget-in-interface-bar.widget-npc-talk-icon'],
+                htmlMultiGlow: ['.widget-in-interface-bar.widget-npc-talk-icon', self.getQuestObserve()],
                 canvasMultiGlow: {
                     list: [{
                         kind: TutorialData.TYPE_OBJECT.NPC,
@@ -532,6 +539,8 @@ module.exports = function() {
 
                 headerPc: "t_header_3_ni_pl",
                 headerMobile: "t_header_3_ni_pl",
+
+                //mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/4.gif',
                 htmlFocus: '.interface-layer>.right-column.main-column',
@@ -607,6 +616,8 @@ module.exports = function() {
                 headerPc: "t_header_4_ni_pl",
                 headerMobile: "t_header_4_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 //htmlPosition: '.border-window:has(.content:has(.quest-observe-window))',
                 //htmlMultiGlow: ['.border-window:has(.content:has(.quest-observe-window))'],
                 htmlPosition: self.getQuestObserve(),
@@ -680,6 +691,8 @@ module.exports = function() {
 
                 headerPc: "t_header_5_ni_pl",
                 headerMobile: "t_header_5_ni_pl",
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/7.gif',
                 //htmlFocus: '.echh-layer',
@@ -757,7 +770,7 @@ module.exports = function() {
                 blink: true,
                 blockedHotKeys: [quickFightNearMobHotkey],
                 blockedWidget: [quickFightWidget],
-                htmlMultiGlow: ['.widget-button.widget-in-interface-bar.widget-attack-near-mob'],
+                htmlMultiGlow: ['.widget-button.widget-in-interface-bar.widget-attack-near-mob', self.getQuestObserve()],
             }],
             6: [{
                 textPc: 't_6_ni_pl',
@@ -766,12 +779,15 @@ module.exports = function() {
                 headerPc: "t_header_6_ni_pl",
                 headerMobile: "t_header_6_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/5.gif',
                 idMaps: [1456],
                 //htmlFocus: '.skill-usable-slot:has(.battle-skill:has(.' + self.getNormalAttackIcon() + '))',
                 //htmlPosition: '.skill-usable-slot:has(.battle-skill:has(.' + self.getNormalAttackIcon() + '))',
                 htmlFocus: '.skill-usable-slot:has(.battle-skill):has(.' + self.getNormalAttackIcon() + ')',
                 htmlPosition: '.skill-usable-slot:has(.battle-skill):has(.' + self.getNormalAttackIcon() + ')',
+                htmlMultiGlow: [self.getQuestObserve()],
                 blink: true,
                 additionalRequireFunction: self.checkAdditionalTutorialRequire6,
             }],
@@ -781,6 +797,9 @@ module.exports = function() {
 
                 headerPc: "t_header_7_ni_pl",
                 headerMobile: "t_header_7_ni_pl",
+
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/5.gif',
                 idMaps: [1456],
                 //htmlMultiGlow: ['.skill-usable-slot:has(.battle-skill:has(.' + self.getNormalAttackIcon() + '))'],
@@ -796,6 +815,8 @@ module.exports = function() {
                 headerPc: "t_header_8_ni_pl",
                 headerMobile: "t_header_8_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/9.gif',
                 htmlFocus: '.close-battle-ground',
                 htmlPosition: '.close-battle-ground',
@@ -808,6 +829,8 @@ module.exports = function() {
 
                 headerPc: "t_header_9_ni_pl",
                 headerMobile: "t_header_9_ni_pl",
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/1.gif',
                 idMaps: [1456],
@@ -829,6 +852,8 @@ module.exports = function() {
 
                 headerPc: "t_header_10_ni_pl",
                 headerMobile: "t_header_10_ni_pl",
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/1.gif',
                 idMaps: [1456],
@@ -884,6 +909,8 @@ module.exports = function() {
 
                 headerPc: "t_header_11_ni_pl",
                 headerMobile: "t_header_11_ni_pl",
+
+                //mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/4.gif',
                 idMaps: [707],
@@ -953,6 +980,8 @@ module.exports = function() {
 
                 headerPc: "t_header_12_ni_pl",
                 headerMobile: "t_header_12_ni_pl",
+
+                //mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/1.gif',
                 idMaps: [707],
@@ -1041,6 +1070,8 @@ module.exports = function() {
                 headerPc: "t_header_13_ni_pl",
                 headerMobile: "t_header_13_ni_pl",
 
+                //mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/4.gif',
                 idMaps: [707],
                 maxLevel: 7,
@@ -1104,6 +1135,8 @@ module.exports = function() {
 
                 headerPc: "t_header_14_ni_pl",
                 headerMobile: "t_header_14_ni_pl",
+
+                //mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/4.gif',
                 idMaps: [707],
@@ -1170,6 +1203,8 @@ module.exports = function() {
                 headerPc: "t_header_15_ni_pl",
                 headerMobile: "t_header_15_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/3.gif',
                 idMaps: [1508],
                 htmlMultiGlow: [
@@ -1188,6 +1223,9 @@ module.exports = function() {
 
                 headerPc: "t_header_16_ni_pl",
                 headerMobile: "t_header_16_ni_pl",
+
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/4.gif',
                 htmlFocus: '.interface-layer>.right-column.main-column',
@@ -1245,6 +1283,9 @@ module.exports = function() {
 
                 headerPc: "t_header_17_ni_pl",
                 headerMobile: "t_header_17_ni_pl",
+
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/1.gif',
                 idMaps: [707],
@@ -1405,6 +1446,8 @@ module.exports = function() {
                 headerPc: "t_header_18_ni_pl",
                 headerMobile: "t_header_18_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/1.gif',
                 idMaps: [707],
                 htmlMultiGlow: ['.shop-wrapper>.shop-content>.finalize-button'],
@@ -1423,6 +1466,9 @@ module.exports = function() {
 
                 headerPc: "t_header_19_ni_pl",
                 headerMobile: "t_header_19_ni_pl",
+
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/4.gif',
                 htmlPosition: '.interface-layer>.right-column.main-column',
@@ -1486,6 +1532,9 @@ module.exports = function() {
                 headerPc: "t_header_20_ni_pl",
                 headerMobile: "t_header_20_ni_pl",
 
+
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/3.gif',
                 htmlMultiGlow: ['.main-buttons-container>.widget-drag-item-icon', '.widget-button.widget-in-interface-bar.widget-drag-item-icon'],
                 htmlPosition: '.interface-layer>.right-column.main-column',
@@ -1547,6 +1596,9 @@ module.exports = function() {
                 headerPc: "t_header_21_ni_pl",
                 headerMobile: "t_header_21_ni_pl",
 
+
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/4.gif',
                 htmlPosition: '.interface-layer>.right-column.main-column',
                 minLevel: 10,
@@ -1603,6 +1655,9 @@ module.exports = function() {
                 headerPc: "t_header_22_ni_pl",
                 headerMobile: "t_header_22_ni_pl",
 
+
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/1.gif',
                 htmlPosition: '.widget-button:has(.icon.photo)',
                 htmlMultiGlow: ['.widget-button>.icon.photo'],
@@ -1620,6 +1675,9 @@ module.exports = function() {
 
                 headerPc: "t_header_23_ni_pl",
                 headerMobile: "t_header_23_ni_pl",
+
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/1.gif',
                 //htmlPosition: '.border-window:has(.content:has(.inner-content:has(.recipes-manager)))',
@@ -1639,6 +1697,9 @@ module.exports = function() {
 
                 headerPc: "t_header_24_ni_pl",
                 headerMobile: "t_header_24_ni_pl",
+
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/1.gif',
                 //htmlPosition: '.border-window:has(.content:has(.inner-content:has(.recipes-manager)))',
@@ -1699,6 +1760,9 @@ module.exports = function() {
                 headerPc: "t_header_25_ni_pl",
                 headerMobile: "t_header_25_ni_pl",
 
+
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/10.gif',
                 htmlPosition: '.mAlert-layer>.mAlert',
                 htmlMultiGlow: ['.mAlert-layer>.mAlert>.content>.window-controlls>.alert-accept-hotkey'],
@@ -1756,6 +1820,8 @@ module.exports = function() {
 
                 headerPc: "t_header_26_ni_pl",
                 headerMobile: "t_header_26_ni_pl",
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/11.gif',
                 //htmlPosition: '.content:has(.inner-content:has(.recipes-manager)) ~ .close-button-corner-decor>.close-button',
@@ -1817,6 +1883,8 @@ module.exports = function() {
                 headerPc: "t_header_27_ni_pl",
                 headerMobile: "t_header_27_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/1.gif',
                 htmlPosition: '.barter-content>.bottom-row-panel>.do-recipe>.button',
                 //htmlMultiGlow: ['.barter-offer-1616>.action>.action-wrapper>.button>.label'],
@@ -1837,6 +1905,8 @@ module.exports = function() {
                 headerPc: "t_header_28_ni_pl",
                 headerMobile: "t_header_28_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/10.gif',
                 htmlPosition: '.mAlert-layer>.mAlert',
                 htmlMultiGlow: ['.mAlert-layer>.mAlert>.content>.window-controlls>.alert-accept-hotkey'],
@@ -1855,6 +1925,8 @@ module.exports = function() {
 
                 headerPc: "t_header_29_ni_pl",
                 headerMobile: "t_header_29_ni_pl",
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/1.gif',
                 //htmlPosition: '.border-window:has(.content:has(.inner-content:has(.shop-wrapper)))',
@@ -1876,6 +1948,8 @@ module.exports = function() {
                 headerPc: "t_header_30_ni_pl",
                 headerMobile: "t_header_30_ni_pl",
 
+                mobileAddClass: HIDDEN_WINDOW,
+
                 graphic: '/img/gui/newTutorial/1.gif',
                 //htmlPosition:'.border-window:has(.content:has(.inner-content:has(.shop-wrapper)))',
                 htmlPosition: '.shop-wrapper>.shop-content>.finalize-button',
@@ -1894,6 +1968,8 @@ module.exports = function() {
 
                 headerPc: "t_header_31_ni_pl",
                 headerMobile: "t_header_31_ni_pl",
+
+                //mobileAddClass: HIDDEN_WINDOW,
 
                 itemsNeed: {
                     htmlMultiGlow: true,
@@ -1956,6 +2032,8 @@ module.exports = function() {
                 headerPc: "t_header_32_ni_pl",
                 headerMobile: "t_header_32_ni_pl",
 
+                //mobileAddClass: HIDDEN_WINDOW,
+
                 itemsNeed: {
                     htmlMultiGlow: true,
                     tpls: {
@@ -2017,6 +2095,8 @@ module.exports = function() {
 
                 headerPc: "t_header_33_ni_pl",
                 headerMobile: "t_header_33_ni_pl",
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 itemsNeed: {
                     htmlMultiGlow: true,
@@ -2089,6 +2169,8 @@ module.exports = function() {
 
                 headerPc: "t_header_34_ni_pl",
                 headerMobile: "t_header_34_ni_pl",
+
+                mobileAddClass: HIDDEN_WINDOW,
 
                 graphic: '/img/gui/newTutorial/1.gif',
                 htmlPosition: '.barter-window',

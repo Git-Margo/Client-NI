@@ -1,15 +1,19 @@
 /**
  * Created by lukasz on 2015-02-25.
  */
-var Tpl = require('core/Templates');
-var DraconiteShop = require('core/shop/DraconiteShop');
-var ServerStorageData = require('core/storage/ServerStorageData.js');
-var Basket = require('core/shop/Basket');
-let ItemClass = require('core/items/ItemClass');
-let ItemState = require('core/items/ItemState');
-var TutorialData = require('core/tutorial/TutorialData');
+var Tpl = require('@core/Templates');
+var DraconiteShop = require('@core/shop/DraconiteShop');
+var ServerStorageData = require('@core/storage/ServerStorageData.js');
+var Basket = require('@core/shop/Basket');
+let ItemClass = require('@core/items/ItemClass');
+let ItemState = require('@core/items/ItemState');
+var TutorialData = require('@core/tutorial/TutorialData');
 
-var GreatMerchamp = require('core/GreatMerchamp');
+var GreatMerchamp = require('@core/GreatMerchamp');
+const {
+    shopActions
+} = require('./ShopData');
+
 module.exports = function() {
     var self = this;
     var data = null;
@@ -206,8 +210,14 @@ module.exports = function() {
         Engine.tpls.fetch(Engine.itemsFetchData.NEW_SHOP_TPL, self.newShopItems);
         self.prepareDescription(d);
         self.initGreatMerchamp();
-        self.wnd.$.find('.shop-content').removeClass('normal-shop-zl normal-shop-sl pet-shop-zl pet-shop-sl');
-        self.wnd.$.find('.shop-content').addClass('normal-shop-' + type);
+        //self.wnd.$.find('.shop-content').removeClass('normal-shop-zl normal-shop-sl pet-shop-zl pet-shop-sl');
+        //self.wnd.$.find('.shop-background').removeClass('normal-shop-zl normal-shop-sl pet-shop-zl pet-shop-sl');
+        //self.wnd.$.find('.shop-content').addClass('normal-shop-' + type);
+        //self.wnd.$.find('.shop-background').addClass('normal-shop-' + type);
+
+
+        removeClassFromShopWrapper();
+        addClassToShopWrappers('normal-shop-' + type);
 
         self.createBottomPanel();
         Engine.lock.add('shop');
@@ -222,6 +232,16 @@ module.exports = function() {
 
     this.getC_slots = function() {
         return c_slots;
+    };
+
+    const addClassToShopWrappers = (classToAdd) => {
+        self.wnd.$.find('.shop-content').addClass(classToAdd);
+        self.wnd.$.find('.shop-background').addClass(classToAdd);
+    };
+
+    const removeClassFromShopWrapper = () => {
+        self.wnd.$.find('.shop-content').removeClass('normal-shop-zl normal-shop-sl pet-shop-zl pet-shop-sl for-you-shop');
+        self.wnd.$.find('.shop-background').removeClass('normal-shop-zl normal-shop-sl pet-shop-zl pet-shop-sl for-you-shop');
     };
 
     this.createBottomPanel = function() {
@@ -248,7 +268,13 @@ module.exports = function() {
 
         var str = _t('buy_' + type + '_label', null, 'shop');
         self.wnd.$.find('.currency-label').html(str);
-        self.wnd.$.find('.chest').addClass(type);
+
+        let slClass = "interface-element-chest-sl";
+        let goldClass = "interface-element-chest-gold"
+        let $chest = self.wnd.$.find('.chest');
+
+        $chest.removeClass([goldClass, slClass]);
+        $chest.addClass(type == 'sl' ? slClass : goldClass);
     };
 
     this.createShowItemsFilterCheckboxs = function() {
@@ -441,8 +467,8 @@ module.exports = function() {
             if (self.checkTeleports(i, noSell)) continue;
 
             if (self.checkNosoulbound(i, noSell, stats)) continue;
-            if (self.checkSoulbound(i, noSell, stats)) continue;
-            if (self.checkPermbound(i, noSell, stats)) continue;
+            if (self.checkSoulbound(i, noSell)) continue;
+            if (self.checkPermbound(i, noSell)) continue;
 
             this.findVal(i, noSell, stats);
         }
@@ -554,15 +580,17 @@ module.exports = function() {
         return !bool1 && bool2;
     };
 
-    this.checkSoulbound = function(i, noSell, stats) {
-        var bool1 = isset(stats['soulbound']);
-        var bool2 = noSell.indexOf('soulbound') > -1;
+    this.checkSoulbound = function(i, noSell) {
+        //var bool1 = isset(stats['soulbound']);
+        var bool1 = i.issetSoulboundStat();
+        var bool2 = noSell.indexOf(Engine.itemStatsData.soulbound) > -1;
         return bool1 && bool2;
     };
 
-    this.checkPermbound = function(i, noSell, stats) {
-        var bool1 = isset(stats['permbound']);
-        var bool2 = noSell.indexOf('permbound') > -1;
+    this.checkPermbound = function(i, noSell) {
+        //var bool1 = isset(stats['permbound']);
+        var bool1 = i.issetPermboundStat();
+        var bool2 = noSell.indexOf(Engine.itemStatsData.permbound) > -1;
         return bool1 && bool2;
     };
 
@@ -589,7 +617,10 @@ module.exports = function() {
 
     this.setShopType = function() {
         if (self.shopType == 0) {
-            self.wnd.$.find('.shop-content').addClass('pet-shop-' + (data.cur == 'sl' ? 'sl' : 'zl'));
+            //self.wnd.$.find('.shop-content').addClass('pet-shop-' + (data.cur == 'sl' ? 'sl': 'zl'));
+
+            addClassToShopWrappers('pet-shop-' + (data.cur == 'sl' ? 'sl' : 'zl'));
+
             //self.wnd.$.css({background: 'url(../img/gui/shop/shop2.png?v=1)'});
             self.ctx = self.wnd.$.find('.SHOP_CANVAS')[0].getContext('2d');
             self.shopType = 1;
@@ -615,7 +646,7 @@ module.exports = function() {
         var $clone = Engine.tpls.createViewIcon(i.id, Engine.itemsViewData.FOR_YOU_ITEM_VIEW, Engine.itemsFetchData.NEW_CRAZY_TPL_SHOP_CHEST.loc)[0];
         $clone.css({
             left: 15 + newX * 50 + newX,
-            top: 22 + newY * 37 + newY
+            top: 20 + newY * 37 + newY
         }).appendTo(wrapper);
         $clone.click(function(e) {
             self.basket.buyItem(i);
@@ -623,7 +654,10 @@ module.exports = function() {
     };
 
     this.setSuperMarketHeader = function() {
-        self.wnd.$.find('.for-you-plug').css('display', 'block');
+
+        addClassToShopWrappers('for-you-shop');
+
+        //self.wnd.$.find('.for-you-plug').css('display', 'block');
         self.wnd.$.find('.for-you-txt').css('display', 'block');
         self.wnd.$.find('.filters-heading').css('display', 'none');
         self.wnd.$.find('.show-items-filter').css('display', 'none');
@@ -638,7 +672,7 @@ module.exports = function() {
     this.callSuperMarket = function() {
         self.setSuperMarketHeader();
         $.ajax({
-            url: 'https://www.margonem.pl/ajax/shopapi.php?tids=&prof=' + Engine.hero.d.prof + '&lvl=' + Engine.hero.d.lvl,
+            url: 'https://www.margonem.pl/ajax/shopapi.php?tids=&prof=' + Engine.hero.d.prof + '&lvl=' + getHeroLevel(),
             type: 'POST',
             dataType: 'json',
             xhrFields: {
@@ -706,7 +740,7 @@ module.exports = function() {
     this.createSingleOffer = function(offer) {
         //const box = self.wnd.$.find('.shop-items');
         const box = self.wnd.$.find('.scroll-pane');
-        const i = tpls[offer.tplId];
+        let i = tpls[offer.tplId];
         i.offerId = offer.id;
         i.quantity = offer.quantity;
         i.pr = offer.price;
@@ -715,10 +749,14 @@ module.exports = function() {
         i.prc = data.cur;
         const $icon = Engine.tpls.createViewIcon(i.id, Engine.itemsViewData.ITEM_TO_BUY_VIEW, Engine.itemsFetchData.NEW_SHOP_TPL.loc)[0];
         i.setTip($icon);
-        if (isset(i._cachedStats.amount)) {
+
+        if (i.getAmountStat()) {
             Engine.tpls.changeItemAmount(i, $icon, offer.quantity);
         }
-        shopItems[i.id] = i;
+        i = {
+            ...i
+        };
+        shopItems[i.offerId] = i;
         addToShopItemsName(i, $icon.find('.highlight'))
 
         if (data.id == 479) { // premium shop - "offer for you"
@@ -740,16 +778,20 @@ module.exports = function() {
         }
 
         $icon.attr('data-item-type', i.itemType);
+
         $icon.click(function(e) {
             e.stopPropagation();
             self.basket.buyItem(i);
         });
 
         $icon.contextmenu(function(e, mE) {
-            i.createOptionMenu(getE(e, mE));
+            i.createOptionMenu(getE(e, mE), null, null, {
+                data: i
+            });
             //e.preventDefault();
         });
 
+        $icon.data('item', i);
         $icon.draggable(eqDragOpts);
         $icon.addClass('shop-item');
 
@@ -837,6 +879,26 @@ module.exports = function() {
         return cl < 15 || cl == 22 || cl == 24;
     };
 
+    this.sellOrBuyAction = (v) => {
+        if (isset(v.sellAction) && v.sellAction === shopActions.FINALIZED) {
+            self.basket.clearSellItems();
+        }
+        if (isset(v.buyAction) && v.buyAction === shopActions.FINALIZED) {
+            Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 18);
+            //Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 18);
+            Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 30);
+            //Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 30);
+            Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 32);
+
+            self.basket.callCheckCanFinishExternalTutorialAcceptBasket();
+
+            self.basket.clearBuyItems();
+
+            self.removeClassInHighlighst('track');
+        }
+        self.basket.doCalcPrices();
+    };
+
     this.initDroppable = function() {
         self.wnd.$.find('.buy-items').droppable({
             accept: '.shop-item',
@@ -892,7 +954,8 @@ module.exports = function() {
             true
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.addItemsToCompare = function() {
@@ -907,6 +970,25 @@ module.exports = function() {
     this.closeOtherWindows = () => {
         const v = Engine.windowsData.windowCloseConfig.SHOP;
         Engine.windowCloseManager.callWindowCloseConfig(v)
+    }
+
+
+    this.buyAllItems = () => {
+        let a = [];
+
+        for (let k in shopItems) {
+            a.push(shopItems[k]);
+        }
+
+        const intervalBuy = (i, id) => {
+            setTimeout(function() {
+                _g('console&custom=.icreate' + esc(" ") + id);
+            }, i * 500)
+        }
+
+        for (let i = 0; i < a.length; i++) {
+            intervalBuy(i, a[i].id);
+        }
     }
 
     this.getShopItemsNameHighlight = getShopItemsNameHighlight;

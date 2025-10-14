@@ -1,12 +1,12 @@
 /**
  * shared mechanics of hero and other players objects
  */
-var Updateable = require('core/Updateable');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-//var DynamicLightIdManager 	= require('core/night/DynamicLightIdManager');
-var ObjectDynamicLightManager = require('core/night/ObjectDynamicLightManager');
-let CanvasObjectCommons = require('core/characters/CanvasObjectCommons.js');
-let DataDrawer = require('core/DataDrawer.js');
+var Updateable = require('@core/Updateable');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+//var DynamicLightIdManager 	= require('@core/night/DynamicLightIdManager');
+var ObjectDynamicLightManager = require('@core/night/ObjectDynamicLightManager');
+let CanvasObjectCommons = require('@core/characters/CanvasObjectCommons.js');
+let DataDrawer = require('@core/DataDrawer.js');
 
 let moduleData = {
     fileName: "Character.js"
@@ -337,29 +337,14 @@ Character.prototype.drawIcon = function(ctx, ignoreWraithShadow) {
     var top = this.ry * 32 - this.fh + 32 - Engine.map.offset[1] - mapShift[1];
 
 
-    var dir = isset(this.dir) ? this.dir : 'S';
+    //var dir = isset(this.dir) ? this.dir : 'S';
     var height = this.fh;
     var wpos = Math.round(this.rx) + Math.round(this.ry) * 256,
         wat = 0;
-    var bgX = this.frame * this.fw,
-        bgY = 0;
+    var bgX = this.frame * this.fw;
+    let bgY = this.getBgY();
     var isWater = false;
-
-
-    switch (dir) {
-        case HeroDirectionData.S:
-            bgY = 0;
-            break;
-        case HeroDirectionData.W:
-            bgY = this.fh;
-            break;
-        case HeroDirectionData.E:
-            bgY = this.fh * 2;
-            break;
-        case HeroDirectionData.N:
-            bgY = this.fh * 3;
-            break;
-    }
+    let fakeNpcDebug = checkFakeNpcDebugDraw(this);
 
 
     if (isset(Engine.map.water[wpos])) {
@@ -384,7 +369,17 @@ Character.prototype.drawIcon = function(ctx, ignoreWraithShadow) {
     if (this.img || this.staticAnimation) {
         if (isWater) putIntoWater(ctx, this.img || this.sprite, bgX, bgY, left, top, this.fw, this.fh);
         if (!ignoreWraithShadow) this.setWarShadowAlpha(ctx);
+
+        if (fakeNpcDebug) {
+            drawFakeNpcDebugBorder(ctx, left, top, this.fw, height);
+        }
+
         ctx.drawImage(this.img || this.sprite, bgX, bgY, this.fw, height, left, top, this.fw, height);
+
+        if (fakeNpcDebug) {
+            drawFakeNpcDebugText(ctx, left, top, this.getId());
+        }
+
         this.setDefaultAlpha(ctx);
     } else if (this.sprite && typeof(this.activeFrame) != 'undefined' && this.frames.length > 0 && !this.isPlayer && !this.fake) {
         if (isWater) putIntoWater(ctx, this.sprite, bgX, (bgY + (this.activeFrame * this.fh)), left, top, this.fw, this.fh);
@@ -394,12 +389,38 @@ Character.prototype.drawIcon = function(ctx, ignoreWraithShadow) {
     } else if (this.sprite && typeof(this.activeFrame) != 'undefined' && this.frames.length > 0 && (this.isPlayer || this.fake)) {
         if (isWater) putIntoWater(ctx, this.sprite, bgX, (bgY + (this.activeFrame * this.fh * 4)), left, top, this.fw, this.fh);
         if (!ignoreWraithShadow) this.setWarShadowAlpha(ctx);
+
+        if (fakeNpcDebug) {
+            drawFakeNpcDebugBorder(ctx, left, top, this.fw, height, this);
+        }
+
         ctx.drawImage(this.sprite, bgX, bgY + (this.activeFrame * this.fh * 4), this.fw, height, left, top, this.fw, height);
+
+        if (fakeNpcDebug) {
+            drawFakeNpcDebugText(ctx, left, top, this.getId());
+        }
+
         this.setDefaultAlpha(ctx);
     }
 
     //this.setDefaultAlpha(ctx);
 };
+
+function checkFakeNpcDebugDraw(character) {
+    return getDebug(CFG.DEBUG_KEYS.RENDER_DEBUG) && character.fake;
+}
+
+function drawFakeNpcDebugBorder(ctx, left, top, width, height) {
+    ctx.strokeStyle = "yellow";
+    ctx.strokeRect(left, top, width, height);
+}
+
+function drawFakeNpcDebugText(ctx, left, top, text) {
+    ctx.fillStyle = "yellow";
+    ctx.font = "12px";
+    ctx.fillText(text, left + 2, top + 10);
+
+}
 
 Character.prototype.updateCollider = function() {
     let leftPosMod = (typeof(this.leftPosMod) != 'undefined' ? this.leftPosMod : 0);

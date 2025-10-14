@@ -1,4 +1,4 @@
-var Finder = require('core/searchPath/finder/Finder');
+var Finder = require('@core/searchPath/finder/Finder');
 
 var GroupFinder = function(node, destination) {
     Finder.call(this);

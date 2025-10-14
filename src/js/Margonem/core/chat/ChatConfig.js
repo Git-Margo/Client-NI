@@ -1,5 +1,5 @@
-var ChatData = require('core/chat/ChatData.js');
-var ServerStorageData = require('core/storage/ServerStorageData.js');
+var ChatData = require('@core/chat/ChatData.js');
+var ServerStorageData = require('@core/storage/ServerStorageData.js');
 
 module.exports = function() {
 

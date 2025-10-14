@@ -5,8 +5,7 @@ import {
     isset
 } from '../HelpersTS';
 
-const Tpl = require('core/Templates');
-const ItemData = require('core/items/data/ItemData');
+const Tpl = require('@core/Templates');
 
 declare const Engine: any;
 declare const _t: any;
@@ -101,14 +100,14 @@ export default class AutofillerConfig {
             for (const {
                     key,
                     checked,
-                    groupId
+                    groupId,
+                    label
                 }
                 of filterData) {
                 const groupEl = this.wndEl.querySelector(`.group-${groupId} .autofiller-config__checkboxes`) as HTMLElement;
-                const label = this.getLabel(filter, key);
                 const checkbox = new Checkbox({
                         name: `${filter}_${key}`,
-                        label,
+                        label: label ? label : this.getLabel(filter, key),
                         value: key,
                         i: key,
                         checked,

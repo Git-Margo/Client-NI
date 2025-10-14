@@ -1,8 +1,8 @@
-let FloatForeground = require('core/floatForeground/FloatForeground.js');
-let RajData = require('core/raj/RajData');
-let RajRandomElements = require('core/raj/RajRandomElements');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+let FloatForeground = require('@core/floatForeground/FloatForeground.js');
+let RajData = require('@core/raj/RajData');
+let RajRandomElements = require('@core/raj/RajRandomElements');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 
@@ -34,6 +34,10 @@ module.exports = function() {
                 removeFunc: removeAction,
                 checkExistFunc: checkObjectExist,
                 createRequire: {
+                    withCreateInstantFadeIn: {
+                        type: TYPE.BOOL,
+                        optional: true
+                    },
                     xVector: {
                         type: TYPE.NUMBER,
                         optional: true
@@ -82,13 +86,18 @@ module.exports = function() {
 
         floatForeground.clearCanvasFadeIfExist();
 
-        let wraithData = {
-            originalObject: floatForeground,
-            id: RajData.FLOAT_FOREGROUND + id,
-            updateOriginalObject: true,
-            startAlpha: actualAlpha
-        };
-        Engine.wraithObjectManager.createWraithObject(wraithData);
+        if (data.withRemoveInstantFadeOut) {
+
+        } else {
+            let wraithData = {
+                originalObject: floatForeground,
+                id: RajData.FLOAT_FOREGROUND + id,
+                updateOriginalObject: true,
+                startAlpha: actualAlpha
+            };
+            Engine.wraithObjectManager.createWraithObject(wraithData);
+        }
+
 
         removeFloatForeground(id)
     }

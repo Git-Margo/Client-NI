@@ -1,8 +1,8 @@
 /**
  * Created by Michnik on 2015-08-31.
  */
-let ProfData = require('core/characters/ProfData');
-var SkillTip = require('core/skills/SkillTip');
+let ProfData = require('@core/characters/ProfData');
+var SkillTip = require('@core/skills/SkillTip');
 var weapon = {
     'sw': ['weapon'],
     '1h': [1],
@@ -19,6 +19,7 @@ var weapon = {
     'phydis': ['phydis'],
     'wound': ['wound']
 };
+const skillsUsingByTrans = ["en-regen", "lightshield_per", "resfire_per", "resfrost_per", "reslight_per", "antidote", "dmg_evade_hpp-target_light", "dmg_evade_hpp-target_light", "energyout", "immunity_to_dmg"]
 
 function getRoundLang(v) {
     if (v > 4) return _t('five_round');
@@ -33,7 +34,7 @@ function getRound(value, second, first, stat) {
 
     if (!(index1 > -1 || index2 > -1)) return [value, second, '']; //nima @
 
-    var prefix = stat != 'en-regen' ? _t('on') : _t('by');
+    const prefix = skillsUsingByTrans.includes(stat) ? _t('by') : _t('on');
 
     if (first == '') { //level 0
         var s = second.slice(0, index2);
@@ -49,7 +50,7 @@ function getRound(value, second, first, stat) {
         var amountRound = prefix + curentLvl;
         var nextLvl = second.slice(index2 + 1, second.length);
         var v2 = second.slice(0, index2);
-        amountRound = amountRound + '<span>(' + nextLvl + ')</span> ' + getRoundLang(curentLvl);
+        amountRound = amountRound + '<span> (' + nextLvl + ') </span> ' + getRoundLang(curentLvl);
         return [v1, v2, amountRound];
     }
 
@@ -116,13 +117,6 @@ function dispatcher(stat, first, second) {
             text += '<span class=' + spanClass + '>' + _t('item_' + stat + ' %val%', {
                 '%val%': value,
                 '%val2%': second
-            }, transCat);
-            break;
-
-        case 'redacdmg_per':
-            text += '<span class=' + spanClass + '>' + _t('skill_' + stat + ' %val%', {
-                '%val%': Math.abs(value),
-                '%val2%': Math.abs(second)
             }, transCat);
             break;
 
@@ -283,6 +277,7 @@ function dispatcher(stat, first, second) {
         case 'active_decblock_per-enemies':
         case 'ac2_per':
         case 'active_add_light_cumulaction':
+        case 'redacdmg_per':
             text += '<span class=' + spanClass + '>' + _t('skill_' + stat + ' %val%', {
                 '%val%': value,
                 '%val2%': second
@@ -636,15 +631,10 @@ function dispatcher(stat, first, second) {
         case 'hp_per-enemies': // - "Aura ï¿½ycia: val% ï¿½ycia dla przeciwnikï¿½w"
             //7. Tropiciel:
         case 'heal_per-allies': // - "Zwiï¿½kszenie leczenia turowego z posiadanego ekwipunku sojusznikï¿½w o +val%"
+        case 'heal_per-enemies':
             text += '<span class=' + spanClass + '>' + _t('end-game-percent' + stat + ' %val%', {
                 '%val%': value,
                 '%val2%': second
-            }, transCat);
-            break;
-        case 'heal_per-enemies': // - "Zmniejszenie leczenia turowego z posiadanego ekwipunku przeciwnikï¿½w o val%"
-            text += '<span class=' + spanClass + '>' + _t('end-game-percent' + stat + ' %val%', {
-                '%val%': Math.abs(value),
-                '%val2%': Math.abs(second)
             }, transCat);
             break;
 

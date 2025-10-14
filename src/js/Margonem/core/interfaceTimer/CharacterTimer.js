@@ -1,5 +1,5 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let TextObject = require('core/canvasObject/TextObject');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let TextObject = require('@core/canvasObject/TextObject');
 
 module.exports = function() {
 
@@ -123,11 +123,11 @@ module.exports = function() {
 
         let color = getColor(sec);
 
-        ctx.save();
+        //ctx.save();
 
         textObject.draw(ctx, formatTime, left, top, 11, color);
 
-        ctx.restore();
+        //ctx.restore();
     };
 
     const getColor = (sec) => {

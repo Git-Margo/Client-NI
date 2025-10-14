@@ -1,4 +1,4 @@
-let BattlePassData = require('core/battlePass/BattlePassData.js');
+let BattlePassData = require('@core/battlePass/BattlePassData.js');
 let Templates = require('../Templates');
 
 module.exports = function() {

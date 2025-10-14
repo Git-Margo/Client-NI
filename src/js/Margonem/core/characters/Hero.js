@@ -1,29 +1,32 @@
 /**
  * Created by Michnik on 2015-09-14.
  */
-var Character = require('core/characters/Character');
-//var DynamicLightCharacterManager = require('core/night/DynamicLightCharacterManager');
-var Input = require('core/InputParser');
-var Tpl = require('core/Templates');
-var Pet = require('core/Pet');
-var SearchPath = require('core/searchPath/SearchPath');
-var WhoIsHereGlow = require('core/whoIsHere/WhoIsHereGlow2');
-var ChangeOutfit = require('core/ChangeOutfit');
-var RoadDisplay = require('core/searchPath/RoadDisplay');
-var EmotionsData = require('core/emotions/EmotionsData');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-var TutorialData = require('core/tutorial/TutorialData');
-var ChatData = require('core/chat/ChatData');
-const ProfData = require('core/characters/ProfData');
-const MapAreaCordTriggerCaller = require('core/map/mapAreaCordTrigger/MapAreaCordTriggerCaller');
+var Character = require('@core/characters/Character');
+//var DynamicLightCharacterManager = require('@core/night/DynamicLightCharacterManager');
+var Input = require('@core/InputParser');
+var Tpl = require('@core/Templates');
+var Pet = require('@core/Pet');
+var SearchPath = require('@core/searchPath/SearchPath');
+var WhoIsHereGlow = require('@core/whoIsHere/WhoIsHereGlow2');
+var ChangeOutfit = require('@core/ChangeOutfit');
+var RoadDisplay = require('@core/searchPath/RoadDisplay');
+var EmotionsData = require('@core/emotions/EmotionsData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+var TutorialData = require('@core/tutorial/TutorialData');
+var ChatData = require('@core/chat/ChatData');
+const ProfData = require('@core/characters/ProfData');
+const MapAreaCordTriggerCaller = require('@core/map/mapAreaCordTrigger/MapAreaCordTriggerCaller');
 const {
     showProfile,
     isMan
 } = require('../HelpersTS');
-const ColorInterfaceNotificationData = require('core/colorInterfaceNotification/ColorInterfaceNotificationData');
-const CharacterAura = require('core/CharacterAura');
-//let ColliderData = require('core/collider/ColliderData');
+const ColorInterfaceNotificationData = require('@core/colorInterfaceNotification/ColorInterfaceNotificationData');
+const CharacterAura = require('@core/CharacterAura');
+const {
+    HeroData
+} = require("@core/characters/HeroData");
+//let ColliderData = require('@core/collider/ColliderData');
 
 var Hero = function() {
 
@@ -60,6 +63,11 @@ var Hero = function() {
     this.teleportLessThan5 = false;
     this.previewOutfit = false;
     this.previewOutfitTimeout = null;
+    this.previewPetTimeout = null;
+
+    let src
+
+    let heroAlreadyInitialised = false;
 
     //this.startClickOnMapMove 	= false;
     let startClickOnMapMove;
@@ -106,6 +114,16 @@ var Hero = function() {
 
     let mapAreaCordTriggerCaller = null;
     let stasisIncomingTimeout = null;
+    this.tempPetObj = null;
+
+
+    const setHeroAlreadyInitialised = () => {
+        heroAlreadyInitialised = true;
+    };
+
+    const getHeroAlreadyInitialised = () => {
+        return heroAlreadyInitialised;
+    };
 
     const setStartClickOnMapMove = (state) => {
         startClickOnMapMove = state;
@@ -154,13 +172,13 @@ var Hero = function() {
         if (!lock) Engine.map.centerOn(this.rx, this.ry);
         this.animate(dt);
 
-        // console.log(idleTime);
-
         if (this.rx != this.d.x || this.ry != this.d.y) {
             this.resetIdleTime();
 
             if (Engine.canvasFocus.getActive()) Engine.tutorials.setPosition();
-            Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 1);
+            if (!mobileCheck()) {
+                Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 1);
+            }
             //Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 1);
 
             self.callCheckCanFinishExternalTutorialMove();
@@ -198,7 +216,8 @@ var Hero = function() {
             true
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.callCheckCanFinishExternalTutorialTalkNpc = (npcId) => {
@@ -208,7 +227,8 @@ var Hero = function() {
             npcId
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.callCheckCanFinishExternalTutorialAttackNpc = (npcId) => {
@@ -218,7 +238,8 @@ var Hero = function() {
             npcId
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.getAutoGw = function() {
@@ -650,14 +671,35 @@ var Hero = function() {
         return SearchPath.map.getNode(Engine.hero.d.x, Engine.hero.d.y)
     }
 
-    this.beforeUpdate = function(data, old, allData) {
-        if (data && isset(data.opt)) {
-            if (!self.d) {
-                self.d = {};
-            }
+    //this.beforeUpdate = function (data, old, allData) {
+    //	if (data && isset(data.opt)) {
+    //		if (!self.d) {
+    //			self.d = {};
+    //		}
+    //
+    //		self.d.opt = data.opt;
+    //	}
+    //};
 
-            self.d.opt = data.opt;
-        }
+    const updateNick = () => {
+        const $heroName1 = Engine.interface.get$interfaceLayer().find('.heroname');
+        const $heroName2 = Engine.interface.get$interfaceLayer().find('.hero-name-light-mode').find('.hero-name');
+
+        let options = {
+            showNick: true,
+            nick: this.getNick(),
+            level: this.getLevel(),
+            prof: this.getProf(),
+            operationLevel: this.getOperationLevel()
+        };
+
+        $heroName1.html(getCharacterInfo(options));
+        addCharacterInfoTip($heroName1, options);
+
+        $heroName2.html(getCharacterInfo(options));
+        addCharacterInfoTip($heroName2, options);
+
+        //$heroName.tip(tip);
     };
 
     this.afterUpdate = function(data, old, allData) {
@@ -665,7 +707,11 @@ var Hero = function() {
 
         //var tip = [_t('my_character', null, 'map')];
         if (data.hasOwnProperty('x') && data.hasOwnProperty('y')) Engine.miniMapController.updateWindowMiniMapHeroPos(data.x, data.y);
-        self.updateTip();
+
+        if (data.nick) {
+            updateNick();
+            self.updateTip();
+        }
 
         if ((data.back == 1) || ((old.x != this.d.x || old.y != this.d.y) && Engine.lock.check() && Engine.stepsToSend['steps'].length > 0)) {
             console.log('back');
@@ -716,8 +762,20 @@ var Hero = function() {
         if (isset(this.petLock)) this.petLock.unlock('petUpdate');
         //if (self.d.ttl < 0) $('.exp-progress .progress').addClass('noexp');
         //else $('.exp-progress .progress').removeClass('noexp');
-        if (self.d.ttl < 0) Engine.interface.get$interfaceLayer().find('.exp-progress .progress').addClass('noexp');
-        else Engine.interface.get$interfaceLayer().find('.exp-progress .progress').removeClass('noexp');
+
+        let $expProgress = Engine.interface.get$interfaceLayer().find('.exp-progress .progress');
+        let $expLightMode = Engine.interface.heroElements.get$expLightMode();
+        let $expTopLightMode = Engine.interface.heroElements.get$expTopLightMode();
+
+        if (self.d.ttl < 0) {
+            $expProgress.addClass('noexp');
+            $expLightMode.addClass('noexp');
+            $expTopLightMode.addClass('noexp');
+        } else {
+            $expProgress.removeClass('noexp');
+            $expLightMode.removeClass('noexp');
+            $expTopLightMode.removeClass('noexp');
+        }
 
         this.updateWhoIsHereGlow();
         updateDataMatchmakingChampion(data);
@@ -743,6 +801,14 @@ var Hero = function() {
             createMatchmakingChampionAura(this)
         }
     };
+
+    const setSrc = (_src) => {
+        src = _src;
+    }
+
+    const getSrc = () => {
+        return src;
+    }
 
     const removeMatchmakingChampionAura = () => {
         delete self.matchmakingChampionAura;
@@ -772,24 +838,33 @@ var Hero = function() {
     };
 
     this.createStrTip = function() {
-        var tip = '';
+        let tip = '';
+        let rankText = '';
         let uprawnienia = self.d.uprawnienia;
         if (uprawnienia) {
-            var rank = -1;
+            let rank;
             if (uprawnienia & 1) rank = 0;
             else if (uprawnienia & 16) rank = 1;
             else if (uprawnienia & 2) rank = 2;
             else if (uprawnienia & 4) rank = 4;
+            else if (uprawnienia & 8) rank = 5;
             else rank = 3;
 
-            //tip += '<div class="rank"><div class="con">' + ranks[rank] + '</div></div>';
-            var ranks = [_t('admin', null, 'heroranks'), _t('super_mg', null, 'heroranks'), _t('mg', null, 'heroranks'), _t('chat_mod', null, 'heroranks'), _t('super_chat_mod', null, 'heroranks')];
-            tip += '<div class="rank">' + _t('my_character', null, 'map') + ' [' + ranks[rank] + ']' + '</div>';
-        } else tip += '<div class="rank">' + _t('my_character', null, 'map') + '</div>';
+            const ranks = [
+                _t('admin', null, 'heroranks'),
+                _t('super_mg', null, 'heroranks'),
+                _t('mg', null, 'heroranks'),
+                _t('chat_mod', null, 'heroranks'),
+                _t('super_chat_mod', null, 'heroranks')
+            ];
+
+            if (isset(ranks[rank]) && ranks[rank] !== '') rankText = ` [${ranks[rank]}]`;
+        }
+        tip += `<div class="rank">${_t('my_character', null, 'map')}${rankText}</div>`;
 
         if (isset(self.d.guest) && parseInt(self.d.guest)) tip += '<div class="rank">' + _t('deputy') + '</div>';
 
-        tip += self.setTipHeader(self);
+        tip += self.setTipHeader();
 
         //if (isset(self.wanted) && parseInt(self.wanted) >= 90) tip += '<div class=wanted></div>'; //Poszukiwany<br/>listem goÅczym
         if (self.wanted) tip += '<div class=wanted></div>'; //Poszukiwany<br/>listem goÅczym
@@ -808,10 +883,31 @@ var Hero = function() {
     };
 
     this.setTipHeader = function(o) {
-        var prof = isset(o.d.prof) ? o.d.prof : '';
-        let debug = (CFG.debug ? (' ' + o.d.id) : '');
-        var nick = '<div class="nick">' + o.nick + debug + ' (' + o.d.lvl + prof + ')' + '</div>';
-        return '<div class="info-wrapper">' + nick + '</div>';
+        //var prof = isset(o.d.prof) ? o.d.prof : '';
+        //let debug = (CFG.debug ? (' ' + o.d.id) : '');
+        //var nick = '<div class="nick">' + o.nick + debug + ' (' + (o.getLevel ? o.getLevel() : o.lvl) + prof + ')' + '</div>';
+
+        //let obj = o ? null : this;
+        //let options = {showNick:true};
+        //if (o) {
+        //	options.nick 			= o.nick;
+        //	options.level 			= o.d.lvl;
+        //	options.prof 			= o.d.prof;
+        //	options.operationLevel 	= 0
+        //}
+
+        let options = {
+            showNick: true,
+            nick: o ? o.nick : this.getNick(),
+            level: o ? o.d.lvl : this.getLevel(),
+            prof: o ? o.d.prof : this.getProf(),
+            operationLevel: o ? 0 : this.getOperationLevel()
+        };
+
+        //let info = '<div class="nick">' + getCharacterInfo(obj, options) + '</div>';
+        let info = '<div class="nick">' + getCharacterInfo(options) + '</div>';
+
+        return '<div class="info-wrapper">' + info + '</div>';
     };
 
     this.updateWhoIsHereGlow = function() {
@@ -839,11 +935,11 @@ var Hero = function() {
     };
 
     this.updateGainedExp = function(d) {
-        if (d && d.exp && d.lvl) {
+        if (d && d.exp && self.getLevel()) {
             if (lastExpGained !== null) {
                 var diff = d.exp - lastExpGained;
                 if (diff !== 0) { // if not same (eg. reload)
-                    self.showGainedExp(diff, d.lvl);
+                    self.showGainedExp(diff, self.getLevel());
                 }
             }
             lastExpGained = d.exp;
@@ -852,6 +948,7 @@ var Hero = function() {
 
     this.showGainedExp = function(val, lvl) {
         const $indicator = Engine.interface.get$interfaceLayer().find('.gained-exp-indicator');
+        const $indicatorLightMode1 = Engine.interface.get$interfaceLayer().find('.top.positioner').find('.gained-exp-indicator-light-mode');
         var nextexp = Math.round(Math.pow(lvl, 4) + 10);
         var prevexp = Math.round(Math.pow(lvl - 1, 4) + 10);
         if (lvl == 1) {
@@ -860,22 +957,30 @@ var Hero = function() {
         var percentExp = val / (nextexp - prevexp);
         var perc = Math.round(percentExp * 10000) / 100;
         var txt = (val > 0 ? "+" : "-") + round(val) + " (" + Math.abs(perc) + "%)";
+        var txt2 = (val > 0 ? "+" : "-") + round(val) + " (" + Math.abs(perc) + "%)";
         //$('.gained-exp-indicator').finish().text(txt);
         //$('.gained-exp-indicator').show().delay(3000).fadeOut();
         if (val > 0) {
             $indicator.css('color', 'lime');
+            $indicatorLightMode1.css('color', 'lime');
         } else {
             $indicator.css('color', 'orangered');
+            $indicatorLightMode1.css('color', 'orangered');
         }
         $indicator.finish().text(txt);
+        $indicatorLightMode1.finish().text(txt2);
         $indicator.show().delay(3000).fadeOut();
+        $indicatorLightMode1.show().delay(3000).fadeOut();
     };
 
-    this.showDifference = ($el, newValue, oldValue) => {
+    this.showDifference = ($wrapper, newValue, oldValue) => {
         if (!oldValue || newValue === oldValue) return;
 
         let diff = formNumberToNumbersGroup(newValue - oldValue);
         let txt;
+        const $el = $('<div>', {
+            class: 'diff-msg'
+        });
         if (newValue > oldValue) {
             txt = '+' + diff;
             $el.css('color', 'lime');
@@ -883,8 +988,9 @@ var Hero = function() {
             txt = diff;
             $el.css('color', 'orangered');
         }
-        $el.finish().text(txt);
-        $el.show().delay(3000).fadeOut();
+        $el.text(txt);
+        $wrapper.prepend($el);
+        $el.delay(3000).fadeOut(() => $el.remove());
     }
     /*
     	this.afterFetch = function (f, path) {
@@ -940,6 +1046,10 @@ var Hero = function() {
         delete self.whoIsHereGlow; // delete for update height
         self.updateWhoIsHereGlow();
     };
+
+    const updateFilterImage = (withoutFilter = false) => {
+        this.sprite = getEngine().canvasFilter.updateFilter(getSrc(), this.sprite, true, withoutFilter);
+    }
 
     /**
      * Update field callbacks (data from json)
@@ -1002,11 +1112,15 @@ var Hero = function() {
             //self.setStaticAnimation(Engine.opt(8, v));
             self.setStaticAnimation(!isSettingsOptionsInterfaceAnimationOn());
             // console.log('hero', path)
+
+            setSrc(path);
+
             Engine.imgLoader.onload(path, o,
                 (i, f) => {
                     self.beforeOnload(f, i);
                 },
                 (i) => {
+                    updateFilterImage();
                     self.afterLoadImage();
                 },
                 () => {
@@ -1054,9 +1168,16 @@ var Hero = function() {
             const precise = val.toString().length > 9 ? 4 : 10;
             const credits = round(val, precise);
             const $heroCredits = Engine.interface.get$interfaceLayer().find('.herocredits');
+            const tip = _t('dragonites') + ' ' + credits;
+
             $heroCredits.html(credits);
             $heroCredits.tip(_t('dragonites') + ' ' + credits);
-            if (Engine.premium) Engine.premium.updateSl();
+
+            if (Engine.premium) {
+                Engine.premium.updateSl();
+            }
+
+            Engine.interface.updateCredits(self.getParseGold(val), tip);
         };
         this.mails = function(val) {
             Engine.interface.mailsElements.mailsRefresh(val);
@@ -1074,8 +1195,10 @@ var Hero = function() {
             this.showDifference(Engine.interface.get$interfaceLayer().find('.herogold-difference'), val, Engine.hero.d.gold);
 
             let v = self.getParseGold(val);
-            Engine.interface.get$interfaceLayer().find('.herogold').html(v);
+            //Engine.interface.get$interfaceLayer().find('.herogold').html(v);
             self.updateGoldTip(_t('gold') + ': ' + round(val, 10), 'gold')
+
+            Engine.interface.updateGold(v);
         };
         this.clan = function(val) {
             //var v = parseInt(val) ? 1 : 0;
@@ -1085,16 +1208,16 @@ var Hero = function() {
         this.goldlim = function(val) {
             var str = _t('goldlimit', null, 'player');
             //$('#herogold').concatTip(str + ' ' + round(val, 10));
-            Engine.interface.get$interfaceLayer().find('.herogold');
+            //Engine.interface.get$interfaceLayer().find('.herogold');
             self.updateGoldTip(str + ' ' + round(val, 10), 'goldLimit')
         };
         this.nick = function(val, old, data) {
-            const lvl = data.lvl || self.d.lvl;
-            const prof = data.prof || self.d.prof;
-            const tip = `${_t('hero_name')}: ${val}</br>${_t('hero_lvl')} ${lvl}</br>${_t('prof')}: ${getAllProfName(prof)}`;
-            const $heroname = Engine.interface.get$interfaceLayer().find('.heroname');
-            $heroname.html(`${val} (${lvl}${prof})`);
-            $heroname.tip(tip);
+            //const lvl = data.lvl || self.getLevel();
+            //const prof = data.prof || self.d.prof;
+            //const tip = `${_t('hero_name')}: ${val}</br>${_t('hero_lvl')} ${lvl}</br>${_t('prof')}: ${getAllProfName(prof)}`;
+            //const $heroname = Engine.interface.get$interfaceLayer().find('.heroname');
+            //$heroname.html(`${val} (${lvl}${prof})`);
+            //$heroname.tip(tip);
             self.nick = val;
         };
         this.prof = function(val) {
@@ -1183,47 +1306,50 @@ var Hero = function() {
         };
         this.attack = function(v) {
             let poisonValue = 0;
+            const range = v.range;
             for (const k in v) {
-                const values = v[k];
-                const txt = `${formNumberToNumbersGroup(values.min)} - ${formNumberToNumbersGroup(values.max)}`;
+                if (k === HeroData.ATTACK_TYPES.RANGE) continue;
+
+                const damage = v[k];
+                const isMinMax = isset(damage.min) && isset(damage.max);
+                const txt = isMinMax ? `${formNumberToNumbersGroup(damage.min)} - ${formNumberToNumbersGroup(damage.max)}` : formNumberToNumbersGroup(damage);
                 const updateOpts = {
                     formNumber: false
                 };
-                values['average'] = Math.round((values.min + values.max) / 2);
+                const averageDamage = isMinMax ? Math.round((damage.min + damage.max) / 2) : damage;
                 switch (k) {
                     case 'physicalMainHand':
-                        const {
-                            prof
-                        } = Engine.hero.d;
-                        const tip = prof === ProfData.HUNTER || prof === ProfData.TRACKER ? 'herostat-tip-damage-normal-distance' : 'herostat-tip-damage-normal';
+                        const isDistance = range === HeroData.ATTACK.RANGE.DISTANCE;
+                        const tip = isDistance ? 'herostat-tip-damage-normal-distance' : 'herostat-tip-damage-normal';
+                        updateOpts.statName = isDistance ? _t('stat-damage-distance') : _t('stat-damage-normal');
                         self.updateStat('damage-normal', txt, null, null, _t(tip), updateOpts);
-                        self.damageSum += self.createDmgStat(values.average);
+                        self.damageSum += self.createDmgStat(averageDamage);
                         break;
                     case 'physicalOffHand':
                         self.updateStat('damage-offhand', txt, null, null, null, updateOpts);
-                        self.damageSum += self.createDmgStat(values.average, 'orange');
+                        self.damageSum += self.createDmgStat(averageDamage, 'orange');
                         break;
                     case 'lightning':
                         self.updateStat('damage-lightning', txt, null, null, null, updateOpts);
-                        self.damageSum += self.createDmgStat(values.average, 'yellow');
+                        self.damageSum += self.createDmgStat(averageDamage, 'yellow');
                         break;
                     case 'fire':
                         self.updateStat('damage-fire', txt, null, null, null, updateOpts);
-                        self.damageSum += self.createDmgStat(values.average, 'red');
+                        self.damageSum += self.createDmgStat(averageDamage, 'red');
                         break;
                     case 'frost':
                         self.updateStat('damage-cold', txt, null, null, null, updateOpts);
-                        self.damageSum += self.createDmgStat(values.average, 'blue');
+                        self.damageSum += self.createDmgStat(averageDamage, 'blue');
                         break;
                     case 'poisonMainHand':
                         $stats.find('.poison-header').css('display', 'block');
                         self.updateStat('poison1', txt, null, null, null, updateOpts);
-                        poisonValue += values.average;
+                        poisonValue += averageDamage;
                         break;
                     case 'poisonOffHand':
                         $stats.find('.poison-header').css('display', 'block');
                         self.updateStat('of_poison1', txt, null, null, null, updateOpts);
-                        poisonValue += values.average;
+                        poisonValue += averageDamage;
                         break;
                     default:
                         console.log(`Error: "${k}" attack stat is not exist.`);
@@ -1260,13 +1386,17 @@ var Hero = function() {
         };
 
         this.uprawnienia = function(v) {
+            const margoConsole = Engine.console;
+
+            margoConsole.initCrazyButton();
             if (!v) {
                 return
             }
 
-            const margoConsole = Engine.console;
             margoConsole.setVisibleOnSizeButton();
             margoConsole.initCommandButton();
+            margoConsole.initCSSThemeButton();
+            getEngine().cssLoader.updateData();
         };
         this.poison0 = function(v) {
             $stats.find('.poison-header').css('display', 'block');
@@ -1356,7 +1486,7 @@ var Hero = function() {
         };
         //this.block = function (v) {
         this.blok = function(v) {
-            var val = Math.round(20 * v / Math.min(self.d.lvl, 300));
+            var val = Math.round(20 * v / Math.min(self.getLevel(), 300));
             var percentage = ' (' + (val > 50 ? 50 : val) + '%)';
             self.updateStat('block', v, percentage);
         };
@@ -1586,7 +1716,7 @@ var Hero = function() {
 
     this.stasisNotif = (v) => {
         var sm = Engine.soundManager;
-        if (sm && v && !sm.getStateSoundNotifById(8)) sm.createNotifSound(9);
+        if (sm && v && sm.getStateSoundNotifById(8)) sm.createNotifSound(9);
     };
 
     this.getParseGold = (val) => {
@@ -1596,7 +1726,10 @@ var Hero = function() {
     };
 
     this.updateGoldTip = function(content, type) {
-        var $tipTpl = Tpl.get('herogold-tip');
+        const $tipTpl = Tpl.get('herogold-tip');
+        const goldComponent = Engine.interface.getGoldCostComponent();
+        const $costElement = $(goldComponent.getElement());
+
         if (type == 'gold') {
             $tipTpl.find('.h-gold').html(content);
             let goldlim = Engine.hero.d.goldlim;
@@ -1604,27 +1737,32 @@ var Hero = function() {
                 $tipTpl.find('.h-gold-limit').html(_t('goldlimit', null, 'player') + ' ' + round(goldlim, 10));
             }
             Engine.interface.get$interfaceLayer().find('.herogold').tip($tipTpl.html(), 't-right');
+            $costElement.tip($tipTpl.html(), 't-right');
         }
         if (type == 'goldLimit') { //add new goldlimit
             $tipTpl.find('.h-gold-limit').html(content);
             Engine.interface.get$interfaceLayer().find('.herogold').changeInTip('.h-gold-limit', content);
+            $costElement.changeInTip('.h-gold-limit', content);
         }
 
     };
 
     this.updateStat = function(name, value, unit, beforeVal, tip, options = {}) {
         const defaultOptions = {
-            formNumber: true
+            formNumber: true,
+            statName: undefined
         }
         const opts = {
             ...defaultOptions,
             ...options
         };
 
-        let $stat = self.getStat(name);
-        var $par = $stat.parent();
+        const $stat = self.getStat(name);
+        const $par = $stat.parent();
+        const $label = $stat.parent().find('.label');
 
         if ($par.css('display') == 'none') $par.css('display', 'flex');
+        if (opts.statName) $label.text(opts.statName);
         if (tip) $par.tip(tip);
 
         let val = (beforeVal ? beforeVal : '') + (opts.formNumber ? formNumberToNumbersGroup(value) : value) + (unit ? unit : '');
@@ -1683,6 +1821,7 @@ var Hero = function() {
     this.locationInfo = function() {
         //$('#coords').html('(' + this.d.x + ',' + this.d.y + ')');
         Engine.interface.get$interfaceLayer().find('.coords').html('(' + this.d.x + ',' + this.d.y + ')');
+        Engine.interface.get$interfaceLayer().find('.location-wrapper-light-mode').find('.location-cords').html('(' + this.d.x + ',' + this.d.y + ')');
     };
 
     this.setLowLvlClass = (lvl) => {
@@ -1753,6 +1892,11 @@ var Hero = function() {
     this.onClear = function() {
         Engine.stepsToSend.reset();
 
+        updateFilterImage(true);
+        if (self.havePet()) {
+            self.getPet().updateFilterImage();
+        }
+
         mapAreaCordTriggerCaller.onClear();
 
         this.getObjectDynamicLightManager().removeAllDynamicLights();
@@ -1810,7 +1954,7 @@ var Hero = function() {
         //	}]);
         //}
 
-        if (d.lvl > 19) {
+        if (self.getLevel() > 19) {
             menu.push([_t('emo_mad', null, 'menu'), function() {
                 _g('emo&a=angry');
             }]);
@@ -1828,7 +1972,9 @@ var Hero = function() {
 
         self.addDebugOptionMenu(menu);
 
-        Engine.interface.showPopupMenu(menu, e, true);
+        Engine.interface.showPopupMenu(menu, e, {
+            onMap: true
+        });
     };
 
     //after getting into new position (rx, ry fully changed to next tile)
@@ -1882,6 +2028,26 @@ var Hero = function() {
     // 	};
     // };
 
+    this.tryPet = (petObj) => {
+        this.tempPetObj = {
+            ...petObj,
+            ...{
+                isPreview: 1
+            }
+        };
+        if (Engine.hero.pet) this.pet.hidePet(() => this.updatePet(this.tempPetObj, {}));
+        else this.updatePet(this.tempPetObj, {})
+
+        message(_t('preview_start'))
+        this.previewPetTimeout = setTimeout(this.removePreviewPet, 60000);
+    }
+
+    this.removePreviewPet = () => {
+        clearTimeout(this.previewPetTimeout);
+        message(_t('preview_end'));
+        this.updatePet({}, {})
+    }
+
     this.updatePet = function(d, allData) {
         var emptyObj = jQuery.isEmptyObject(d);
         if (allData.t == 'reload' && !emptyObj) return;
@@ -1894,6 +2060,7 @@ var Hero = function() {
         }
 
         if (!isset(this.pet)) {
+            clearTimeout(this.previewPetTimeout);
             d.own = true;
             d.master = self;
             d.isNew = true;
@@ -2020,8 +2187,25 @@ var Hero = function() {
             return;
         }
 
-        _g('fight&a=attack&id=' + nearPlayerId, function() {});
+        // _g('fight&a=attack&id=' + nearPlayerId, function () {});
+        heroAttackRequest(nearPlayerId);
     };
+
+    const heroAttackRequest = (id, callback, options = {}) => {
+        let autoFight = options.autoFight ? "&ff=1" : '';
+        let minus = options.minus ? "-" : '';
+
+        //console.log('block');
+        _g('fight&a=attack&id=' + minus + id + autoFight, function(callbackData) {
+
+            //Engine.lock.add('heroAttack');
+
+
+            if (callback) {
+                callback(callbackData);
+            }
+        });
+    }
 
     const getNearPlayerId = () => {
         let others = Engine.others.check();
@@ -2149,9 +2333,14 @@ var Hero = function() {
         //var range = Engine.map.pvp == 1 ? 4 : 2; //  ???????
         var range = 2;
         if (Math.abs(o.d.x - self.rx) <= range && Math.abs(o.d.y - self.ry) <= range) {
-            _g('fight&a=attack&id=' + o.d.id, function(d) {
+            // _g('fight&a=attack&id=' + o.d.id, function (d) {
+            // 	if (isset(d.alert)) Engine.hero.markOtherObj.deleteRedMark();
+            // });
+
+            heroAttackRequest(o.d.id, function(d) {
                 if (isset(d.alert)) Engine.hero.markOtherObj.deleteRedMark();
             });
+
         }
     };
 
@@ -2164,24 +2353,39 @@ var Hero = function() {
         //else str = Engine.settings.getLocOptById(18) ? '&ff=1' : '';
 
         if (auto) {
-            _g("fight&a=attack&id=-" + id + '&ff=1', function() {
+            // _g("fight&a=attack&id=-" + id + '&ff=1', function () {
+            // 	Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 5, {idNpc:self.d.id});
+            // 	//Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 5, {idNpc:self.d.id});
+            // 	//Engine.tutorialManager.checkCanFinishExternalAndFinish({name: TutorialData.ON_FINISH_REQUIRE.ATTACK_NPC_ID, [TutorialData.ON_FINISH_REQUIRE.ATTACK_NPC_ID]: id})
+            // 	self.callCheckCanFinishExternalTutorialAttackNpc(id)
+            // });
+
+            heroAttackRequest(id, function() {
                 Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 5, {
                     idNpc: self.d.id
                 });
-                //Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 5, {idNpc:self.d.id});
-                //Engine.tutorialManager.checkCanFinishExternalAndFinish({name: TutorialData.ON_FINISH_REQUIRE.ATTACK_NPC_ID, [TutorialData.ON_FINISH_REQUIRE.ATTACK_NPC_ID]: id})
                 self.callCheckCanFinishExternalTutorialAttackNpc(id)
-            });
+            }, {
+                autoFight: true,
+                minus: true
+            })
+
         } else {
 
-            _g("fight&a=attack&id=-" + id, function() {
+            // _g("fight&a=attack&id=-" + id, function () {
+            // 	Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 5, {idNpc:self.d.id});
+            // 	//Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 5, {idNpc:self.d.id});
+            // 	//Engine.tutorialManager.checkCanFinishExternalAndFinish({name: TutorialData.ON_FINISH_REQUIRE.ATTACK_NPC_ID, [TutorialData.ON_FINISH_REQUIRE.ATTACK_NPC_ID]: id})
+            // 	self.callCheckCanFinishExternalTutorialAttackNpc(id)
+            // });
+            heroAttackRequest(id, function() {
                 Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 5, {
                     idNpc: self.d.id
                 });
-                //Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 5, {idNpc:self.d.id});
-                //Engine.tutorialManager.checkCanFinishExternalAndFinish({name: TutorialData.ON_FINISH_REQUIRE.ATTACK_NPC_ID, [TutorialData.ON_FINISH_REQUIRE.ATTACK_NPC_ID]: id})
                 self.callCheckCanFinishExternalTutorialAttackNpc(id)
-            });
+            }, {
+                minus: true
+            })
         }
     };
 
@@ -2293,6 +2497,26 @@ var Hero = function() {
         return this.d.lvl
     }
 
+    this.getProf = () => {
+        return this.d.prof;
+    };
+
+    this.getLevel = () => {
+        if (!this.d.lvl) {
+            return 0;
+        }
+
+        return this.d.lvl
+    }
+
+    this.getOperationLevel = () => {
+        if (!this.d.oplvl) {
+            return 0;
+        }
+
+        return this.d.oplvl
+    }
+
     this.outfitPreview = (val) => {
         let path;
         let o = {
@@ -2366,6 +2590,10 @@ var Hero = function() {
 
     this.setRefFollowObj = setRefFollowObj;
     this.setStartClickOnMapMove = setStartClickOnMapMove;
+    this.setHeroAlreadyInitialised = setHeroAlreadyInitialised;
+    this.getHeroAlreadyInitialised = getHeroAlreadyInitialised;
+    this.updateNick = updateNick;
+    this.updateFilterImage = updateFilterImage;
 
     //const initDynamicHoleImg = () => {
     //	dynamicHoleImg = Engine.nightController.getFramesWithHoles().getDynamicHoleImg(100);

@@ -1,7 +1,8 @@
-var tpl = require('core/Templates');
-var SocietyItem = require('core/society/SocietyItem');
-var WantedController = require('core/wanted/WantedController');
-let SocietyData = require('core/society/SocietyData');
+var tpl = require('@core/Templates');
+var SocietyItem = require('@core/society/SocietyItem');
+var WantedController = require('@core/wanted/WantedController');
+let SocietyData = require('@core/society/SocietyData');
+let Tabs = require('@core//components/Tabs');
 
 module.exports = function() {
     var self = this;
@@ -11,16 +12,59 @@ module.exports = function() {
     var list = [];
     var column;
 
+    let tabsInstance
+
     this.init = function() {
         this.initWindow();
-        this.newCard(SocietyData.KIND.WANTED);
-        this.newCard(SocietyData.KIND.ENEMY);
-        this.newCard(SocietyData.KIND.FRIEND);
+        // this.newCard(SocietyData.KIND.WANTED);
+        // this.newCard(SocietyData.KIND.ENEMY);
+        // this.newCard(SocietyData.KIND.FRIEND);
+        initCards();
         this.createColumn();
         this.createSortButton();
         this.createsWantedButton();
         //this.setVisible(SocietyData.KIND.FRIEND, true);
     };
+
+    const initCards = () => {
+
+        const KIND = SocietyData.KIND
+        const FRIEND = KIND.FRIEND;
+        const ENEMY = KIND.ENEMY;
+        const WANTED = KIND.WANTED;
+
+        let cards = {
+            [FRIEND]: {
+                name: _t(self.getAllName(FRIEND)),
+                initAction: () => self.setVisible(FRIEND),
+                contentTargetEl: self.wnd.$[0].querySelector('.' + FRIEND)
+            },
+            [ENEMY]: {
+                name: _t(self.getAllName(ENEMY)),
+                initAction: () => self.setVisible(ENEMY),
+                contentTargetEl: self.wnd.$[0].querySelector('.' + ENEMY)
+            }
+        };
+
+
+        if (Engine.worldConfig.getWantedShow()) {
+            cards[WANTED] = {
+                name: _t(self.getAllName(WANTED)),
+                initAction: () => self.setVisible(WANTED),
+                contentTargetEl: self.wnd.$[0].querySelector('.' + WANTED)
+            }
+        }
+
+
+        const tabsOptions = {
+            tabsEl: {
+                navEl: self.wnd.$[0].querySelector('.friend-enemy-cards'),
+                //contentsEl: this.wndEl.querySelector('.mails-window__contents'),
+            }
+        };
+
+        tabsInstance = new Tabs.default(cards, tabsOptions);
+    }
 
     this.initWindow = function() {
         content = tpl.get('friend-enemy-list');
@@ -75,7 +119,7 @@ module.exports = function() {
 
             person.init(d, kind, sortB);
 
-            var onlineFriend = (isset(d[8]) && d[8].indexOf(SocietyData.STATE.ONLINE) > -1);
+            var onlineFriend = (isset(d[9]) && d[9].indexOf(SocietyData.STATE.ONLINE) > -1);
 
             if (!sortVisible && onlineFriend) list.unshift(person);
             else list.push(person);
@@ -93,11 +137,11 @@ module.exports = function() {
     this.setHowRecordsOnPerson = function(kind) {
         switch (kind) {
             case SocietyData.KIND.FRIEND:
-                return 10;
+                return 11;
             case SocietyData.KIND.ENEMY:
-                return 6;
+                return 7;
             case SocietyData.KIND.WANTED:
-                return 9;
+                return 10;
         }
     };
 
@@ -235,21 +279,21 @@ module.exports = function() {
         Engine.society = false;
     };
 
-    this.newCard = function(name) {
-        var $card = tpl.get('card').addClass(name);
-        var $header = this.wnd.$.find('.friend-enemy-cards');
-
-        if (!Engine.worldConfig.getWantedShow()) {
-            $header.addClass('wanted-hide');
-        }
-        var $label = $card.find('.label').html(_t(self.getAllName(name)));
-
-        $header.prepend($card);
-        $card.append($label);
-        $card.click(function() {
-            self.setVisible(name);
-        });
-    };
+    // this.newCard 	= function (name) {
+    // 	var $card 	= tpl.get('card').addClass(name);
+    // 	var $header = this.wnd.$.find('.friend-enemy-cards');
+    //
+    // 	if (!Engine.worldConfig.getWantedShow()) {
+    // 		$header.addClass('wanted-hide');
+    // 	}
+    // 	var $label = $card.find('.label').html(_t(self.getAllName(name)));
+    //
+    // 	$header.prepend($card);
+    // 	$card.append($label);
+    // 	$card.click(function () {
+    // 		self.setVisible(name);
+    // 	});
+    // };
 
     this.getAllName = function(name) {
         switch (name) {
@@ -263,13 +307,15 @@ module.exports = function() {
     };
 
     this.setVisible = function(which, init) {
-        var $cards = self.wnd.$.find('.card');
-        var $card = self.wnd.$.find('.' + which);
-
-        $cards.removeClass('active');
-        $card.addClass('active');
+        // var $cards 	= self.wnd.$.find('.card');
+        // var $card 	= self.wnd.$.find('.' + which);
+        //
+        // $cards.removeClass('active');
+        // $card.addClass('active');
         sortVisible = false;
         columnShowed = which;
+
+        tabsInstance.activateCard(which);
 
         if (init) return;
         if (columnShowed == SocietyData.KIND.WANTED) return self.getWantedPersons();
@@ -288,7 +334,7 @@ module.exports = function() {
             var array = [];
             for (var k in wantedList) {
                 var obj = wantedList[k];
-                array.push(obj.id, obj.nick, obj.town, '3', obj.x, obj.y, obj.lvl, obj.prof, obj.icon);
+                array.push(obj.id, obj.nick, obj.town, '3', obj.x, obj.y, obj.lvl, obj.oplvl, obj.prof, obj.icon);
             }
             self.updateData(array, SocietyData.KIND.WANTED);
         });

@@ -1,7 +1,7 @@
- //let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObjectNew');
- let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObject');
- let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
- var SocietyData = require('core/society/SocietyData');
+ //let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObjectNew');
+ let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObject');
+ let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
+ var SocietyData = require('@core/society/SocietyData');
 
  module.exports = function() {
 
@@ -252,4 +252,5 @@
      this.deleteFromList = deleteFromList;
      this.addToList = addToList;
      this.clearAllLists = clearAllLists;
+     this.createTipToOther = createTipToOther;
  };

@@ -1,4 +1,4 @@
-var CodeMessageData = require('core/codeMessage/CodeMessageData');
+var CodeMessageData = require('@core/codeMessage/CodeMessageData');
 
 module.exports = function() {
 

@@ -1,13 +1,15 @@
-let StorageFuncWindow = require('core/window/StorageFuncWindow');
+let StorageFuncWindow = require('@core/window/StorageFuncWindow');
 
 module.exports = function() {
 
     let $wrapper;
+    let $wnd;
     let nameWindow;
     let lightModeCss;
 
-    const init = (wnd, _nameWindow, _wrapper, _lightModeCss) => {
+    const init = (wnd, _nameWindow, _wrapper, _wnd, _lightModeCss) => {
         set$Wrapper(_wrapper);
+        set$Wnd(_wnd);
         setNameWindow(_nameWindow);
 
         if (_lightModeCss != null) setLightModeCss(_lightModeCss);
@@ -15,6 +17,10 @@ module.exports = function() {
 
     const set$Wrapper = (_$wrapper) => {
         $wrapper = _$wrapper
+    };
+
+    const set$Wnd = (_$wnd) => {
+        $wnd = _$wnd
     };
 
     const setLightModeCss = (_lightModeCss) => {
@@ -43,13 +49,21 @@ module.exports = function() {
         saveOpacityInStorage(opacity);
     };
 
+    const decreaseOpacity = () => {
+        let opacity = getWindowOpacity();
+        opacity = opacity - 1;
+        opacity = opacity < 0 ? 5 : opacity;
+        setWindowOpacity(opacity);
+        saveOpacityInStorage(opacity);
+    };
+
     const addStyles = (style) => {
         const styleEl = stringToHtml(style);
         document.head.appendChild(styleEl);
     };
 
     const setOpacityOnBackground = (opacity) => {
-        $wrapper.attr('data-opacity-lvl', opacity);
+        $wnd.attr('data-opacity-lvl', opacity);
     };
 
     const setWindowOpacity = (opacity) => {
@@ -109,9 +123,11 @@ module.exports = function() {
         StorageFuncWindow.setOpacityWindow(opacity, nameWindow);
     };
 
-    const getWindowOpacity = () => parseInt($wrapper.attr('data-opacity-lvl'));
+    const getWindowOpacity = () => parseInt($wnd.attr('data-opacity-lvl'));
 
 
     this.init = init;
     this.setManageOpacity = setManageOpacity;
+    this.increaseOpacity = increaseOpacity;
+    this.decreaseOpacity = decreaseOpacity;
 }

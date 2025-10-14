@@ -1,8 +1,8 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-var EmotionsData = require('core/emotions/EmotionsData');
-let NpcData = require('core/characters/NpcData');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+var EmotionsData = require('@core/emotions/EmotionsData');
+let NpcData = require('@core/characters/NpcData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
 
 module.exports = function() {
 
@@ -15,9 +15,11 @@ module.exports = function() {
     const ACTION_REMOVE = RajActionData.ACTION.REMOVE;
 
     let npcActionsList;
+    let mapActionsList;
 
     const init = () => {
         clearNpcActionsList();
+        clearMapActionsList();
         initRajActionsManager();
     };
 
@@ -41,7 +43,7 @@ module.exports = function() {
                     target: {
                         type: {
                             name: TYPE.TARGET,
-                            option: [RajActionData.TARGET_KIND.THIS_NPC_INSTANCE, CanvasObjectTypeData.NPC]
+                            option: [RajActionData.TARGET_KIND.THIS_NPC_INSTANCE, CanvasObjectTypeData.NPC, "MAP"]
                         }
                     }
                 }
@@ -52,6 +54,10 @@ module.exports = function() {
 
     const clearNpcActionsList = () => {
         npcActionsList = {};
+    };
+
+    const clearMapActionsList = () => {
+        mapActionsList = {};
     };
 
     const updateData = (emoActionsData, additionalData) => {
@@ -85,38 +91,140 @@ module.exports = function() {
         //if (!Engine.rajCase.checkFullFillCase(data.case)) return;
 
         let emoName = data.name;
-        let npcId = data.target.id;
-        let npcSource = EmotionsData.OBJECT_TYPE.NPC;
+        let targetId;
+        let source;
 
-        if (!checkOneNpcActionsList(npcId)) createOneNpcActionsList(npcId);
+        switch (data.target.kind) {
+            case CanvasObjectTypeData.NPC:
+                //source          = EmotionsData.OBJECT_TYPE.NPC;
+                //targetId        = data.target.id;
+                //
+                //if (!checkOneNpcActionsList(targetId)) createOneNpcActionsList(targetId);
+                //
+                //if (!checkEmoNameExistOnOneNpcActionsList(targetId, emoName, ACTION_CREATE)) {
+                //    addEmoNameToOneNpcActionsList(targetId, emoName, ACTION_CREATE);
+                //}
+                //
+                //if (checkEmoNameExistOnOneNpcActionsList(targetId, emoName, ACTION_REMOVE)) {
+                //    removeEmoNameFromOneNpcActionsList(targetId, emoName, ACTION_REMOVE);
+                //}
+                //
+                //
+                //Engine.emotions.updateData([{
+                //    name        : emoName,
+                //    source_id   : targetId,
+                //    source_type : source
+                //}]);
+                //
+                //manageRefreshTip(targetId, emoName);
 
-        if (!checkEmoNameExistOnOneNpcActionsList(npcId, emoName, ACTION_CREATE)) {
-            addEmoNameToOneNpcActionsList(npcId, emoName, ACTION_CREATE);
+                createNpcEmo(data);
+                break;
+            case "MAP":
+
+                //source          = EmotionsData.OBJECT_TYPE.MAP;
+                //targetId        = data.target.id;
+                //
+                //if (!checkOneMapActionsList(targetId)) {
+                //    createOneMapActionsList(targetId);
+                //}
+                //
+                //Engine.emotions.updateData([{
+                //    name        : emoName,
+                //    source_id   : targetId,
+                //    source_type : source,
+                //    sourceData  : {
+                //        x : data.target.x,
+                //        y : data.target.y
+                //    }
+                //}]);
+
+                createMapEmo(data);
+                break;
         }
 
-        if (checkEmoNameExistOnOneNpcActionsList(npcId, emoName, ACTION_REMOVE)) {
-            removeEmoNameFromOneNpcActionsList(npcId, emoName, ACTION_REMOVE);
+    }
+
+    const createNpcEmo = (data) => {
+        let emoName = data.name;
+        let source = EmotionsData.OBJECT_TYPE.NPC;
+        let targetId = data.target.id;
+
+        if (!checkOneNpcActionsList(targetId)) createOneNpcActionsList(targetId);
+
+        if (!checkEmoNameExistOnOneNpcActionsList(targetId, emoName, ACTION_CREATE)) {
+            addEmoNameToOneNpcActionsList(targetId, emoName, ACTION_CREATE);
         }
 
+        if (checkEmoNameExistOnOneNpcActionsList(targetId, emoName, ACTION_REMOVE)) {
+            removeEmoNameFromOneNpcActionsList(targetId, emoName, ACTION_REMOVE);
+        }
 
         Engine.emotions.updateData([{
             name: emoName,
-            source_id: npcId,
-            source_type: npcSource
+            source_id: targetId,
+            source_type: source
         }]);
 
-        manageRefreshTip(npcId, emoName);
-    }
+        manageRefreshTip(targetId, emoName);
+    };
+
+    const createMapEmo = (data) => {
+        let emoName = data.name;
+        let source = EmotionsData.OBJECT_TYPE.MAP;
+        let targetId = data.target.id;
+
+        if (!checkOneMapActionsList(targetId)) {
+            createOneMapActionsList(targetId);
+        }
+
+        Engine.emotions.updateData([{
+            name: emoName,
+            source_id: targetId,
+            source_type: source,
+            sourceData: {
+                x: data.target.x,
+                y: data.target.y
+            }
+        }]);
+    };
 
     //const removeAction = (data, npcId, emoName) => {
     const removeAction = (data, additionaData) => {
 
 
         let emoName = data.name;
-        let npcId = data.target.id;
-        let npcSource = EmotionsData.OBJECT_TYPE.NPC;
+        let targetId = data.target.id;
+        let sourceType = data.target.kind;
 
-        //if (!Engine.rajCase.checkFullFillCase(data.case)) return;
+
+        switch (sourceType) {
+            case CanvasObjectTypeData.NPC:
+                removeNpcEmo(targetId, emoName)
+                break;
+            case "MAP":
+                removeMapEmo(targetId, emoName)
+                break;
+        }
+
+
+
+        //if (!checkOneNpcActionsList(npcId)) createOneNpcActionsList(npcId);
+        //
+        //if (checkEmoNameExistOnOneNpcActionsList(npcId, emoName, ACTION_CREATE)) {
+        //    removeEmoNameFromOneNpcActionsList(npcId, emoName, ACTION_CREATE);
+        //}
+        //
+        //if (!checkEmoNameExistOnOneNpcActionsList(npcId, emoName, ACTION_REMOVE)) {
+        //    addEmoNameToOneNpcActionsList(npcId, emoName, ACTION_REMOVE);
+        //}
+        //
+        //Engine.emotions.deleteAllSourceEmo(npcId, emoName);
+        //
+        //manageRefreshTip(npcId, emoName);
+    };
+
+    const removeNpcEmo = (npcId, emoName) => {
         if (!checkOneNpcActionsList(npcId)) createOneNpcActionsList(npcId);
 
         if (checkEmoNameExistOnOneNpcActionsList(npcId, emoName, ACTION_CREATE)) {
@@ -130,7 +238,13 @@ module.exports = function() {
         Engine.emotions.deleteAllSourceEmo(npcId, emoName);
 
         manageRefreshTip(npcId, emoName);
-    };
+    }
+
+    const removeMapEmo = (emoId, emoName) => {
+        deleteOneMapActionsList(emoId);
+
+        Engine.emotions.deleteAllSourceEmo(emoId, emoName);
+    }
 
     const manageRefreshTip = (npcId) => {
 
@@ -145,11 +259,20 @@ module.exports = function() {
         delete npcActionsList[npcId];
     };
 
+    const deleteOneMapActionsList = (emoId) => {
+        if (!checkOneMapActionsList(emoId)) return
+        delete mapActionsList[emoId];
+    };
+
     const createOneNpcActionsList = (npcId) => {
         npcActionsList[npcId] = {
             [ACTION_CREATE]: {},
             [ACTION_REMOVE]: {}
         };
+    };
+
+    const createOneMapActionsList = (emoId) => {
+        mapActionsList[emoId] = true
     };
 
     const getRajEmoDefinitionsActionsFileNamesArrayToAddToTip = (npcId) => {
@@ -187,6 +310,10 @@ module.exports = function() {
         return npcActionsList[npcId] ? true : false;
     };
 
+    const checkOneMapActionsList = (emoId) => {
+        return mapActionsList[emoId] ? true : false;
+    };
+
     const checkOneNpcActionsListCreateAndRemoveEmpty = (npcId) => {
         return lengthObject(npcActionsList[npcId][ACTION_CREATE]) == 0 && lengthObject(npcActionsList[npcId][ACTION_REMOVE] == 0);
     };
@@ -195,13 +322,25 @@ module.exports = function() {
         return npcActionsList[npcId][action][emoName]
     };
 
+    //const checkEmoNameExistOnOneMapActionsList = (npcId, emoName, action) => {
+    //    return mapActionsList[npcId][action][emoName]
+    //};
+
     const addEmoNameToOneNpcActionsList = (npcId, emoName, action) => {
         npcActionsList[npcId][action][emoName] = true;
     };
 
+    //const addEmoNameToOneMapActionsList = (npcId, emoName, action) => {
+    //    mapActionsList[npcId][action][emoName] = true;
+    //};
+
     const removeEmoNameFromOneNpcActionsList = (npcId, emoName, action) => {
         return delete npcActionsList[npcId][action][emoName];
     };
+
+    //const removeEmoNameFromOneMapActionsList = (npcId, emoName, action) => {
+    //    return delete mapActionsList[npcId][action][emoName];
+    //};
 
     const getShowNotify = (npcId, emoName) => {
         if (checkOneNpcActionsListCreateAndRemoveEmpty(npcId)) return true;

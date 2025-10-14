@@ -1,10 +1,10 @@
-const RajRandom = require('core/raj/rajRandom/RajRandom');
-const RajFunc = require('core/raj/rajFunc/RajFunc.js');
-const RajFor = require('core/raj/RajFor');
-const RajTemplate = require('core/raj/RajTemplate');
-const RajData = require('core/raj/RajData');
-const RajRandomData = require('core/raj/rajRandom/RajRandomData.js');
-const RajFuncData = require('core/raj/rajFunc/RajFuncData.js');
+const RajRandom = require('@core/raj/rajRandom/RajRandom');
+const RajFunc = require('@core/raj/rajFunc/RajFunc.js');
+const RajFor = require('@core/raj/RajFor');
+const RajTemplate = require('@core/raj/RajTemplate');
+const RajData = require('@core/raj/RajData');
+const RajRandomData = require('@core/raj/rajRandom/RajRandomData.js');
+const RajFuncData = require('@core/raj/rajFunc/RajFuncData.js');
 
 module.exports = function() {
 

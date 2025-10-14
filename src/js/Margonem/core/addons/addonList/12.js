@@ -1,38 +1,30 @@
+const ShowItemDetails = require('../../ShowItemDetails');
 module.exports = function() {
 
     const
-        //addonKey = 'addon_12',
         addonKey = Engine.windowsData.name.addon_12,
-        addonName = _t("title", null, "map_items"),
-        removeText = _t('delete', null, 'buttons'),
-        searchText = _t('search');
-    //FETCH_WATCH_ITEM = {loc: 'm', k:'FETCH_WATCH_ITEM'}
+        addonName = _t("title", null, "map_items");
 
 
     let running = false,
-        // open = false,
         hwnd = null,
         itemIsNpc = false;
 
     Vue.directive('add-item', {
-        bind: function(el, binding, vnode) {
+        bind: function(el, binding) {
             el.innerHTML = '';
             el.appendChild(binding.value[0]);
         },
-        // update: function (el, binding, vnode) { // fix for update element (e.g. delete item)
-        // 	el.innerHTML = '';
-        // 	el.appendChild(binding.value[0]);
-        // }
     });
 
     Vue.directive('add-tip', {
-        bind: function(el, binding, vnode) {
+        bind: function(el, binding) {
             $(el).tip(binding.value);
         }
     });
 
     Vue.directive('add-npc-tip', {
-        bind: function(el, binding, vnode) {
+        bind: function(el, binding) {
             let id = binding.value.id;
             let npc = Engine.npcs.getById(id);
 
@@ -40,11 +32,10 @@ module.exports = function() {
                 return;
             }
 
-            let view = binding.value.view;
-            let tip = Engine.npcs.getTip(npc);
-            let icon = createNpcIcon("tip-npc-wrapper", "tip-npc-icon", view, 1, 32, 32, 190);
-
-            $(el).tip(tip + icon);
+            let tip = Engine.npcs.getTip(npc, {
+                withIcon: true
+            });
+            $(el).tip(tip);
         }
     });
 
@@ -68,10 +59,6 @@ module.exports = function() {
 						</div>
 					</div>
 				</div>
-				<div class="search-wrapper scrollable">
-					<input class="search map-item-search-input" placeholder="${searchText}" v-model="searchValue">
-					<div class="search-x" @click="searchClear" v-add-tip="'${removeText}'"></div>
-				</div>
 			</div>
         `,
         data: {
@@ -91,16 +78,11 @@ module.exports = function() {
             scrollBarUpdate();
         },
         destroyed() {
-            let self = this;
             API.Storage.remove(addonKey, true);
             if (itemIsNpc) {
                 API.removeCallbackFromEvent(Engine.apiData.NEW_NPC, this.watchNpc);
-                // API.removeCallbackFromEvent("removeNpc", function(e) {
-                // 	self.removeItem(e.d.id);
-                // });
                 API.removeCallbackFromEvent(Engine.apiData.CLEAR_MAP_NPCS, this.removeAllItems);
             } else {
-                //Engine.items.removeCallback("m", this.watchItem);
                 Engine.items.removeCallback(Engine.itemsFetchData.FETCH_WATCH_ITEM);
             }
         },
@@ -113,8 +95,8 @@ module.exports = function() {
             }
         },
         methods: {
-            searchClear() {
-                this.searchValue = '';
+            setSearch(value) {
+                this.searchValue = value;
             },
             watchItem(i) {
                 let self = this;
@@ -151,11 +133,10 @@ module.exports = function() {
                 }
             },
             getView(i) {
-                // return Engine.items.createViewIcon(i.id, 'ground-addon-item-vue')[0];
                 return Engine.items.createViewIcon(i.id, Engine.itemsViewData.GROUND_ADDON_ITEM_VUE_VIEW)[0];
             },
             removeItem(id) {
-                var index = this.list.findIndex(obj => obj.id == id); //this.list.indexOf(e.id);
+                var index = this.list.findIndex(obj => obj.id == id);
                 if (index >= 0) {
                     this.list.splice(index, 1);
                 }
@@ -175,6 +156,7 @@ module.exports = function() {
 				@mouseenter="addArrow(item)"
 				@mouseleave="removeArrow(item)"
 				@click="goTo(item)"
+				@contextmenu.prevent="(event) => contextMenu(event, item)"
 				:class="{ active: isActive }"
 				ref="lala"
     		>
@@ -240,18 +222,67 @@ module.exports = function() {
                 setTimeout(() => {
                     this.isActive = false;
                 }, 500)
+            },
+            contextMenu(event, obj) {
+                const contextMenu = [];
+
+                if (obj.type === "Item") {
+                    const item = Engine.items.getItemById(obj.id);
+                    const groundItem = Engine.map.groundItems.getItemById(obj.id);
+
+                    contextMenu.push([
+                        _t('take', null, 'menu'),
+                        () => Engine.hero.addAfterFollowAction(groundItem, () => {
+                            _g("takeitem&id=" + groundItem.d.id);
+                        })
+                    ]);
+                    contextMenu.push([
+                        _t('show_id'), () => {
+                            new ShowItemDetails(item);
+                        }
+                    ]);
+                    contextMenu.push([
+                        _t('stick_tip'), () => {
+                            Engine.stickyTips.add(item);
+                        }
+                    ]);
+                } else {
+                    const npc = Engine.npcs.getById(obj.id);
+                    contextMenu.push([
+                        _t('take', null, 'menu'),
+                        () => Engine.hero.addAfterFollowAction(npc, () => {
+                            Engine.hero.sendRequestToTalk(npc.d.id);
+                        })
+                    ]);
+                }
+                if (contextMenu.length) {
+                    Engine.interface.showPopupMenu(contextMenu, event);
+                    return true;
+                }
+                return false;
             }
         },
     });
 
-    function initWindow() {
+    const searchItems = (value) => {
+        app.setSearch(value);
+    }
 
+    function initWindow() {
+        const content = $(`
+			<div class="${addonKey}_content">
+				<div id="${addonKey}"></div>
+			</div>
+		`);
         hwnd = Engine.windowManager.add({
-            content: $(`<div id="${addonKey}"></div>`),
+            content,
             title: addonName,
             nameWindow: addonKey,
             widget: Engine.widgetsData.name.addon_12,
             type: Engine.windowsData.type.TRANSPARENT,
+            search: {
+                keyUpCallback: (e, val) => searchItems(val)
+            },
             manageOpacity: 3,
             managePosition: {
                 x: '251',
@@ -260,13 +291,10 @@ module.exports = function() {
             manageShow: false,
             onclose: () => {
                 closeWnd();
-                // open = false;
-                // API.Storage.set(`${addonKey}/show`, open);
             }
         });
 
         hwnd.el = hwnd.$[0];
-        // closeWnd();
         hwnd.el.classList.add('items-on-ground');
         hwnd.updatePos();
         hwnd.addToAlertLayer();
@@ -278,9 +306,7 @@ module.exports = function() {
     }
 
     function removeWindow() {
-        //hwnd.$.remove();
         hwnd.remove();
-        //delete hwnd;
         hwnd = null;
     }
 
@@ -297,33 +323,20 @@ module.exports = function() {
     }
 
     function openWnd() {
-        //hwnd.el.style.display = 'block';
         hwnd.show()
     }
 
     function closeWnd() {
-        //hwnd.el.style.display = 'none';
         hwnd.hide();
     }
 
     this.manageVisible = function() {
-        // open = !open;
-
         if (hwnd.isShow()) closeWnd();
         else {
             openWnd();
             hwnd.setWndOnPeak();
             scrollBarUpdate();
         }
-
-        // if (open) {
-        // 	openWnd();
-        // 	hwnd.setWndOnPeak();
-        // 	scrollBarUpdate();
-        // } else {
-        // 	closeWnd();
-        // }
-        // API.Storage.set(`${addonKey}/show`, open);
     };
 
     function scrollBarUpdate() {
@@ -342,18 +355,12 @@ module.exports = function() {
         running = true;
         addStyles();
         initWindow();
-
-        // if (API.Storage.get(`${addonKey}/show`, false)) {
-        // 	openWnd();
-        // open = true;
-        // }
     };
 
     this.stop = function() {
         if (!running) return;
         running = false;
         app.$destroy();
-        //delAllItem();
         removeStyles();
         removeWindow();
     };

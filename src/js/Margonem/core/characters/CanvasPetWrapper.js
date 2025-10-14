@@ -1,5 +1,5 @@
-let PetActions = require('core/PetActions.js');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
+let PetActions = require('@core/PetActions.js');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
 
 module.exports = function() {
 
@@ -10,6 +10,7 @@ module.exports = function() {
     let path;
     let nameActionArray;
     let actionsDataArray;
+    let fullPetData;
 
     let actionFrame = 0;
 
@@ -75,7 +76,7 @@ module.exports = function() {
 
     function updateData(data) {
         path = data.path;
-
+        fullPetData = data.fullPetData;
         if (data.actions != '') {
             nameActionArray = data.actions.split("|");
             actionsDataArray = petActions.createActionsDataArrayForHero(nameActionArray)
@@ -101,14 +102,10 @@ module.exports = function() {
 
 
         if (chooseDir != null || checkActionIsRunning()) {
-
-            // m.push([_t('cancel_action_or_dir'), () => {
-            // 	chooseDir = null;
-            // 	stopAction();
-            // }]);
             m.push(createMenuDirItem(_t('cancel_action_or_dir'), null));
-
         }
+
+        m.push([_t('summon_pet'), () => Engine.hero.tryPet(fullPetData)]);
 
         Engine.interface.showPopupMenu(m, e);
     }
@@ -197,16 +194,12 @@ module.exports = function() {
     }
 
     function update(dt) {
-
         animate(dt);
 
         if (checkActionIsRunning()) {
-
             petActions.updateAction(self, dt);
-            //console.log(actionFrame);
             return
         }
-        //console.log(actionFrame, frame);
 
         manageDir(dt);
         manageFrame(dt);

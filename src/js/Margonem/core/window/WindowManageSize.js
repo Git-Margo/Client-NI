@@ -1,4 +1,4 @@
-let Storage = require('core/Storage');
+let Storage = require('@core/Storage');
 
 module.exports = function() {
 
@@ -25,8 +25,6 @@ module.exports = function() {
 
         createToggleSizeButton(_buttonWrapper);
         initData();
-        setSizeWindow();
-        managePosOfWndOutOfScreen();
     };
 
     const initData = () => {
@@ -35,17 +33,42 @@ module.exports = function() {
         setSizeOpt(sizeOptData);
     };
 
-    const toggleSizeOpt = () => {
-        setSizeOpt(sizeOpt + 1);
-
-        if (sizeOpt > sizeArray.length - 1) setSizeOpt(0);
-
-        setBattlePredictionHelpWindowSizeOpt();
-
+    const updateSizeWindow = () => {
         setSizeWindow();
         managePosOfWndOutOfScreen();
-
         callCallback();
+    }
+
+    const callNextSizeOpt = (dontGoToFirst) => {
+
+        let sizeOptIsLast = sizeOpt >= sizeArray.length - 1;
+
+        if (dontGoToFirst && sizeOptIsLast) {
+            return;
+        }
+
+        let nextSizeOpt = sizeOptIsLast ? 0 : sizeOpt + 1;
+
+        setSizeOpt(nextSizeOpt);
+
+        setBattlePredictionHelpWindowSizeOpt();
+        updateSizeWindow();
+    };
+
+    const callPreviousSizeOpt = (dontGoToLast) => {
+
+        let sizeOptIsFirst = sizeOpt == 0;
+
+        if (dontGoToLast && sizeOptIsFirst) {
+            return;
+        }
+
+        let nextSizeOpt = sizeOptIsFirst ? sizeArray.length - 1 : sizeOpt - 1;
+
+        setSizeOpt(nextSizeOpt);
+
+        setBattlePredictionHelpWindowSizeOpt();
+        updateSizeWindow();
     };
 
     const setBattlePredictionHelpWindowSizeOpt = () => {
@@ -85,9 +108,11 @@ module.exports = function() {
     };
 
     const createToggleSizeButton = (_buttonWrapper) => {
-        let $toggleSizeButton = $("<div>").addClass('toggle-size-button');
+        let $toggleSizeButton = $("<div>").addClass('toggle-size-button').tip(_t('change_size'));
 
-        $toggleSizeButton.on('click', toggleSizeOpt)
+        $toggleSizeButton.on('click', function() {
+            callNextSizeOpt()
+        })
 
         _buttonWrapper.append($toggleSizeButton);
     };
@@ -101,8 +126,6 @@ module.exports = function() {
         if (opt.h) o.height = opt.h;
 
         content.css(o);
-
-        //updateScrollbar();
     };
 
     const managePosOfWndOutOfScreen = () => {
@@ -110,7 +133,7 @@ module.exports = function() {
 
         if (!wnd.checkPassTheScreenBounds()) return;
 
-        wnd.setWindowOnLeftTopCorner();
+        wnd.updatePos();
 
         if (sizeOpt == 0) return;
 
@@ -119,8 +142,6 @@ module.exports = function() {
         setSizeOpt(0);
 
         setSizeWindow();
-
-        callCallback();
     };
 
     const callCallback = () => {
@@ -133,6 +154,23 @@ module.exports = function() {
         sizeOpt = _sizeOpt;
     };
 
+    const getActualSize = () => {
+        let o = sizeArray[sizeOpt];
+
+        if (!o) {
+            return null;
+        }
+
+        return {
+            w: o.w,
+            h: o.h
+        }
+    };
+
     this.init = init;
+    this.getActualSize = getActualSize;
+    this.updateSizeWindow = updateSizeWindow;
+    this.callNextSizeOpt = callNextSizeOpt;
+    this.callPreviousSizeOpt = callPreviousSizeOpt;
 
 };

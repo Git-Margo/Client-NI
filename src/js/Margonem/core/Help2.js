@@ -1,5 +1,5 @@
-var tpl = require('core/Templates');
-let ProfData = require('core/characters/ProfData');
+var tpl = require('@core/Templates');
+let ProfData = require('@core/characters/ProfData');
 
 module.exports = function() {
 

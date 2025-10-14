@@ -34,7 +34,7 @@ const getNewArrayWithChooseOrderOfFirstIndex = (oldArray, arrayToRandom) => {
     let oldArrayLength = oldArray.length;
     let newArray = [];
 
-    console.log('newIndex', newIndex);
+    //console.log('newIndex', newIndex);
 
     for (let i = newIndex; i < oldArrayLength; i++) {
 

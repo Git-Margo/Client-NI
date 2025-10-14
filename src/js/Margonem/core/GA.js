@@ -1,5 +1,5 @@
-var Storage = require('core/Storage');
-var ItemState = require('core/items/ItemState');
+var Storage = require('@core/Storage');
+var ItemState = require('@core/items/ItemState');
 
 module.exports = function() {
     this.init = () => {

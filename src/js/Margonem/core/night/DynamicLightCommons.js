@@ -1,5 +1,5 @@
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let LightData = require('core/night/LightData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let LightData = require('@core/night/LightData');
 
 
 module.exports = function() {
@@ -98,11 +98,15 @@ module.exports = function() {
     };
 
     const getOnlyNight = (d) => {
-        if (!d.light) return null;
+        if (!d.light) {
+            return true;
+        }
 
-        if (d.light.onlyNight) return true;
+        if (isset(d.light.onlyNight)) {
+            return d.light.onlyNight;
+        }
 
-        return null
+        return true
     }
 
     const getDynamicHoleImgBuActualFrame = (actualFrame) => {
@@ -198,6 +202,7 @@ module.exports = function() {
 
         let tileSize = CFG.tileSize;
         let halfTileSize = CFG.halfTileSize;
+        let battle = getEngine().battle;
 
         let left;
         let top;
@@ -208,8 +213,38 @@ module.exports = function() {
 
         if (realXYPos) {
 
-            left = xPos - fw / 2;
-            top = yPos - fh / 2;
+            //if (xPos != null && yPos != null) {
+            if (!master) {
+
+                left = xPos - fw / 2;
+                top = yPos - fh / 2;
+
+            } else {
+
+                //if (!master) {
+                //    return;
+                //}
+
+                let scale = battle.scaleBattle.getScale();
+                //let xPos        = master.xPos + halfTileSize - fw / 2;
+                //let yPos        = master.yPos + halfTileSize - fh / 2;
+                let xPos = master.xPos - fw / 2;
+                let yPos = master.yPos - fh / 2;
+
+                left = xPos * scale;
+                top = yPos * scale;
+
+                top -= halfTileSize;
+
+                //let position        = getEngine().battle.getBattleArea().position();
+                let positionLeft = battle.getBattleLeft() / Engine.zoomFactor;
+                let positionTop = battle.getBattleTop() / Engine.zoomFactor;
+
+                left = left + positionLeft;
+                top = top + positionTop;
+
+
+            }
 
         } else {
 
@@ -248,6 +283,10 @@ module.exports = function() {
 
         // mainNightCtx.fillStyle = "blue";
         // mainNightCtx.fillRect(left, top, 10, 10);
+
+        //if (realXYPos) {
+        //    console.log('dynamicLightCommons', left, top);
+        //}
 
         mainNightCtx.drawImage(
             currentDynamicHoleImg,

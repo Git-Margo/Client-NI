@@ -1,8 +1,8 @@
-var Emotion = require('core/emotions/Emotion');
-var EmotionsDefinitions = require('core/emotions/EmotionsDefinitions');
-var RenderGifStrategy = require('core/emotions/RenderGifStrategy');
-var Action = require('core/emotions/Action');
-var EmotionsData = require('core/emotions/EmotionsData');
+var Emotion = require('@core/emotions/Emotion');
+var EmotionsDefinitions = require('@core/emotions/EmotionsDefinitions');
+var RenderGifStrategy = require('@core/emotions/RenderGifStrategy');
+var Action = require('@core/emotions/Action');
+var EmotionsData = require('@core/emotions/EmotionsData');
 module.exports = function() {
     var self = this;
     var list = [];
@@ -29,7 +29,7 @@ module.exports = function() {
             if (self.ignoreEmo(type, sourceType, sourceId)) continue;
             if (!self.checkSourceObjectExist(obj)) continue;
 
-            self.addEmo(type, sourceType, sourceId, targetType, targetId, timeToRemove);
+            self.addEmo(type, sourceType, sourceId, targetType, targetId, timeToRemove, obj);
 
             if (sourceType == EmotionsData.OBJECT_TYPE.NPC) Engine.npcs.manageDisplayOfNpcEmo(sourceId);
         }
@@ -67,6 +67,8 @@ module.exports = function() {
 
         if (obj.target_type == EmotionsData.OBJECT_TYPE.OTHER && heroId == obj.target_id) obj.target_type = EmotionsData.OBJECT_TYPE.HERO;
 
+        if (obj.target_type == EmotionsData.OBJECT_TYPE.MAP) obj.target_type = EmotionsData.OBJECT_TYPE.MAP;
+
     };
 
     this.checkSourceObjectExist = (obj) => {
@@ -79,6 +81,8 @@ module.exports = function() {
                 return Engine.others.check()[obj.source_id] ? true : false;
             case EmotionsData.OBJECT_TYPE.PET:
                 return Engine.hero.havePet() ? true : false;
+            case EmotionsData.OBJECT_TYPE.MAP:
+                return true;
         }
         return false;
     }
@@ -95,6 +99,7 @@ module.exports = function() {
             case EmotionsData.OBJECT_TYPE.OTHER:
             case EmotionsData.OBJECT_TYPE.HERO:
             case EmotionsData.OBJECT_TYPE.PET:
+            case EmotionsData.OBJECT_TYPE.MAP:
                 sourceExist = true
                 break;
             default:
@@ -241,7 +246,7 @@ module.exports = function() {
         }
     };
 
-    this.addEmo = function(type, sourceType, sourceId, targetType, targetId, endTime) {
+    this.addEmo = function(type, sourceType, sourceId, targetType, targetId, endTime, rawObj) {
         var emoData = self.emotionsDefinitions.get(type);
         //if (!isset(emoData)) {
         if (emoData == null) {
@@ -261,7 +266,8 @@ module.exports = function() {
             targetType: targetType,
             targetId: targetId,
             endTime: endTime === 0 && isset(emoData.timeout) ? Engine.getEv() + emoData.timeout / 1000 : endTime,
-            type: type
+            type: type,
+            rawObj: rawObj
         };
 
         if (isset(emoData.clear)) self.emoClear(sourceId, emoData.clear);
@@ -297,9 +303,37 @@ module.exports = function() {
     }
 
     this.getDrawableList = function() {
-        var arr = [];
-        for (var i in list)
+        let arr = [];
+        const NPC = EmotionsData.OBJECT_TYPE.NPC;
+        const characterHide = getEngine().rajCharacterHide;
+        const rajMassObjectHide = getEngine().rajMassObjectHide;
+
+        for (var i in list) {
+
+            let emo = list[i];
+            let source = emo.getSource();
+
+            //if (emo.getSourceType() == NPC && characterHide.checkHideObject(source) && !characterHide.checkDisplayEmo(source)) {
+            //	continue
+            //}
+            if (emo.getSourceType() == NPC) {
+
+                if (characterHide.checkHideObject(source)) {
+                    if (!characterHide.checkDisplayEmo(source)) {
+                        continue
+                    }
+                }
+
+                if (Engine.rajMassObjectHide.checkMassObjectsHide(source)) {
+                    if (!rajMassObjectHide.checkDisplayEmo(source)) {
+                        continue
+                    }
+                }
+            }
+
             arr.push(list[i]);
+        }
+
         return arr;
     }
 };

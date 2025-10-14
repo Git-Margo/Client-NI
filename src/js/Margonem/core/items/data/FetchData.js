@@ -75,6 +75,12 @@ let o = {
     NEW_CHAT_LINKED_ITEM: {
         loc: 'C'
     },
+    NEW_SOCKET_ENCHANT_ITEM: {
+        loc: 'D'
+    },
+    NEW_SOCKET_EXTRACT_ITEM: {
+        loc: 'E'
+    },
     // NEW_BASKET_ITEM_1               : {loc: 'g'},
     // NEW_BASKET_ITEM_2               : {loc: 'g'},
 
@@ -151,6 +157,12 @@ let o = {
     },
     NEW_RECIPE_INGREDIENT_TPL: {
         loc: 'c'
+    },
+    NEW_SOCKET_EXTRACT_TPL: {
+        loc: 'E'
+    },
+    NEW_SOCKET_COMPOSE_TPL: {
+        loc: 'A'
     },
 
 

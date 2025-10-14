@@ -55,7 +55,9 @@ module.exports = function() {
                 menu.push(menuElement);
             }
 
-            Engine.interface.showPopupMenu(menu, getE(e, mE), true);
+            Engine.interface.showPopupMenu(menu, getE(e, mE), {
+                onMap: true
+            });
         })
     };
 

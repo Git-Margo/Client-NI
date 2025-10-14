@@ -1,4 +1,4 @@
-const ColorInterfaceNotificationData = require('core/colorInterfaceNotification/ColorInterfaceNotificationData');
+const ColorInterfaceNotificationData = require('@core/colorInterfaceNotification/ColorInterfaceNotificationData');
 
 module.exports = function() {
 
@@ -129,7 +129,7 @@ module.exports = function() {
         let margin = blur;
 
         ctx.clearRect(0, 0, w, h);
-        ctx.save();
+        //ctx.save();
         ctx.beginPath();
         ctx.rect(left - margin, top - margin, w + margin * 2, h + margin * 2);
         ctx.clip();
@@ -142,7 +142,9 @@ module.exports = function() {
         ctx.shadowColor = color;
 
         ctx.strokeRect(left - margin, top - margin, w + margin * 2, h + margin * 2);
-        ctx.restore();
+        //ctx.restore();
+
+        ctx.shadowBlur = 0;
 
         canvasData.toDraw = true;
     }

@@ -1,8 +1,8 @@
-let FallObj = require('core/weather/FallObj');
-let WeatherData = require('core/weather/WeatherData');
-let RajRandomElements = require('core/raj/RajRandomElements');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
+let FallObj = require('@core/weather/FallObj');
+let WeatherData = require('@core/weather/WeatherData');
+let RajRandomElements = require('@core/raj/RajRandomElements');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
 
 module.exports = new(function() {
 
@@ -566,6 +566,13 @@ module.exports = new(function() {
         }
     };
 
+    const refreshFilter = () => {
+        for (let i = 0; i < list.length; i++) {
+            list[i].updateFilterImage();
+        }
+    }
+
     this.init = init;
+    this.refreshFilter = refreshFilter;
 
 })();

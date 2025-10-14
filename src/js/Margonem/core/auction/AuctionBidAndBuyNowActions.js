@@ -1,6 +1,6 @@
 let Templates = require('../Templates');
-let AuctionData = require('core/auction/AuctionData');
-const InputMaskData = require('core/InputMaskData');
+let AuctionData = require('@core/auction/AuctionData');
+const InputMaskData = require('@core/InputMaskData');
 
 module.exports = function() {
 

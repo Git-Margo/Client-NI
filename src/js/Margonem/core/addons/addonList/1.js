@@ -1,13 +1,13 @@
-const Button = require("../../components/Button");
-const NativeColorPicker = require("../../components/NativeColorPicker");
-const Slider = require("../../components/Slider");
+const Button = require('../../components/Button');
+const NativeColorPicker = require('../../components/NativeColorPicker');
+const Slider = require('../../components/Slider');
 const ServerStorageData = require('../../storage/ServerStorageData.js');
 const {
     hex2rgb,
     mergeObjects
-} = require("../../HelpersTS");
+} = require('../../HelpersTS');
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 module.exports = function() {
     let

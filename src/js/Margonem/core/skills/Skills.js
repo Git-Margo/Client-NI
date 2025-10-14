@@ -1,13 +1,13 @@
 /**
  * Created by Michnik on 2015-08-18.
  */
-var Tpl = require('core/Templates');
-var Parser = require('core/skills/SkillsParser');
-var MBattleEditor = require('core/skills/MBattleEditor');
-var SkillTip = require('core/skills/SkillTip');
-var SkillsData = require('core/skills/SkillsData');
+var Tpl = require('@core/Templates');
+var Parser = require('@core/skills/SkillsParser');
+var MBattleEditor = require('@core/skills/MBattleEditor');
+var SkillTip = require('@core/skills/SkillTip');
+var SkillsData = require('@core/skills/SkillsData');
 const Slider = require('../components/Slider');
-//var Interface = require('core/Interface');
+//var Interface = require('@core/Interface');
 module.exports = function() {
     var self = this;
     var $content; // = Tpl.get('skills-window');
@@ -41,6 +41,9 @@ module.exports = function() {
         this.initEqDragOpts();
         this.initDroppable();
         this.initMBattleWrapper();
+
+        const $interfaceLayer = Engine.interface.get$interfaceLayer();
+        $interfaceLayer.addClass('show-skills-window')
     };
 
     this.getOneStepSkillId = () => {
@@ -83,12 +86,20 @@ module.exports = function() {
         Engine.interface.get$interfaceLayer().find('.bottom-panel').prepend($additionalHotKeys);
     };
 
+    const getSkillUsableSlots = () => {
+        return Engine.interface.get$interfaceLayer().find('.skill-usable-slots');
+    };
+
     this.hideInterfaceItems = function() {
         //$('.bottom-panel>.slots').css('display', 'none');
         //$('.skill-usable-slots').css('display', 'block');
+
+        let $skillUsableSlots = getSkillUsableSlots();
+
         Engine.interface.get$interfaceLayer().find('.bottom-panel>.slots').css('display', 'none');
-        Engine.interface.get$interfaceLayer().find('.skill-usable-slots').css('display', 'block');
-        if (Engine.hero.lvl > 299) {
+        //Engine.interface.get$interfaceLayer().find('.skill-usable-slots').css('display', 'block');
+        $skillUsableSlots.css('display', 'block');
+        if (getHeroLevel() > 299) {
             $('.end-game-overlay').removeClass('end-game-overlay');
         }
     };
@@ -96,8 +107,12 @@ module.exports = function() {
     this.showInterfaceItems = function() {
         //$('.bottom-panel>.slots').css('display', 'block');
         //$('.skill-usable-slots').css('display', 'none');
+
+        let $skillUsableSlots = getSkillUsableSlots();
+
         Engine.interface.get$interfaceLayer().find('.bottom-panel>.slots').css('display', 'block');
-        Engine.interface.get$interfaceLayer().find('.skill-usable-slots').css('display', 'none');
+        //Engine.interface.get$interfaceLayer().find('.skill-usable-slots').css('display', 'none');
+        $skillUsableSlots.css('display', 'none');
         Engine.interface.heroElements.checkAndSetEndGamePanel();
     };
 
@@ -285,6 +300,11 @@ module.exports = function() {
         //	}
         //});
 
+        let position = mobileCheck() ? {
+            position: Engine.windowsData.position.TOP_POSITIONING
+        } : {
+            position: Engine.windowsData.position.CENTER
+        }
 
         Engine.windowManager.add({
             content: $content,
@@ -292,6 +312,7 @@ module.exports = function() {
             //nameWindow        : 'skills',
             nameWindow: Engine.windowsData.name.SKILLS,
             widget: Engine.widgetsData.name.SKILLS,
+            managePosition: position,
             objParent: this,
             nameRefInParent: 'wnd',
             startVH: 60,
@@ -313,7 +334,7 @@ module.exports = function() {
             track: true
         });
         //this.wnd.$.show();
-        this.wnd.center();
+        this.wnd.updatePos();
     };
 
     this.initVariable = function() {
@@ -329,7 +350,7 @@ module.exports = function() {
     this.refreshBMButton = function() {
         let $b = self.wnd.$.find('.MB-wrapper').find('.button');
         let $l = self.wnd.$.find('.MB-label-1');
-        if (Engine.hero.d.lvl < 25) {
+        if (getHeroLevel() < 25) {
             $b.addClass('disable');
             $l.css('display', 'inline-block');
         } else {
@@ -409,7 +430,7 @@ module.exports = function() {
                 cLvl: v[id].lvl,
                 mLvl: maxLvl,
                 currentStatsIndex,
-                allStats: stats
+                allStats: stats.map((st) => st.trim())
             };
 
             var index = pos % 8;
@@ -523,7 +544,7 @@ module.exports = function() {
         var $sPane = $content.find('.skills-wrapper > .scroll-pane');
         var $tab = [];
         var clickable = true; // first skill's can by clickable
-        var hLvl = Engine.hero.d.lvl; // hero's lvl
+        var hLvl = getHeroLevel(); // hero's lvl
         var cSkills = null; //current skills
         var $skill = null;
         var points = 0;
@@ -582,7 +603,11 @@ module.exports = function() {
     };
 
     this.updateSkillsLearnt = function(v) {
-        $content.find('.right-column').find('.skills-points').html(v + '/' + Math.max(0, Engine.hero.d.lvl - 24));
+        $content.find('.right-column').find('.skills-points .skills_learnt').text(v);
+    };
+
+    this.updateSkillsTotal = function(v) {
+        $content.find('.right-column').find('.skills-points .skills_total').text(v);
     };
 
     this.fillRightColumn = function() {
@@ -679,7 +704,7 @@ module.exports = function() {
     }
 
     this.createCost = (countSkillsToLearn = 1) => {
-        const cost = Math.floor(Math.pow(Engine.hero.d.lvl, 1.9)) * countSkillsToLearn;
+        const cost = Math.floor(Math.pow(Math.min(300, getHeroLevel()), 1.9)) * countSkillsToLearn;
         const enoughGold = Engine.hero.d.gold >= cost;
         const costTxt = round(cost, 1);
         const allClasses = 'cost-value' + (freeSkills ? ' cost-value-crossed' : !enoughGold ? ' cost-value-red' : '');
@@ -956,6 +981,8 @@ module.exports = function() {
     };
 
     this.close = function() {
+        const $interfaceLayer = Engine.interface.get$interfaceLayer();
+        $interfaceLayer.removeClass('show-skills-window')
         self.showInterfaceItems();
         $additionalHotKeys.remove();
         $delSkillMiddleLayer.remove();

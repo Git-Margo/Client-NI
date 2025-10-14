@@ -17,8 +17,8 @@ module.exports = {
         NAME: "name",
         ICON_ID: "iconId",
         CURRENCY: "currency",
-        CURRENCY_Z: "z",
-        CURRENCY_S: "s"
+        CURRENCY_GOLD: "gold",
+        CURRENCY_CREDITS: "credits"
 
     }
 };

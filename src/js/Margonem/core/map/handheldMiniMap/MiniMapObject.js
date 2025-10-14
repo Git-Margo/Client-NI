@@ -1,4 +1,4 @@
-let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
+let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
 
 
 module.exports = function() {

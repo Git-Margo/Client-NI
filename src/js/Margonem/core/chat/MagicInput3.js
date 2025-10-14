@@ -150,7 +150,7 @@ module.exports = function() {
 
     const initOnKeyUpEvent = () => {
         $magicInput.on('keyup', function(e) {
-            debugger;
+            //debugger;
             updateValue();
 
             if (e.originalEvent.key == "Enter") {
@@ -891,7 +891,7 @@ module.exports = function() {
         setInput(inputHtmlValue + val);
     };
 
-    isTextNode = (element) => {
+    const isTextNode = (element) => {
         return element.nodeName == '#text';
     }
 

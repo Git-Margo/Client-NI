@@ -1,5 +1,5 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-var FollowGlow = require('core/glow/FollowGlow');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+var FollowGlow = require('@core/glow/FollowGlow');
 
 module.exports = function() {
 

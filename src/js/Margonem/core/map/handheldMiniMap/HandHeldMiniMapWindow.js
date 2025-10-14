@@ -1,9 +1,7 @@
-let tpl = require('core/Templates');
-// let Store                   = require('core/Storage');
-var EditMiniMapWindowPanel = require('core/map/EditMiniMapWindowPanel');
-var HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
-var StorageFuncHandHeldMiniMap = require('core/map/StorageFuncHandHeldMiniMap');
-// var StorageFuncWindow = require('core/window/StorageFuncWindow');
+let tpl = require('@core/Templates');
+var EditMiniMapWindowPanel = require('@core/map/EditMiniMapWindowPanel');
+var HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
+var StorageFuncHandHeldMiniMap = require('@core/map/StorageFuncHandHeldMiniMap');
 
 
 module.exports = function() {
@@ -11,20 +9,22 @@ module.exports = function() {
     let wnd;
     let canvas;
     let ctx;
-
-    // const handheldStoreKey = 'handheld-window';
-
     let searchValue = '';
 
     let editMiniMapWindowPanel;
-
-    let resizeTimeOut = null;
-
-    // let minSquare     = 14
-    let sizes = [230, 300, 450, 650];
-    let maxSize = sizes.length - 1;
-    let currentSize = 0;
-
+    let sizeArray = [{
+        w: 230,
+        h: 230
+    }, {
+        w: 300,
+        h: 300
+    }, {
+        w: 450,
+        h: 450
+    }, {
+        w: 650,
+        h: 650
+    }];
     let scale = null;
     let squareData = {
         normalSize: null,
@@ -38,15 +38,13 @@ module.exports = function() {
 
     function init() {
         initWindow();
-        setSizeOfMiniMapWindow();
-        initSearch();
-        createChangeSizeBtn();
-        createSettingsBtn();
+        //initSearch();
+        //createSettingsBtn();
         initCanvas();
         initMouseEvent();
         initScrollEvents();
-        setCanvasSize(sizes[currentSize], sizes[currentSize]);
-        // setStateOfMiniMapWindow();
+
+        wnd.updateSizeWindow();
         wnd.updatePos();
     }
 
@@ -57,7 +55,16 @@ module.exports = function() {
             widget: Engine.widgetsData.name.MINI_MAP,
             type: Engine.windowsData.type.TRANSPARENT,
             manageOpacity: 3,
-            //lightModeCss		: `.handheld-mini-map .search-wrapper.search-item-wrapper {display: none}`,
+            //mobileMenu			: [['SEARCH', function () {message('SHOW_OR_HIDE_SEARCH')}]],
+            manageConfiguration: {
+                fn: function(e) {
+                    createControllPanel(e);
+                }
+            },
+            manageSize: {
+                sizeArray: sizeArray,
+                callback: changeSizeCallback
+            },
             managePosition: {
                 x: '251',
                 y: '60',
@@ -65,7 +72,11 @@ module.exports = function() {
             },
             title: _t('portable_map'),
             addClass: 'handheld-window',
-            manageShow: true,
+            search: {
+                keyUpCallback: keyUpCallback,
+                addClass: "search-item-wrapper"
+            },
+            manageShow: !mobileCheck(),
             onclose: () => {
                 closeMiniMap();
             }
@@ -74,22 +85,10 @@ module.exports = function() {
         wnd.addToAlertLayer();
     }
 
-    // function setStateOfMiniMapWindow () {
-    // 	// let state = Store.get(handheldStoreKey + '/show');
-    // 	//let state = StorageFuncHandHeldMiniMap.getShowWindow()
-    // 	let state = StorageFuncWindow.getShowWindow(Engine.windowsData.name.HANDHELD_WINDOW)
-    //
-    // 	if (state == null) {
-    // 		// Store.set(handheldStoreKey + '/show', true)
-    // 		//StorageFuncHandHeldMiniMap.setShowWindow(true)
-    // 		StorageFuncWindow.setShowWindow(true, Engine.windowsData.name.HANDHELD_WINDOW);
-    // 	} else {
-    //
-    // 		if (state == false) wnd.hide();
-    //
-    // 	}
-    //
-    // }
+    const keyUpCallback = (e, val) => {
+        searchValue = val
+        Engine.miniMapController.handHeldMiniMapController.refreshMiniMapController();
+    }
 
     function initSearch() {
         let $searchInput = wnd.$.find('.search');
@@ -115,22 +114,16 @@ module.exports = function() {
 
     function onScrollMap(e) {
         if (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) {
+            wnd.callNextSizeOpt(true);
+        } else {
+            wnd.callPreviousSizeOpt(true);
+        }
 
-            if (currentSize == maxSize) return;
-            sizeWindowPlusLoop();
-
-        } else sizeWindowMinusLoop();
         Engine.miniMapController.handHeldMiniMapController.refreshMiniMapController();
     }
 
     function onResize() {
-        if (!wnd.isShow()) return;
 
-        if (resizeTimeOut) clearTimeout(resizeTimeOut);
-
-        resizeTimeOut = setTimeout(function() {
-            managePosOfMiniMapWhenWndOutOfScreen();
-        }, 200);
     }
 
     function nameIsCorrect(_name) {
@@ -142,39 +135,19 @@ module.exports = function() {
         return name.search(searchValue.toLowerCase()) > -1;
     }
 
-    function setSizeOfMiniMapWindow() {
-        // var s = Store.get(handheldStoreKey + '/big');
-        var s = StorageFuncHandHeldMiniMap.getSizeWindow();
+    //function createSettingsBtn () {
+    //	let $settings2 = tpl.get('settings-button');
+    //	wnd.$.find('.handheld-mini-map').append($settings2);
+    //	$settings2.addClass('settings-button2');
+    //	$settings2.click(function (e) {
+    //		e.stopPropagation();
+    //		createControllPanel();
+    //	});
+    //}
 
-        if (s === null) {
-            currentSize = 0;
-            saveCurrentSizeInStorage();
-        } else currentSize = s
-    }
+    function createControllPanel(e) {
+        e.stopPropagation();
 
-    function createChangeSizeBtn() {
-        let $toggleSize = tpl.get('toggle-size-button');
-
-        wnd.$.find('.handheld-mini-map').append($toggleSize);
-
-        $toggleSize.addClass('settings-button1');
-        $toggleSize.click(function(e) {
-            sizeWindowPlusLoop();
-            Engine.miniMapController.handHeldMiniMapController.refreshMiniMapController();
-        });
-    }
-
-    function createSettingsBtn() {
-        let $settings2 = tpl.get('settings-button');
-        wnd.$.find('.handheld-mini-map').append($settings2);
-        $settings2.addClass('settings-button2');
-        $settings2.click(function(e) {
-            e.stopPropagation();
-            createControllPanel();
-        });
-    }
-
-    function createControllPanel() {
         if (editMiniMapWindowPanel) editMiniMapWindowPanel.close();
         else {
             editMiniMapWindowPanel = new EditMiniMapWindowPanel();
@@ -186,50 +159,29 @@ module.exports = function() {
         editMiniMapWindowPanel = null;
     }
 
-    function sizeWindowPlusLoop() {
-        if (currentSize == maxSize) currentSize = 0;
-        else currentSize++;
-
-        saveCurrentSizeInStorage();
-        updateMiniMapWindowSize();
-        managePosOfMiniMapWhenWndOutOfScreen();
-    }
-
-    function sizeWindowMinusLoop() {
-        if (currentSize < 1) return
-
-        currentSize--;
-
-        saveCurrentSizeInStorage();
-        updateMiniMapWindowSize();
-        managePosOfMiniMapWhenWndOutOfScreen();
-    }
-
-    function saveCurrentSizeInStorage() {
-        // Store.set(handheldStoreKey + '/big', currentSize);
-        StorageFuncHandHeldMiniMap.setSizeWindow(currentSize);
-    }
-
-    function managePosOfMiniMapWhenWndOutOfScreen() {
-        if (!wnd.checkPassTheScreenBounds()) return;
-
-        //wnd.setWindowOnLeftTopCorner();
-        wnd.updatePos();
-
-        if (currentSize == 0) return;
-        if (!wnd.checkPassTheScreenBounds()) return;
-
-        currentSize = 0;
-
-        saveCurrentSizeInStorage();
+    function changeSizeCallback() {
         updateMiniMapWindowSize();
 
-        //wnd.updatePos();
+        if (!Engine.map.size.x || !Engine.map.size.y) {
+            return
+        }
+
+        Engine.miniMapController.handHeldMiniMapController.refreshMiniMapController();
     }
 
     function updateMiniMapWindowSize() {
-        let s = sizes[currentSize];
-        setCanvasSize(s, s);
+        let s = wnd.getActualWindowManageSize();
+
+        if (!s) {
+            return
+        }
+
+        setCanvasSize(s.w, s.h);
+
+        if (!Engine.map.size.x || !Engine.map.size.y) {
+            return
+        }
+
         prepareScaleMarginSquareData();
     }
 
@@ -397,16 +349,12 @@ module.exports = function() {
     }
 
     function openMiniMap() {
-        // Store.set(handheldStoreKey + '/show', true);
-        //StorageFuncHandHeldMiniMap.setShowWindow(true)
         wnd.show();
         wnd.setWndOnPeak();
     }
 
     function closeMiniMap() {
         wnd.hide();
-        // Store.set(handheldStoreKey + '/show', false);
-        //StorageFuncHandHeldMiniMap.setShowWindow(false)
     }
 
     function toggleMiniMap() {
@@ -431,14 +379,9 @@ module.exports = function() {
         let xMap = Engine.map.size.x;
         let yMap = Engine.map.size.y;
 
-        let canvasWidth = canvas.width;
-        let canvasHeight = canvas.height;
-
         let realWidthMap = xMap * CFG.tileSize;
-        let realHeightMap = yMap * CFG.tileSize;
 
         let widthMiniMap = xMap * HandHeldMiniMapData.MIN_SQUARE;
-        let heightMiniMap = yMap * HandHeldMiniMapData.MIN_SQUARE;
 
 
         return widthMiniMap / realWidthMap;
@@ -451,12 +394,7 @@ module.exports = function() {
         ]
     }
 
-    // function getNewMinSquare () {
-    // 	return minSquare;
-    // }
-
     function setSquareData(normalSizeSquare, minSizeSquare, marginSquare) {
-        //console.log(normalSizeSquare);
         squareData.normalSize = normalSizeSquare;
         squareData.minSize = minSizeSquare;
         squareData.margin = marginSquare;
@@ -490,7 +428,6 @@ module.exports = function() {
     this.nameIsCorrect = nameIsCorrect;
     this.setScale = setScale;
     this.getNewScale = getNewScale;
-    // this.getNewMinSquare = getNewMinSquare;
     this.getNewOffset = getNewOffset;
 
     this.setSquareData = setSquareData;

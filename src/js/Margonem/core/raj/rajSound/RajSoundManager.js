@@ -1,8 +1,8 @@
-const RajSound = require('core/raj/rajSound/RajSound.js');
-const RajSoundData = require('core/raj/rajSound/RajSoundData.js');
-const RajGetSpecificData = require('core/raj/RajGetSpecificData');
-const RajActionData = require('core/raj/rajAction/RajActionData');
-const RajActionManager = require('core/raj/rajAction/RajActionManager');
+const RajSound = require('@core/raj/rajSound/RajSound.js');
+const RajSoundData = require('@core/raj/rajSound/RajSoundData.js');
+const RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+const RajActionData = require('@core/raj/rajAction/RajActionData');
+const RajActionManager = require('@core/raj/rajAction/RajActionManager');
 
 module.exports = function() {
 

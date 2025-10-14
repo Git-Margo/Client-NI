@@ -1,4 +1,6 @@
-const BuildsData = require('core/builds/BuildsData.js');
+const BuildsData = require('@core/builds/BuildsData.js');
+var SettingsData = require('@core/settings/SettingsData');
+const ProfData = require('@core/characters/ProfData');
 
 module.exports = function() {
 
@@ -26,7 +28,7 @@ module.exports = function() {
                     return specificStringVals(v, [BUILDS_REQ.UPDATE_CURRENT, BUILDS_REQ.UPDATE, BUILDS_REQ.BUY])
                 },
                 [BUILDS_REQ.CURRENCY]: (v) => {
-                    return specificStringVals(v, [BUILDS_REQ.CURRENCY_Z, BUILDS_REQ.CURRENCY_S])
+                    return specificStringVals(v, [BUILDS_REQ.CURRENCY_GOLD, BUILDS_REQ.CURRENCY_CREDITS])
                 },
                 [BUILDS_REQ.ID]: (v) => {
                     return isIntVal(v)
@@ -102,6 +104,15 @@ module.exports = function() {
             talk: {
                 id: (v) => {
                     return isIntVal(v) || specificStringVals(v, ['player', 'pet', 'any'])
+                },
+                action: (v) => {
+                    return specificStringVals(v, ['reset', 'cancel'])
+                },
+                sex: (v) => {
+                    return specificStringVals(v, ['m', "f"])
+                },
+                prof: (v) => {
+                    return specificStringVals(v, [ProfData.WARRIOR, ProfData.BLADE_DANCER, ProfData.PALADIN, ProfData.MAGE, ProfData.HUNTER, ProfData.TRACKER])
                 },
                 c: (v) => {
                     return isPl() ? isFloatVal(v) : isStringVal(v)
@@ -254,7 +265,7 @@ module.exports = function() {
                     return specificStringVals(v, ['confirm', 'cancel_e', 'cancel_a', 'close', 'ally', "enemy", "item_put", "item_move", "item_get", "upgrade"])
                 },
                 pay: (v) => {
-                    return specificStringVals(v, ['z', 's', 'self'])
+                    return specificStringVals(v, ['gold', 'credits', 'self'])
                 },
                 x: (v) => {
                     return isIntVal(v)
@@ -447,7 +458,7 @@ module.exports = function() {
             },
             extractor: {
                 action: (v) => {
-                    return specificStringVals(v, ['preview', 'extract', ])
+                    return specificStringVals(v, ['preview', 'extract'])
                 },
                 items: (v) => {
                     return isIntVal(v)
@@ -456,7 +467,7 @@ module.exports = function() {
                     return isIntVal(v)
                 },
                 currency: (v) => {
-                    return specificStringVals(v, ['z', 's'])
+                    return specificStringVals(v, ['gold', 'credits'])
                 },
             },
             loot: {
@@ -511,6 +522,9 @@ module.exports = function() {
                 upgrade: (v) => {
                     return isIntVal(v)
                 },
+                opentab: (v) => {
+                    return isIntVal(v)
+                },
                 answer: (v) => {
                     return isIntVal(v)
                 },
@@ -539,7 +553,7 @@ module.exports = function() {
                     return isIntVal(v)
                 },
                 pay: (v) => {
-                    return specificStringVals(v, ['z', 's'])
+                    return specificStringVals(v, ['gold', 'credits'])
                 },
                 remove: (v) => {
                     return specificStringVals(v, ['OK'])
@@ -765,6 +779,24 @@ module.exports = function() {
                     return specificStringVals(v, ['open', 'close'])
                 }
             },
+            settings: {
+                action: (v) => {
+                    return specificStringVals(v, ['update'])
+                },
+                id: (v) => {
+                    return isIntVal(v)
+                },
+                v: (v) => {
+                    return isIntVal(v) || v == '-' // v == '-' exception for range berserk. need to fix in future
+                },
+                key: (v) => {
+                    return specificStringVals(v, [
+                        SettingsData.VARS.OPERATION_LEVEL.MODE,
+                        ...Object.values(SettingsData.VARS.LOOT_FILTER),
+                        ...Object.values(SettingsData.VARS.BERSERK_VARS)
+                    ])
+                },
+            },
             hunting_statistics: {
                 sort: (v) => {
                     return isStringVal(v)
@@ -772,12 +804,51 @@ module.exports = function() {
                 filter: (v) => {
                     return isStringVal(v)
                 },
+            },
+            administration: {
+                targetId: (v) => {
+                    return isIntVal(v)
+                },
+            },
+            activities: {
+                action: (v) => {
+                    return specificStringVals(v, ['show', 'observe'])
+                },
+                targetId: (v) => {
+                    return isIntVal(v)
+                },
+                activityId: (v) => {
+                    return isIntVal(v)
+                },
+                isObserved: (v) => {
+                    return isIntVal(v)
+                },
+            },
+            socket: {
+                action: (v) => {
+                    return specificStringVals(v, ['inject', 'injectPreview', 'extract', 'extractPreview', 'compose', 'composePreview', 'composePreviewRecipes'])
+                },
+                item: (v) => {
+                    return isIntVal(v)
+                },
+                items: (v) => {
+                    return isIntsValWithSeperator(v)
+                },
+                enhancer: (v) => {
+                    return isIntVal(v)
+                },
+                currency: (v) => {
+                    return specificStringVals(v, ['gold', 'credits'])
+                },
             }
         };
     };
 
-
     //["creditshop", "filters=1", "npc=479", "filterlvlunder=10", "filterlvlabove=5"]
+
+    const isStringBoolean = (v) => {
+        return v == 'true' || v == 'false';
+    }
 
     const isEmptyString = (v) => {
         return v == '';

@@ -1,5 +1,5 @@
-var tpl = require('core/Templates');
-//var Items = require('core/items/ItemsManager');
+var tpl = require('@core/Templates');
+//var Items = require('@core/items/ItemsManager');
 module.exports = function() {
     var content;
     let fetchCounter = 0;
@@ -73,8 +73,7 @@ module.exports = function() {
 
     this.prepareTplsArray = () => {
         const items = [...this.content, ...this.reagents];
-
-        return this.sortTpls(items.map(({
+        const itemsData = items.map(({
             id,
             amount
         }) => {
@@ -86,7 +85,9 @@ module.exports = function() {
                     amount
                 }
             }
-        }));
+        });
+        debugger;
+        return this.sortTpls(itemsData);
     }
 
     this.getType = (id) => {

@@ -1,27 +1,31 @@
-var Storage = require('core/Storage');
-var Templates = require('core/Templates');
-//var Settings = require('core/Settings');
-var Premium = require('core/Premium');
-var Banners = require('core/banners/Banners');
-var DraconiteShop = require('core/shop/DraconiteShop');
-var Help = require('core/Help2');
-var MusicPanel = require('core/sound/MusicPanel');
-//var AddonsPanel = require('core/addons/AddonsPanel');
-var AchievementsPanel = require('core/AchievementsPanel');
-var ChangePlayer = require('core/ChangePlayer');
-//var PadController = require('core/PadController');
-var TpScroll = require('core/TpScroll');
-var HeroElements = require('core/interface/HeroElements');
-var MailsElements = require('core/interface/MailsElements');
-let LayersData = require('core/interface/LayersData');
-var ChatData = require('core/chat/ChatData');
+var Storage = require('@core/Storage');
+var Templates = require('@core/Templates');
+//var Settings = require('@core/Settings');
+var Premium = require('@core/Premium');
+var Banners = require('@core/banners/Banners');
+var DraconiteShop = require('@core/shop/DraconiteShop');
+var Help = require('@core/Help2');
+//var MusicPanel = require('@core/sound/MusicPanel');
+//var AddonsPanel = require('@core/addons/AddonsPanel');
+
+var ChangePlayer = require('@core/ChangePlayer');
+//var PadController = require('@core/PadController');
+var TpScroll = require('@core/TpScroll');
+var HeroElements = require('@core/interface/HeroElements');
+var MailsElements = require('@core/interface/MailsElements');
+let LayersData = require('@core/interface/LayersData');
+var ChatData = require('@core/chat/ChatData');
 const {
     WW
-} = require('core/worldWindow/WorldWindow');
+} = require('@core/worldWindow/WorldWindow');
 const {
     isMobileApp
 } = require('../HelpersTS');
-const ColliderData = require('core/collider/ColliderData');
+const ColliderData = require('@core/collider/ColliderData');
+const CostComponent = require('@core/components/CostComponent');
+const CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+const StorageData = require('@core/StorageData');
+var ResolutionData = require('@core/resolution/ResolutionData');
 
 
 
@@ -31,6 +35,8 @@ module.exports = function() {
     var notifQueue = [];
 
     //var lastSendClanMessage = 0;
+
+    let interfaceLightMode = false
 
     let layers = {};
 
@@ -46,23 +52,71 @@ module.exports = function() {
     let $topPositioner;
     let $rightColumn
 
+    let $bigMessagesLightMode
     let $buildsInterface;
     let $location;
+    let $locationLightMode;
+    let $locationId;
     let $mapTimer;
+    let $mapBall;
+    let $mapBallLightMode;
+    let $inventory
+
+    let goldCostComponent = null;
+    let slCostComponent = null;
 
     //this.alreadyInitialised = false;
 
     let alreadyInitialised = false;
 
+
+    const SHOW_RIGHT_COLUMN_WIDTH = 241
+
     const setAlreadyInitialised = (_alreadyInitialised) => {
         alreadyInitialised = _alreadyInitialised;
     };
+
+    const initCostStatsLightMode = () => {
+        const $interfaceLayer = Engine.interface.get$interfaceLayer();
+        const $currencyLightMode = $interfaceLayer.find('.currency-light-mode');
+
+        goldCostComponent = new CostComponent();
+        slCostComponent = new CostComponent();
+
+        goldCostComponent.init();
+        slCostComponent.init();
+
+        $currencyLightMode.find('.gold-currency')[0].appendChild(goldCostComponent.getElement());
+        $currencyLightMode.find('.sl-currency')[0].appendChild(slCostComponent.getElement());
+    };
+
+    const updateCredits = (val, tip) => {
+        slCostComponent.updateData({
+            currency: "credits",
+            price: val,
+            cl: ['small']
+        });
+        $(slCostComponent.getElement()).tip(tip)
+    }
+
+    const updateGold = (val) => {
+        self.get$interfaceLayer().find('.herogold').html(val);
+        goldCostComponent.updateData({
+            currency: "gold",
+            price: val,
+            cl: ['small']
+        });
+    }
+
+    const getGoldCostComponent = () => {
+        return goldCostComponent
+    }
 
     this.getAlreadyInitialised = () => {
         return alreadyInitialised;
     };
 
-    this.lock = new Lock(['game_init', 'loader', 'images', 'crossStorage'], function() {
+    this.lock = new Lock(['game_init', 'loader', 'images', 'crossStorage', 'charlist'], function() {
 
         let tempAlreadyInitialised = alreadyInitialised;
 
@@ -124,20 +178,60 @@ module.exports = function() {
         $location = this.get$interfaceLayer().find('.location');
     };
 
+    const init$locationLightMode = () => {
+        $locationLightMode = this.get$interfaceLayer().find('.location-wrapper-light-mode').find('.location-name');
+    };
+
+    const get$mapBall = () => {
+        return $mapBall
+    }
+
+    const get$mapBallLightMode = () => {
+        return $mapBallLightMode
+    }
+
+    const init$mapBall = () => {
+        $mapBall = this.get$interfaceLayer().find('.map_ball');
+    }
+
+    const init$mapBallLightMode = () => {
+        $mapBallLightMode = this.get$interfaceLayer().find('.map-ball');
+    }
+
+    const init$locationId = () => {
+        $locationId = this.get$interfaceLayer().find('.location-id');
+    };
+
     const init$buildsInterface = () => {
         $buildsInterface = this.get$interfaceLayer().find('.builds-interface');
+    };
+
+    const init$bigMessagesLightMode = () => {
+        $bigMessagesLightMode = this.get$interfaceLayer().find('.big-messages-light-mode');
     };
 
     const init$mapTimer = () => {
         $mapTimer = this.get$interfaceLayer().find('.map-timer');
     };
 
+    const get$locationLightMode = () => {
+        return $locationLightMode;
+    };
+
     const get$location = () => {
         return $location;
     };
 
+    const get$locationId = () => {
+        return $locationId;
+    };
+
     const get$buildsInterface = () => {
         return $buildsInterface;
+    };
+
+    const get$bigMessagesLightMode = () => {
+        return $bigMessagesLightMode;
     };
 
     const setTip$mapTimer = (tip) => {
@@ -158,9 +252,11 @@ module.exports = function() {
 
         if (state) {
             $location.addClass(SHORT);
+            $locationId.addClass(SHORT);
             $mapTimer.addClass(SHOW);
         } else {
             $location.removeClass(SHORT);
+            $locationId.removeClass(SHORT);
             $mapTimer.removeClass(SHOW);
         }
     }
@@ -193,6 +289,11 @@ module.exports = function() {
 
         this.initPositioners();
         this.initMouseEvent();
+
+        if (mobileCheck()) {
+            initTouchEvent();
+        }
+
         this.initInterfaceTemplates();
 
         this.createZoomOverlay();
@@ -202,8 +303,14 @@ module.exports = function() {
         this.mailsElements = new MailsElements(this);
 
         init$buildsInterface();
+        init$bigMessagesLightMode();
         init$location();
+        init$locationLightMode();
+        init$locationId();
         init$mapTimer();
+        init$mapBall();
+        init$mapBallLightMode();
+        initCostStatsLightMode();
 
         var $loader = this.get$loaderLayer().find('.progress-bar .inner');
         $loader.css('display', 'block');
@@ -216,8 +323,8 @@ module.exports = function() {
     };
 
     this.initMouseEvent = () => {
-
-        $GAME_CANVAS.on("mouseup mousedown click mousemove mouseleave mouseenter contextmenu", function(e) {
+        $GAME_CANVAS.on("mouseup mousedown click mousemove mouseleave mouseenter contextmenu longpress", function(e) {
+            if (e.type === 'longpress') e.type = 'contextmenu';
             let factor = Engine.zoomFactor;
             let zoom = getEngine().zoomManager.getActualZoom();
 
@@ -238,22 +345,115 @@ module.exports = function() {
         });
 
         $([
-            this.get$interfaceLayer()[0],
-            this.get$mAlertLayer()[0],
-            this.get$alertsLayer()[0]
-        ]).on('mouseup', function() {
-            if (!blockRemoveMobileMenu) $('.popup-menu').remove();
-            var others = Engine.others.check();
-            for (var k in others) {
-                var o = others[k];
-                if (o.colorMark && o.colorMark.color == 'green') {
-                    delete o.colorMark;
-                    Engine.targets.deleteArrow('Other-' + o.d.id);
+                this.get$interfaceLayer()[0],
+                this.get$mAlertLayer()[0],
+                this.get$alertsLayer()[0]
+            ]).on('mousedown', function() {
+                if (!blockRemoveMobileMenu) $('.popup-menu').remove();
+            })
+            .on('mouseup', function() {
+                var others = Engine.others.check();
+                for (var k in others) {
+                    var o = others[k];
+                    if (o.colorMark && o.colorMark.color == 'green') {
+                        delete o.colorMark;
+                        Engine.targets.deleteArrow('Other-' + o.d.id);
+                    }
+
                 }
+                hideColorPickerPalette();
+            });
+    };
+
+    const initTouchEvent = () => {
+        let padTimeout = null;
+
+        $GAME_CANVAS.on("touchstart touchmove touchend", function(e) {
+            switch (e.type) {
+                case 'touchstart':
+
+                    let touches = e.targetTouches[0];
+                    let pos = getXYFromRealLeftTop(touches.pageX, touches.pageY);
+                    let list = Engine.renderer.getCollisionsAt(pos.x, pos.y);
+
+
+                    if (!checkCanCallPad(list)) {
+                        return;
+                    }
+
+                    padTimeout = setTimeout(function() {
+                        Engine.padController.show(e);
+
+                        touches = e.targetTouches[0];
+                        let zoom = 1 / Engine.zoomFactor;
+                        let pLeft = touches.pageX * zoom;
+                        let pTop = touches.pageY * zoom;
+                        let padSize = Engine.padController.getPadSize();
+                        let margin = 4;
+                        let h = padSize + margin;
+
+                        pLeft = pLeft - h / 2;
+                        pTop = pTop - h / 2;
+
+                        Engine.padController.setPos(pLeft, pTop);
+                        Engine.padController.touchstartEvent(e);
+                    }, 200);
+                    break;
+                case 'touchmove':
+                    if (Engine.padController.isShow()) {
+                        Engine.padController.touchmoveEvent(e);
+                    }
+                    break;
+                case 'touchend':
+                    if (padTimeout) {
+                        clearTimeout(padTimeout);
+                        padTimeout = null;
+                    }
+                    if (Engine.padController.isShow()) {
+                        Engine.padController.touchendEvent(e);
+                        Engine.padController.hide();
+                    }
+                    break;
 
             }
-            hideColorPickerPalette();
-        });
+        })
+    };
+
+    const checkCanCallPad = (collisionList) => {
+
+        if (!collisionList.length) {
+            return true;
+        }
+
+        for (let k in collisionList) {
+            let canvasObject = collisionList[k];
+
+            if (!canvasObject.getCanvasObjectType) {
+                continue;
+            }
+
+            let canvasObjectType = canvasObject.getCanvasObjectType();
+
+            switch (canvasObjectType) {
+                case CanvasObjectTypeData.NPC:
+                    if (canvasObject.isTalkOrTakeOrGoNpc()) {
+                        return false;
+                    }
+                    break;
+                case CanvasObjectTypeData.PET:
+                    if (canvasObject.isPetMine()) {
+                        return false;
+                    }
+                    break;
+                case CanvasObjectTypeData.HERO:
+                case CanvasObjectTypeData.GATEWAY:
+                case CanvasObjectTypeData.OTHER:
+                case CanvasObjectTypeData.M_ITEM:
+                    return false;
+            }
+        }
+
+        return true;
     };
 
     const hideColorPickerPalette = () => {
@@ -335,13 +535,23 @@ module.exports = function() {
         $gameLayer.append(Templates.get('dead-overlay'));
 
         var $character = Templates.get('character_wrapper');
-        var $inventory = Templates.get('inventory_wrapper');
+        $inventory = Templates.get('inventory_wrapper');
 
-        $gameWindowPositioner.find('.right-column').find('.inner-wrapper').append($character);
-        $gameWindowPositioner.find('.right-column').find('.inner-wrapper').append(Templates.get('battle-set-wrapper'));
-        $gameWindowPositioner.find('.right-column').find('.inner-wrapper').append($inventory);
-        $gameWindowPositioner.find('.right-column').find('.inner-wrapper').append($('<div>').addClass('tutorial-banner-anchor'));
+        let $equipment = Templates.get("interface-element-equipment-with-additional-bag").addClass("equipment-wrapper");
+
+        $character.find('.equipment-wrapper').replaceWith($equipment);
+
+        const $rightMainColumnWrapper = getRightMainColumnWrapper();
+
+        $rightMainColumnWrapper.append($character);
+        $rightMainColumnWrapper.append(Templates.get('battle-set-wrapper'));
+        $rightMainColumnWrapper.append($inventory);
+        $rightMainColumnWrapper.append($('<div>').addClass('tutorial-banner-anchor'));
     };
+
+    const getRightMainColumnWrapper = () => {
+        return $gameWindowPositioner.find('.right-column').find('.inner-wrapper').find('.right-main-column-wrapper');
+    }
 
     this.addToGameWindowPositioner = ($element) => {
         $gameWindowPositioner.append($element);
@@ -350,6 +560,11 @@ module.exports = function() {
     this.tooMoreZoomOut = function() {
         return $('body').width() > $(window).width() * 2;
     };
+
+    this.initChangePlayer = () => {
+        if (Engine.changePlayer) return;
+        Engine.changePlayer = new ChangePlayer.default();
+    }
 
     this.initBattleSetPanel = function() {
 
@@ -376,20 +591,18 @@ module.exports = function() {
             self.setZoomFactor(1);
             return;
         }
-        var zoomFactor = Storage.get('ZoomFactor');
+
+        //var zoomFactor = Storage.get('ZoomFactor');
+        var zoomFactor = getZoomFactorFromStorage();
         if (zoomFactor == null || !init) {
             Engine.zoomFactor = 1;
-            self.setASDASD();
+            var zoom = self.findTheBestZoom();
+            self.setZoomFactor(zoom);
         } else {
             Engine.zoomFactor = zoomFactor;
             this.addZoomClassToBody();
         }
         Engine.onResize();
-    };
-
-    this.setASDASD = function() {
-        var zoom = self.findTheBestZoom();
-        self.setZoomFactor(zoom);
     };
 
     this.findTheBestZoom = function() {
@@ -404,12 +617,47 @@ module.exports = function() {
 
     this.setZoomFactor = function(val) {
         Engine.zoomFactor = val;
-        Storage.set('ZoomFactor', val);
+
+        setZoomFactorInStorage(val);
         this.addZoomClassToBody();
     };
 
+    const getZoomFactorFromStorage = () => {
+        let store = null;
+
+        if (checkHorizontalOrientation()) {
+            store = StorageData.ZOOM_FACTOR_HORIZONTAL;
+        } else {
+            store = StorageData.ZOOM_FACTOR_VERTICAL;
+        }
+
+        return Storage.get(store);
+    }
+
+    const setZoomFactorInStorage = (val) => {
+        let store = null;
+
+        if (checkHorizontalOrientation()) {
+            store = StorageData.ZOOM_FACTOR_HORIZONTAL;
+        } else {
+            store = StorageData.ZOOM_FACTOR_VERTICAL;
+        }
+
+        Storage.set(store, val);
+    }
+
+    const checkHorizontalOrientation = () => {
+        return window.innerWidth > window.innerHeight
+    }
+
     this.addZoomClassToBody = function() {
         let $body = $('body');
+        $body.removeClass('zoom-factor-160');
+        $body.removeClass('zoom-factor-150');
+        $body.removeClass('zoom-factor-140');
+        $body.removeClass('zoom-factor-130');
+        $body.removeClass('zoom-factor-120');
+        $body.removeClass('zoom-factor-110');
         $body.removeClass('zoom-factor-100');
         $body.removeClass('zoom-factor-90');
         $body.removeClass('zoom-factor-80');
@@ -493,22 +741,22 @@ module.exports = function() {
             if (e.ctrlKey) return;
             e.preventDefault();
         });
-        $('.logs-btn').click(function() {
-            var $chat = self.get$interfaceLayer().find('.chat-tpl');
-            var top = parseInt($chat.css('top'));
-            if (top > 50) $chat.css('top', '40px');
-            else $chat.css('top', '50%');
-        });
+        //$('.logs-btn').click(function () {
+        //	var $chat = self.get$interfaceLayer().find('.chat-tpl');
+        //	var top = parseInt($chat.css('top'));
+        //	if (top > 50) $chat.css('top', '40px');
+        //	else $chat.css('top', '50%');
+        //});
         // Engine.onResize();
         this.get$interfaceLayer().show();
         //Engine.widgetManager.initDefaultWidgetSet();
         this.addStaticButtons();
-        Engine.widgetManager.createEmptySlotsWidget();
-        this.showEmptySlots(false);
+        //Engine.widgetManager.createEmptySlotsWidget();
+        //this.showEmptySlots(false);
         this.shopButtons();
         //this.initEngineSettings();
-        this.initChangePlayer();
         this.initBattleSetPanel();
+        this.afterCharacterListLoaded();
 
         Engine.map.setSetings();
 
@@ -526,9 +774,11 @@ module.exports = function() {
         //self.initAddons();
         Engine.widgetManager.addWidgetButtonsWithInitZoom();
 
-        self.initAchievements();
+        //self.initAchievements();
         self.setSizeEqColumnSize();
-        self.pvpIcon();
+        //self.pvpIcon();
+        self.pvpIcon($mapBall);
+        self.pvpIcon($mapBallLightMode);
         self.worldName();
         self.initBanners();
         //Engine.nightController.nightManage();
@@ -550,6 +800,11 @@ module.exports = function() {
 
         API.callEvent(Engine.apiData.AFTER_INTERFACE_START);
     };
+
+    this.afterCharacterListLoaded = () => {
+        this.initChangePlayer();
+        if (Engine.activityObserve) Engine.activityObserve.onCharlistLoaded();
+    }
 
     this.updateInterfaceLayerScrollbars = () => {
         this.get$interfaceLayer().find('.battle-controller .scroll-wrapper').trigger('scrollBottom');
@@ -685,11 +940,7 @@ module.exports = function() {
     //	}
     //};
 
-    this.initChangePlayer = function() {
-        if (Engine.changePlayer) return;
-        Engine.changePlayer = new ChangePlayer.default();
-        // Engine.changePlayer.init();
-    };
+
 
     this.canShowAddons = function() {
         var worlds = ['dev', 'new', 'experimental'];
@@ -707,10 +958,6 @@ module.exports = function() {
         Engine.banners.showOrHideBanners();
     };
 
-    this.initAchievements = function() {
-        Engine.achievements = new AchievementsPanel();
-        Engine.achievements.init();
-    };
 
     this.showConsoleNotif = function() {
         var name = 'consoleNotif';
@@ -766,18 +1013,39 @@ module.exports = function() {
     };
 
     this.getPopupMenu = () => {
-        let $popUpMenu = $('.popup-menu');
+        //let $popUpMenu = $('.popup-menu');
+        let $popUpMenu = self.get$popUpLayer().find('.popup-menu')
         if (!$popUpMenu.length) return null;
 
         return $popUpMenu;
     };
 
-    this.showPopupMenu = function(menu, e, onMap) {
+    const removePopupMenu = () => {
+        let $popUpMenu = self.getPopupMenu();
+
+        if ($popUpMenu) {
+            $popUpMenu.remove()
+        }
+    }
+
+    this.showPopupMenu = function(menu, e, options = {}) {
         e.stopPropagation();
         e.preventDefault();
-        $('.popup-menu').remove();
+        const defaultOptions = {
+            onMap: false,
+        }
+        options = Object.assign({}, defaultOptions, options);
+
+        removePopupMenu();
+
         if (!menu.length) return;
         var $m = Templates.get("popup-menu");
+        if (options.cssClass) $m.addClass(options.cssClass);
+        if (options.header) {
+            const $header = Templates.get("popup-menu-header");
+            $header.html(options.header);
+            $m.append($header);
+        }
         var $btn = Templates.get('button').addClass('small');
 
         for (var i in menu) {
@@ -813,7 +1081,7 @@ module.exports = function() {
         const {
             left,
             top
-        } = this.calcPopupMenuPos(e.clientX, e.clientY, w, h, onMap);
+        } = this.calcPopupMenuPos(e.clientX, e.clientY, w, h, options.onMap);
 
 
         $m.css({
@@ -883,19 +1151,16 @@ module.exports = function() {
     this.clickSettings = function() {
         Engine.settings.toggle();
 
-        if (!Engine.musicPanel) {
-            Engine.musicPanel = new MusicPanel();
-            Engine.musicPanel.init();
-        }
+        //if (!Engine.musicPanel) {
+        //	Engine.musicPanel = new MusicPanel();
+        //	Engine.musicPanel.init();
+        //}
     };
 
     this.clickMatchmaking = function() {
         Engine.matchmaking.toggle();
     };
 
-    this.clickAchivements = function() {
-        Engine.achievements.toggle();
-    };
 
     this.clickNews = function() {
         //gameanalytics.GameAnalytics.addDesignEvent("News:ClickNews", 1);
@@ -988,6 +1253,10 @@ module.exports = function() {
         else Engine.worldWindow.close()
     };
 
+    this.clickLootFilter = function() {
+        Engine.lootFilter.windowToggle();
+    };
+
     this.clickQuests = function() {
         Engine.quests.managePanelVisible();
     };
@@ -1046,7 +1315,19 @@ module.exports = function() {
     };
 
     this.clickFullScreen = function() {
+        if (isMobileApp()) {
+            window.location.href = 'https://www.margonem.pl/mobile-client-refresh';
+            return
+        }
         toggleFullScreen();
+    };
+
+    this.clickRefresh = function() {
+        if (isMobileApp()) {
+            window.location.href = 'https://www.margonem.pl/mobile-client-refresh';
+        } else {
+            pageReload();
+        }
     };
 
     this.clickWhoIsHere = function() {
@@ -1057,8 +1338,8 @@ module.exports = function() {
         Engine.addonsPanel.manageVisible();
     };
 
-    this.clickPhoto = function() {
-        if (!Engine.crafting.opened) Engine.crafting.triggerOpen();
+    this.clickCrafting = function() {
+        if (!Engine.crafting.isOpen()) Engine.crafting.triggerOpen();
         else Engine.crafting.triggerClose();
     };
 
@@ -1188,6 +1469,30 @@ module.exports = function() {
         }
     };
 
+    const getStateOfLightInterfaceFromStorage = () => {
+        return Storage.easyGet(StorageData.LIGHT_INTERFACE);
+    };
+
+    const setStateOfLightInterfaceInStorage = (state) => {
+        return Storage.easySet(state, StorageData.LIGHT_INTERFACE);
+    };
+
+    const setLighModeByDataInStorage = () => {
+        let state = getStateOfLightInterfaceFromStorage();
+
+        if (state == null) {
+            this.setInterfaceLightMode(true);
+            return
+        }
+
+        if (state) {
+            this.setInterfaceLightMode(true);
+        } else {
+            this.setInterfaceLightMode(false);
+        }
+
+    }
+
     this.clickAutofightNearMob = function() {
         Engine.hero.atackNearMob(true);
     };
@@ -1211,100 +1516,151 @@ module.exports = function() {
         self.decreaseZoom()
     };
 
+    const getShowRightColumnWidth = () => {
+        if (this.checkEqColumnIsShow()) {
+            return Engine.interface.get$rightColumn().outerWidth()
+        } else {
+            return SHOW_RIGHT_COLUMN_WIDTH
+        }
+
+    }
+
+    const tooBigScreen = (newZoomFactor) => {
+
+
+
+        const POS = Engine.widgetsData.pos;
+        const widgetManager = getEngine().widgetManager;
+
+        const $topLeftBar = widgetManager.getBar(POS.TOP_LEFT);
+        const $topRightBar = widgetManager.getBar(POS.TOP_RIGHT);
+
+        const $topLeftVisibilityColumn = widgetManager.getColumnVisibilityButton(POS.TOP_LEFT);
+        const $topRightVisibilityColumn = widgetManager.getColumnVisibilityButton(POS.TOP_RIGHT);
+
+        const $topLeftVisibilityWidgets = $topLeftBar.find('.widget-bar-visible-btn');
+        const $topRightVisibilityWidgets = $topRightBar.find('.widget-bar-visible-btn');
+
+        const topLeftSize = widgetManager.getMaxBarSize(POS.TOP_LEFT);
+        const topRightSize = widgetManager.getMaxBarSize(POS.TOP_RIGHT);
+
+        const bottomLeftSize = widgetManager.getMaxBarSize(POS.BOTTOM_LEFT);
+        const bottomRightSize = widgetManager.getMaxBarSize(POS.BOTTOM_RIGHT);
+
+        const bottomLeftAdditionalSize = widgetManager.getMaxBarSize(POS.BOTTOM_LEFT_ADDITIONAL);
+        const bottomRightAdditionalSize = widgetManager.getMaxBarSize(POS.BOTTOM_RIGHT_ADDITIONAL);
+
+
+        if (!isMobileApp()) {
+
+            if (window.innerWidth < getShowRightColumnWidth() * newZoomFactor * 2) {
+                return true
+            }
+
+
+            return false
+        }
+
+
+        let wTopBars = 0;
+
+        wTopBars += topLeftSize.width * newZoomFactor;
+        wTopBars += topRightSize.width * newZoomFactor;
+
+        if (isMobileApp()) {
+
+            wTopBars += $topLeftVisibilityColumn.width() * newZoomFactor;
+            wTopBars += $topRightVisibilityColumn.width() * newZoomFactor;
+
+        }
+
+        if ($topLeftVisibilityWidgets.length) wTopBars += $topLeftVisibilityWidgets.width() * newZoomFactor;
+        if ($topRightVisibilityWidgets.length) wTopBars += $topRightVisibilityWidgets.width() * newZoomFactor;
+
+
+        //if (!isMobileApp()) {
+        //	wTopBars 		+= $topPositioner.find('.hud-container').width() / 2 * newZoomFactor
+        //}
+
+        //wTopBars 		+= $topLeftVisibilityWidgets.width() * newZoomFactor;
+        //wTopBars 		+= $topRightVisibilityWidgets.width() * newZoomFactor;
+
+        if (isMobileApp()) {
+
+            wTopBars += getShowRightColumnWidth() * newZoomFactor;
+
+        }
+
+        if (window.innerWidth < wTopBars) {
+            return true
+        }
+
+        //if (!isMobileApp()) {
+        //	let leftWBottomBars 		= Math.max(bottomLeftSize.width * newZoomFactor,  bottomLeftAdditionalSize.width * newZoomFactor);
+        //	let rightWBottomBars 		= Math.max(bottomRightSize.width * newZoomFactor, bottomRightAdditionalSize.width * newZoomFactor);
+        //
+        //
+        //	let $bottomPanelOfBottomPositioner = $bottomPositioner.find('.bottom-panel-of-bottom-positioner');
+        //
+        //	let bottowPanelOfBotomPositionerW = $bottomPanelOfBottomPositioner.width() * newZoomFactor;
+        //
+        //	if (window.innerWidth < leftWBottomBars + bottowPanelOfBotomPositionerW / 2 + rightWBottomBars) {
+        //		return true
+        //	}
+        //}
+
+
+        let leftHBottomBars = Math.max(bottomLeftSize.height * newZoomFactor, bottomLeftAdditionalSize.height * newZoomFactor);
+        let rightHBottomBars = Math.max(bottomRightSize.height * newZoomFactor, bottomRightAdditionalSize.height * newZoomFactor);
+
+
+        let maxHeightOfBottomBars = Math.max(leftHBottomBars, rightHBottomBars);
+        let maxHeightOfTopBars = ResolutionData.WIDGET_BAR_COLUMN_VISIBILITY_TOGGLE_SIZE * newZoomFactor;
+        let h = maxHeightOfBottomBars + maxHeightOfTopBars;
+
+
+        if (window.innerHeight < h) {
+            return true
+        }
+        /*
+        		let top = $inventory.position().top + $inventory.height()  * newZoomFactor;
+
+        		if (window.innerHeight < top) {
+        			return true
+        		}
+        */
+        return false
+    };
+
     this.clickIncreaseZoom = function() {
         self.setZoomFactor(Engine.zoomFactor + 0.1);
         Engine.onResize();
 
         var result = tooBigScreen(Engine.zoomFactor);
-        if (!result) return;
-
-        self.clickDecreaseZoom();
-
-        let $interfaceLayer = self.get$interfaceLayer();
-
-        switch (result) {
-            case 'leftUpWidgetW':
-                return mAlert(_t('leftUpWidgetW'));
-                break;
-            case 'rightUpWidgetW':
-                return mAlert(_t('rightUpWidgetW'));
-                break;
-            case 'leftDownWidgetW':
-
-                var aSize = $interfaceLayer.find('.bottom-left.main-buttons-container').find('.widget-button').length;
-                var bSize = $interfaceLayer.find('.bottom-left-additional').find('.widget-button').length;
-                var maxIndex1 = getMaxWidgetIndex($interfaceLayer.find('.bottom-left.main-buttons-container')) + 1;
-                var maxIndex2 = getMaxWidgetIndex($interfaceLayer.find('.bottom-left-additional')) + 1;
-                var max = Math.max(maxIndex1, maxIndex2);
-
-                if (max <= Math.ceil((aSize + bSize) / 2)) return mAlert(_t('leftDownWidgetW'));
-                break;
-            case 'rightDownWidgetW':
-
-                var aSize = $interfaceLayer.find('.bottom-right.main-buttons-container').find('.widget-button').length;
-                var bSize = $interfaceLayer.find('.bottom-right-additional').find('.widget-button').length;
-                var maxIndex1 = getMaxWidgetIndex($interfaceLayer.find('.bottom-right.main-buttons-container')) + 1;
-                var maxIndex2 = getMaxWidgetIndex($interfaceLayer.find('.bottom-right-additional')) + 1;
-
-                var max = Math.max(maxIndex1, maxIndex2);
-                if (max <= Math.ceil((aSize + bSize) / 2)) return mAlert(_t('rightDownWidgetW'));
-                break;
-            case 'leftAddWidgetW':
-
-                var aSize = $interfaceLayer.find('.bottom-left.main-buttons-container').find('.widget-button').length;
-                var bSize = $interfaceLayer.find('.bottom-left-additional').find('.widget-button').length;
-                var maxIndex1 = getMaxWidgetIndex($interfaceLayer.find('.bottom-left.main-buttons-container')) + 1;
-                var maxIndex2 = getMaxWidgetIndex($interfaceLayer.find('.bottom-left-additional')) + 1;
-                var max = Math.max(maxIndex1, maxIndex2);
-                if (max <= Math.ceil((aSize + bSize) / 2)) return mAlert(_t('leftAddWidgetW'));
-                break;
-            case 'rightAddWidgetW':
-
-                var aSize = $interfaceLayer.find('.bottom-right.main-buttons-container').find('.widget-button').length;
-                var bSize = $interfaceLayer.find('.bottom-right-additional').find('.widget-button').length;
-                var maxIndex1 = getMaxWidgetIndex($interfaceLayer.find('.bottom-right.main-buttons-container')) + 1;
-                var maxIndex2 = getMaxWidgetIndex($interfaceLayer.find('.bottom-right-additional')) + 1;
-                var max = Math.max(maxIndex1, maxIndex2);
-                if (max <= Math.ceil((aSize + bSize) / 2)) return mAlert(_t('rightAddWidgetW'));
-                break;
+        if (result) {
+            mAlert(_t('CAN_NOT_ZOOM_IN_MORE'));
+            self.clickDecreaseZoom();
         }
 
-        mAlert(_t('change_widget_set'), [{
-            txt: 'OK',
-            callback: function() {
-                Engine.widgetManager.rebuiltWidgetBarsIndex();
-                self.setZoomFactor(Engine.zoomFactor + 0.1);
-                Engine.onResize();
-                return true;
-            }
-        }, {
-            txt: _t('no'),
-            callback: function() {
-                return true;
-            }
-        }], function(w) {
-            w.$.addClass('huge-alert');
-            w.$.find('.small').removeClass('small');
-        });
     };
 
     this.getTheMostIndex = function() {
 
     };
 
-    this.clickToggleRightColumn = () => {
-        var $rC = this.get$interfaceLayer().find.find('.right-column.main-column');
-        if ($rC.css('display') == 'block') {
-            $rC.css('display', 'none');
-            $gameLayer.css('right', 0);
-            $('.right-column-notif').css('right', 0);
-        } else {
-            $rC.css('display', 'block');
-            $gameLayer.css('right', '245px');
-            this.get$interfaceLayer().find('.right-column-notif').css('right', 255);
-        }
-        Engine.onResize();
-    };
+    //this.clickToggleRightColumn = () => {
+    //	var $rC = this.get$interfaceLayer().find.find('.right-column.main-column');
+    //	if ($rC.css('display') == 'block') {
+    //		$rC.css('display', 'none');
+    //		$gameLayer.css('right', 0);
+    //		$('.right-column-notif').css('right', 0);
+    //	} else {
+    //		$rC.css('display', 'block');
+    //		$gameLayer.css('right', '245px');
+    //		this.get$interfaceLayer().find('.right-column-notif').css('right', 255);
+    //	}
+    //	Engine.onResize();
+    //};
 
     this.isAlwaysExist = function(key) {
         var alwaysExist = isset(defaultWidgetSet[key]['alwaysExist']) && defaultWidgetSet[key]['alwaysExist'];
@@ -1323,6 +1679,24 @@ module.exports = function() {
 
         var store = Engine.serverStorage.get(Engine.widgetManager.getPathToHotWidgetVersion());
         Engine.widgetManager.hideAdditionalWidgetBars();
+
+        if (!store) {
+            const p = Engine.widgetsData.pos;
+            const widgetManager = Engine.widgetManager
+            const additionalLeft = p.BOTTOM_LEFT_ADDITIONAL;
+            const additionalRight = p.BOTTOM_RIGHT_ADDITIONAL;
+
+            if (widgetManager.checkWidgetInAdditionalBarInDefaultWidgetSet(additionalLeft)) {
+                Engine.widgetManager.manageDisplayAdditionaWidgetBarsPerPos(additionalLeft);
+            }
+
+            if (widgetManager.checkWidgetInAdditionalBarInDefaultWidgetSet(additionalRight)) {
+                Engine.widgetManager.manageDisplayAdditionaWidgetBarsPerPos(additionalRight);
+            }
+
+            return
+        }
+
         for (var k in store) {
             Engine.widgetManager.manageDisplayAdditionaWidgetBarsPerPos(store[k][1]);
         }
@@ -1333,19 +1707,25 @@ module.exports = function() {
         Engine.GA.send(category, eventType, label);
     };
 
-    this.showEmptySlots = function(show) {
-        $('.main-buttons-container').find('.empty-slot-widget').css('display', show ? 'block' : 'none');
-        //$('.bottom-left-additional.main-buttons-container, .bottom-right-additional.main-buttons-container').css('display', show ? 'block' : 'none');
-    };
+    //this.showEmptySlots = function (show) {
+    //	$('.main-buttons-container').find('.empty-slot-widget').css('display', show ? 'block' : 'none');
+    //	//$('.bottom-left-additional.main-buttons-container, .bottom-right-additional.main-buttons-container').css('display', show ? 'block' : 'none');
+    //};
 
     this.addStaticButtons = function() {
-        var btn = Templates.get('button');
-        btn.addClass('small green stats-expand');
+        var btn1 = Templates.get('button');
+        btn1.addClass('small green stats-expand');
 
-        btn.click(this.clickMoreBtn);
+        btn1.click(this.clickMoreBtn);
+        self.get$interfaceLayer().find('.stats-wrapper').find('.stats-button').append(btn1);
+        getMoreBtnText(null, btn1, btn1.find('.label'));
 
-        $('.stats-button').append(btn);
-        this.getMoreBtnText(null, btn.find('.label'));
+        var btn2 = Templates.get('button');
+        btn2.addClass('small green stats-expand');
+
+        btn2.click(this.clickMoreBtn);
+        self.get$interfaceLayer().find('.stats-light-mode').find('.stats-button').append(btn2);
+        getMoreBtnText(null, btn2, btn2.find('.label'));
 
         if (isset(Engine.hero.previewAcc) && isEn()) {
             appendRegisterButton();
@@ -1389,17 +1769,64 @@ module.exports = function() {
     };
 
     this.clickMoreBtn = function() {
-        var $btn = self.get$interfaceLayer().find('.stats-button').find('.stats-expand');
-        $btn.toggleClass('active');
+        let $interfaceLayer = self.get$interfaceLayer()
+        let $btn1 = $interfaceLayer.find('.stats-wrapper').find('.stats-button').find('.stats-expand');
+        let $btn2 = $interfaceLayer.find('.stats-light-mode').find('.stats-button').find('.stats-expand');
+
+        $btn1.toggleClass('active');
+        $btn2.toggleClass('active');
         self.get$interfaceLayer().find('.extended-stats').toggleClass('active').trigger('update');
 
-        var $label = $btn.find('.label');
-        self.getMoreBtnText(null, $label);
+        let $label1 = $btn1.find('.label');
+        getMoreBtnText(null, $btn1, $label1);
+
+        let $label2 = $btn2.find('.label');
+        getMoreBtnText(null, $btn2, $label2);
+
+        if (getEngine().interface.getInterfaceLightMode()) {
+            //let $rightTop = $('.top-right.main-buttons-container');
+            //let $rightBottom = $('.bottom-right.main-buttons-container');
+            //let $rightBottomAdditional = $('.bottom-right-additional.main-buttons-container');
+            //let $topRightVisibilityToggle = $('.top-right-column-visibility-toggle');
+            //
+            //if (self.isStatsExpanded()) {
+            //	$rightTop.css('display', 'none');
+            //	$rightBottom.css('display', 'none');
+            //	$rightBottomAdditional.css('display', 'none');
+            //	$topRightVisibilityToggle.css('visibility', 'hidden');
+            //} else {
+            //	$rightTop.css('display', 'block');
+            //	$rightBottom.css('display', 'block');
+            //	$rightBottomAdditional.css('display', 'block');
+            //	$topRightVisibilityToggle.css('visibility', 'inherit');
+            //}
+
+            const POS = Engine.widgetsData.pos;
+            const widgetManger = getEngine().widgetManager;
+            const a = [
+                POS.TOP_RIGHT,
+                POS.BOTTOM_RIGHT_ADDITIONAL,
+                POS.BOTTOM_RIGHT
+            ];
+            const expanded = self.isStatsExpanded();
+
+            widgetManger.setVisibilityWidgetsByBars(a, !expanded);
+        }
+
+
     };
 
-    this.getMoreBtnText = function(value, $label) {
-        var $btn = self.get$interfaceLayer().find('.stats-button').find('.stats-expand');
-        var str = !$btn.hasClass('active') ? _t('btn_stats_default') : _t('btn_stats_active');
+    const getMoreBtnText = function(value, $btn, $label) {
+        //var $btn = self.get$interfaceLayer().find('.stats-wrapper').find('.stats-button').find('.stats-expand');
+        //var str = !$btn.hasClass('active') ?  _t('btn_stats_default') : _t('btn_stats_active');
+        let str = null;
+
+        if (interfaceLightMode) {
+            str = _t('stats-expand', null, "widgets-tip")
+        } else {
+            str = !$btn.hasClass('active') ? _t('btn_stats_default') : _t('btn_stats_active');
+        }
+
         $label.html(str);
         Engine.hotKeys.replaceshowhideStatsBtnsNames();
     };
@@ -1428,8 +1855,9 @@ module.exports = function() {
         state ? $gameWindowPositioner.addClass('additional-bar-br') : $gameWindowPositioner.removeClass('additional-bar-br');
     };
 
-    this.pvpIcon = () => {
-        this.get$interfaceLayer().find('.map_ball').on('click', function() {
+    this.pvpIcon = ($element) => {
+        //this.get$interfaceLayer().find('.map_ball').on('click', function() {
+        $element.on('click', function() {
             if (Engine.worldConfig.getPvp()) {
                 _g('conquer');
             } else {
@@ -1450,7 +1878,7 @@ module.exports = function() {
     this.worldName = function() {
         let $worldName = self.get$interfaceLayer().find('.world-name');
 
-        $worldName.html(Engine.worldConfig.getWorldName());
+        $worldName.html(capitalize(Engine.worldConfig.getWorldName()));
         $worldName.tip(_t('world_name') + ': ' + capitalize(Engine.worldConfig.getWorldName())); // capitalize each words
     };
 
@@ -1534,13 +1962,21 @@ module.exports = function() {
     };
 
     const appendRegisterButton = () => {
-        const registerBtn = Templates.get('widget-button');
-        registerBtn.addClass('red blink');
-        registerBtn.find('.icon').addClass('register-icon');
-        registerBtn.tip(_t('bm_register', null, 'ingame_register'), 't_static');
-        registerBtn.find('.label').text(_t('reg_header', null, 'ingame_register'));
-        registerBtn.appendTo(self.get$interfaceLayer().find('.bm-register'));
-        registerBtn.click(function() {
+        const registerBtn1 = Templates.get('widget-button');
+        registerBtn1.addClass('red blink');
+        registerBtn1.find('.icon').addClass('register-icon');
+        registerBtn1.tip(_t('bm_register', null, 'ingame_register'), 't_static');
+        registerBtn1.find('.label').text(_t('reg_header', null, 'ingame_register'));
+
+        const registerBtn2 = registerBtn1.clone();
+
+        registerBtn1.appendTo(self.get$interfaceLayer().find('.bm-register'));
+        registerBtn2.appendTo(self.get$interfaceLayer().find('.bm-register-light-mode'));
+
+        registerBtn1.click(function() {
+            self.registrationCall();
+        });
+        registerBtn2.click(function() {
             self.registrationCall();
         });
     }
@@ -1600,6 +2036,56 @@ module.exports = function() {
         });
     };
 
+    const setInterfaceLightMode = (state) => {
+        interfaceLightMode = state;
+        if (state) {
+            $gameWindowPositioner.addClass('light-interface');
+            $gameWindowPositioner.removeClass('classic-interface');
+        } else {
+            $gameWindowPositioner.removeClass('light-interface');
+            $gameWindowPositioner.addClass('classic-interface');
+        }
+    };
+
+    const toggleInterfaceLightMode = () => {
+
+        if (Engine.battle.isBattleShow()) {
+            return;
+        }
+
+        this.setInterfaceLightMode(!interfaceLightMode);
+
+
+        if (mobileCheck()) {
+            setStateOfLightInterfaceInStorage(interfaceLightMode)
+            Engine.widgetManager.initMobileWidgetsByLightMode()
+        }
+
+        Engine.widgetManager.rebuildWidgetButtons();
+        Engine.onResize()
+    }
+
+    const checkInterfaceLightMode = () => {
+        return $gameWindowPositioner.hasClass('light-interface');
+    }
+
+    const getInterfaceLightMode = () => {
+        return interfaceLightMode
+    }
+
+    const updateTopOfRightColumn = () => {
+        let $rightMainColumnWrapper = getRightMainColumnWrapper();
+        let top = null;
+
+        if (getInterfaceLightMode()) {
+            top = getEngine().widgetManager.getPossibleTopValOfLeftOrRightColumn(Engine.widgetsData.pos.TOP_RIGHT);
+        } else {
+            top = 0;
+        }
+
+        $rightMainColumnWrapper.css('top', top);
+    }
+
     this.getInterfaceStart = getInterfaceStart;
     this.setCursor = setCursor;
     this.setDoActionCursor = setDoActionCursor;
@@ -1607,10 +2093,28 @@ module.exports = function() {
     this.setPickUpCursor = setPickUpCursor;
     this.addCallbackToInteraceFocusList = addCallbackToInteraceFocusList;
     this.get$location = get$location;
+    this.get$locationLightMode = get$locationLightMode;
+    this.get$locationId = get$locationId;
     this.get$buildsInterface = get$buildsInterface;
+    this.get$bigMessagesLightMode = get$bigMessagesLightMode;
     this.show$mapTimer = show$mapTimer;
     this.setTip$mapTimer = setTip$mapTimer;
     this.addClassTo$mapTimer = addClassTo$mapTimer;
     this.removeClassFrom$mapTimer = removeClassFrom$mapTimer;
+    this.setInterfaceLightMode = setInterfaceLightMode;
+    this.checkInterfaceLightMode = checkInterfaceLightMode;
+    this.updateCredits = updateCredits;
+    this.updateGold = updateGold;
+    this.getGoldCostComponent = getGoldCostComponent;
+    this.getInterfaceLightMode = getInterfaceLightMode;
+    this.updateTopOfRightColumn = updateTopOfRightColumn;
+    this.getRightMainColumnWrapper = getRightMainColumnWrapper;
+    this.get$mapBallLightMode = get$mapBallLightMode;
+    this.get$mapBall = get$mapBall;
+    this.getZoomFactorFromStorage = getZoomFactorFromStorage;
+    this.toggleInterfaceLightMode = toggleInterfaceLightMode;
+    this.removePopupMenu = removePopupMenu;
+    this.setLighModeByDataInStorage = setLighModeByDataInStorage;
+    this.getStateOfLightInterfaceFromStorage = getStateOfLightInterfaceFromStorage;
 
 };

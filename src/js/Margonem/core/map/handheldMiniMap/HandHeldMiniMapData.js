@@ -1,4 +1,4 @@
-var SocietyData = require('core/society/SocietyData');
+var SocietyData = require('@core/society/SocietyData');
 
 module.exports = {
     TYPE: {
@@ -18,6 +18,7 @@ module.exports = {
         RIP: 'rip',
         HEROES_RESP: 'heroes-resp',
         HEROES_RESP_E: 'heroes-resp-e',
+        TITAN_RESP: 'titan-resp',
 
         RECOVERY: 'recovery',
 
@@ -71,13 +72,13 @@ module.exports = {
     },
     DATA_DRAWER_WIDTH_DATA: {
         KEY: "data-drawer-width",
-        DEFAULT: 96,
+        DEFAULT: mobileCheck() ? 128 : 96,
         MIN: 32,
         MAX: 128
     },
     DATA_DRAWER_FONT_SIZE_DATA: {
         KEY: "data-drawer-font-size",
-        DEFAULT: 10,
+        DEFAULT: mobileCheck() ? 13 : 10,
         MIN: 8,
         MAX: 16
     }

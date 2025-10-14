@@ -154,7 +154,7 @@ module.exports = function() {
         let margin = 120;
 
         ctx.clearRect(0, 0, w, h);
-        ctx.save();
+        //ctx.save();
         ctx.beginPath();
         ctx.rect(left - margin, top - margin, w + margin * 2, h + margin * 2);
         ctx.clip();
@@ -167,7 +167,9 @@ module.exports = function() {
         ctx.shadowColor = "#b71212";
 
         ctx.strokeRect(left - margin, top - margin, w + margin * 2, h + margin * 2);
-        ctx.restore();
+
+        ctx.globalAlpha = 1;
+        //ctx.restore();
 
         canvasData.toDraw = true;
     }

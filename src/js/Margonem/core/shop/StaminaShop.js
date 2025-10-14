@@ -1,9 +1,9 @@
 /**
  * Created by Michnik on 2015-08-11.
  */
-var Tpl = require('core/Templates');
-// var Wnd = require('core/Window');
-var DraconiteShop = require('core/shop/DraconiteShop');
+var Tpl = require('@core/Templates');
+// var Wnd = require('@core/Window');
+var DraconiteShop = require('@core/shop/DraconiteShop');
 module.exports = function() {
     var self = this;
     var tStamina = [
@@ -53,7 +53,7 @@ module.exports = function() {
             nameWindow: Engine.windowsData.name.STAMINA_SHOP,
             nameRefInParent: 'wnd',
             objParent: this,
-            title: _t('premium_item_2', null, 'premium_panel'),
+            title: _t('new_premium_item_2', null, 'premium_panel'),
             onclose: () => {
                 self.close();
             }

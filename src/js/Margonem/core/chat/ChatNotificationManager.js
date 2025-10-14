@@ -1,4 +1,4 @@
-var ChatData = require('core/chat/ChatData');
+var ChatData = require('@core/chat/ChatData');
 
 module.exports = function() {
 

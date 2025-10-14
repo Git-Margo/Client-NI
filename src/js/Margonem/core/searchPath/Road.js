@@ -1,4 +1,4 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 var Road = function(characterObject, searchContext, onDestroy) {
 

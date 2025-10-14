@@ -1,5 +1,5 @@
-const Tpl = require('core/Templates');
-import Finalize from './Finalize';
+const Tpl = require('@core/Templates');
+import PaymentSelector from "@core/components/PaymentSelector";
 
 declare const isset: any;
 declare const Engine: any;
@@ -23,11 +23,10 @@ export default class Extraction {
 
     private requestBlock: boolean = false;
 
-    private finalize!: Finalize;
+    private paymentSelector!: PaymentSelector;
 
     constructor(private wndEl: HTMLElement) {
         this.createContent();
-        this.initScroll();
         this.droppableInit();
         this.getEngine().items.fetch(this.getEngine().itemsFetchData.NEW_EXTRACTION_RECEIVED_ITEM, this.newReceivedItem.bind(this));
         this.getEngine().tpls.fetch(this.getEngine().itemsFetchData.NEW_EXTRACTION_RECEIVED_TPL, this.newReceivedItem.bind(this));
@@ -44,18 +43,45 @@ export default class Extraction {
         this.extractItemSlot = this.contentEl.querySelector('.extraction__item') as HTMLElement;
         this.extractItemSlotReceive = this.contentEl.querySelector('.extraction__receives') as HTMLElement;
 
-        const finalizeEl = this.contentEl.querySelector('.extraction__finalize') as HTMLElement;
-        this.finalize = new Finalize(finalizeEl);
+        const paymentsEl = this.contentEl.querySelector('.extraction__finalize') as HTMLElement;
+        this.paymentSelector = new PaymentSelector({
+            infobox: this.tLang('info2'),
+            submit: {
+                btnText: this.tLang('submit_btn'),
+                btnOnClick: (selectedPayment, value) => this.confirmOnClick(selectedPayment, value)
+            },
+            hidden: true
+        });
+        paymentsEl.appendChild(this.paymentSelector.getComponent())
     }
 
-    initScroll() {
-        $(this.contentEl).find('.scroll-wrapper').addScrollBar({
-            track: true
-        });
-    };
+    confirmOnClick(selectedCurrency: string, value: number) {
+        const
+            val = selectedCurrency === 'gold' ? {
+                '%val%': formNumberToNumbersGroup(value),
+                '%val2%': _t('cost_gold')
+            } : {
+                '%val%': formNumberToNumbersGroup(value),
+                '%val2%': _t('cost_credits')
+            },
+            costInfo = this.tLang('extract_cost %val%', 'extraction', val),
+            confirmInfo = this.tLang('confirm-prompt'),
+            text = parseBasicBB(costInfo) + confirmInfo,
+            dataAlert = {
+                q: text,
+                clb: () => this.sendExtractRequest(selectedCurrency),
+                m: 'yesno4'
+            };
+        askAlert(dataAlert);
+    }
+
+    sendExtractRequest(selectedPayment: string) {
+        const extractItem = this.selectedExtractItem;
+        _g(`extractor&action=extract&currency=${selectedPayment}&item=${extractItem}`)
+    }
 
     updateScroll() {
-        $('.scroll-wrapper', $(this.contentEl)).trigger('update');
+        this.getEngine().crafting.itemCraft.updateScroll();
     };
 
     droppableInit() {
@@ -209,7 +235,7 @@ export default class Extraction {
             if (ingredientItemTplId) this.receivedTpls[ingredientItemTplId] = ingredientItemAmount;
             this.receivedTpls[progressItemTplId] = progressItemAmount;
 
-            this.finalize.update(prices);
+            this.paymentSelector.updatePayments(prices);
         }
 
         this.updateScroll();
@@ -222,7 +248,7 @@ export default class Extraction {
 
     clearAll() {
         this.removeItemFromEnchant();
-        this.finalize.reset();
+        this.paymentSelector.reset();
         this.getEngine().tpls.deleteMessItemsByLoc('j');
         this.getEngine().items.deleteMessItemsByLoc('j');
         // this.getEngine().items.deleteAllViewsByViewName('extraction-item');
@@ -236,7 +262,7 @@ export default class Extraction {
 
     close() {
         this.clearAll();
-        this.finalize.destroy();
+        this.paymentSelector.destroy();
         this.getEngine().items.removeCallback(this.getEngine().itemsFetchData.NEW_EXTRACTION_RECEIVED_ITEM);
         this.getEngine().tpls.removeCallback(this.getEngine().itemsFetchData.NEW_EXTRACTION_RECEIVED_TPL);
         this.getEngine().disableItemsManager.endSpecificItemKindDisable(Engine.itemsDisableData.EXTRACTION);
@@ -244,8 +270,8 @@ export default class Extraction {
         this.getEngine().crafting.extraction = false;
     }
 
-    tLang(name: string, category: string = 'extraction') {
-        return typeof RUNNING_UNIT_TEST === "undefined" ? _t(name, null, category) : '';
+    tLang(name: string, category: string = 'extraction', params: null | {} = null) {
+        return typeof RUNNING_UNIT_TEST === "undefined" ? _t(name, params, category) : '';
     };
 
     getEngine() {

@@ -1,8 +1,8 @@
 const moduleData = {
     fileName: "RajGetSpecificData.js"
 };
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 function prepareData(data, additionalData) {
 
@@ -98,9 +98,8 @@ function getTargetObject(data, additionalData) {
                 errorReport(moduleData.fileName, FUNC, `WARRIOR not exist!`, data);
                 return null;
             }
-
-            //return targetObject;
-            return null
+            return targetObject;
+            // return null
         default:
             errorReport(moduleData.fileName, FUNC, 'undefined kind!', data);
             return null;
@@ -186,6 +185,12 @@ function getXPos(data, targetObject, x) {
         if (data.modify) x = modifyVal(x, data.modify);
     }
 
+    let mapSize = getEngine().map.getSize();
+    let xMapSize = mapSize.x == null ? 0 : mapSize.x;
+
+    x = Math.max(x, 0);
+    x = Math.min(x, xMapSize);
+
     return x;
 }
 
@@ -208,6 +213,12 @@ function getYPos(data, targetObject, y) {
     } else {
         if (data.modify) y = modifyVal(y, data.modify);
     }
+
+    let mapSize = getEngine().map.getSize();
+    let yMapSize = mapSize.y == null ? 0 : mapSize.y;
+
+    y = Math.max(y, 0);
+    y = Math.min(y, yMapSize);
 
     return y;
 }

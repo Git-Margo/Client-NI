@@ -3,7 +3,7 @@ import {
     isset
 } from '../HelpersTS';
 
-let ItemState = require('core/items/ItemState');
+let ItemState = require('@core/items/ItemState');
 
 type Tcls = number[];
 type Tstats = (string | (string | (string | number)[])[])[];
@@ -96,7 +96,7 @@ export default class ItemGrabber {
                 name: statName,
                 params: statParams
             } = oneStat;
-            if (item.haveStat(statName)) {
+            if (item.issetItemStat(statName)) {
                 const [operator, value] = statParams,
                 itemStatValue = item._cachedStats[statName];
                 if (count(operator, itemStatValue, value)) return true; // e.g (itemLvl < lvl)
@@ -104,7 +104,7 @@ export default class ItemGrabber {
                 return false;
             }
         } else {
-            if (item.haveStat(oneStat)) return true;
+            if (item.issetItemStat(oneStat)) return true;
         }
         return false;
     }

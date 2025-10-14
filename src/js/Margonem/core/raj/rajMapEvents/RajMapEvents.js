@@ -1,8 +1,8 @@
-//var RajData                 = require('core/raj/RajData');
-var RajMapEventsData = require('core/raj/rajMapEvents/RajMapEventsData');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
+//var RajData                 = require('@core/raj/RajData');
+var RajMapEventsData = require('@core/raj/rajMapEvents/RajMapEventsData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
 
 
 module.exports = function() {
@@ -172,7 +172,7 @@ module.exports = function() {
     };
 
     const isPossibleCallMapEventsFromExternalProperties = (npcId) => {
-        let externalProperties = Engine.npcs.getExternalProperties(npcId);
+        let externalProperties = Engine.npcs.getSraj(npcId);
 
         if (externalProperties == null) return false;
 

@@ -1,4 +1,4 @@
-var DynamicLightIdManager = require('core/night/DynamicLightIdManager');
+var DynamicLightIdManager = require('@core/night/DynamicLightIdManager');
 
 module.exports = function() {
 

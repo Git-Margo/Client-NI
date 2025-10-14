@@ -1,22 +1,22 @@
-var StorageFuncHandHeldMiniMap = require('core/map/StorageFuncHandHeldMiniMap');
+var StorageFuncHandHeldMiniMap = require('@core/map/StorageFuncHandHeldMiniMap');
 
-let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
-let MapObject = require('core/map/handheldMiniMap/MapObject');
-let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObject');
-let HandHeldMiniMapWindow = require('core/map/handheldMiniMap/HandHeldMiniMapWindow');
+let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
+let MapObject = require('@core/map/handheldMiniMap/MapObject');
+let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObject');
+let HandHeldMiniMapWindow = require('@core/map/handheldMiniMap/HandHeldMiniMapWindow');
 
 
-let ImageObjectController = require('core/map/handheldMiniMap/ImageObjectController');
-let MiniMapTipController = require('core/map/handheldMiniMap/MiniMapTipController');
-let MiniMapHeroController = require('core/map/handheldMiniMap/MiniMapHeroController');
-let MiniMapOtherController = require('core/map/handheldMiniMap/MiniMapOtherController');
-let MiniMapNpcController = require('core/map/handheldMiniMap/MiniMapNpcController');
-let MiniMapItemController = require('core/map/handheldMiniMap/MiniMapItemController');
-let MiniMapRipController = require('core/map/handheldMiniMap/MiniMapRipController');
-let MiniMapGatewayController = require('core/map/handheldMiniMap/MiniMapGatewayController');
-let MiniMapRespController = require('core/map/handheldMiniMap/MiniMapRespController');
+let ImageObjectController = require('@core/map/handheldMiniMap/ImageObjectController');
+let MiniMapTipController = require('@core/map/handheldMiniMap/MiniMapTipController');
+let MiniMapHeroController = require('@core/map/handheldMiniMap/MiniMapHeroController');
+let MiniMapOtherController = require('@core/map/handheldMiniMap/MiniMapOtherController');
+let MiniMapNpcController = require('@core/map/handheldMiniMap/MiniMapNpcController');
+let MiniMapItemController = require('@core/map/handheldMiniMap/MiniMapItemController');
+let MiniMapRipController = require('@core/map/handheldMiniMap/MiniMapRipController');
+let MiniMapGatewayController = require('@core/map/handheldMiniMap/MiniMapGatewayController');
+let MiniMapRespController = require('@core/map/handheldMiniMap/MiniMapRespController');
 
-var StorageData = require('core/StorageData');
+var StorageData = require('@core/StorageData');
 
 module.exports = function() {
 
@@ -483,6 +483,12 @@ module.exports = function() {
                 dataDrawerNick: true,
                 dataDrawerProfAndLevel: true
             },
+            [KIND.TITAN_RESP]: {
+                handheldMap: true,
+                color: '#acda22',
+                icon: SQUARE,
+                type: RESP
+            },
             [KIND.RECOVERY]: {
                 handheldMap: true,
                 color: '#ffa9fe',
@@ -502,6 +508,65 @@ module.exports = function() {
                 type: RIP
             }
         };
+
+        const mobileSettings = {
+            [KIND.HERO]: {},
+            [KIND.NORMAL_OTHER]: {
+                dataDrawerNick: true,
+                dataDrawerProfAndLevel: true
+            },
+            [KIND.FRIEND]: {
+                dataDrawerNick: true,
+                dataDrawerProfAndLevel: true
+            },
+            [KIND.ENEMY]: {
+                dataDrawerNick: true,
+                dataDrawerProfAndLevel: true
+            },
+            [KIND.CLAN]: {
+                dataDrawerNick: true,
+                dataDrawerProfAndLevel: true
+            },
+            [KIND.CLAN_FRIEND]: {
+                dataDrawerNick: true,
+                dataDrawerProfAndLevel: true
+            },
+            [KIND.CLAN_ENEMY]: {
+                dataDrawerNick: true,
+                dataDrawerProfAndLevel: true
+            },
+            [KIND.GROUP]: {
+                dataDrawerNick: true,
+                dataDrawerProfAndLevel: true
+            },
+            [KIND.WANTED]: {
+                dataDrawerNick: true,
+                dataDrawerProfAndLevel: true
+            },
+            [KIND.NPCS]: {},
+            [KIND.NORMAL_MONSTER]: {},
+            [KIND.ELITE_1]: {},
+            [KIND.ELITE_2]: {},
+            [KIND.ELITE_3]: {},
+            [KIND.HEROS]: {},
+            [KIND.HEROES_RESP]: {},
+            [KIND.HEROES_RESP_E]: {},
+            [KIND.COLOSSUS]: {},
+            [KIND.TYTAN]: {},
+            [KIND.TITAN_RESP]: {},
+            [KIND.RECOVERY]: {},
+            [KIND.GATEWAY]: {},
+            [KIND.RIP]: {}
+        };
+
+        if (!mobileCheck()) return;
+        for (const key in mobileSettings) {
+            if (!namesTab.hasOwnProperty(key)) continue;
+            namesTab[key] = {
+                ...namesTab[key],
+                ...mobileSettings[key]
+            };
+        }
     }
 
     function getDataToWhoIsHere() {
@@ -622,9 +687,10 @@ module.exports = function() {
 
             return store;
         } else {
-            var amount = defaultVal;
-            StorageFuncHandHeldMiniMap.setMinLevelOfKindByName(amount);
-            return amount;
+            // var amount = defaultVal;
+            // StorageFuncHandHeldMiniMap.setMinLevelOfKindByName(amount);
+            // return amount;
+            return defaultVal;
         }
     }
 

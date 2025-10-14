@@ -1,15 +1,16 @@
 /**
  * Created by lukasz on 12.09.14.
  */
-const RajCharacterImageChangerData = require('core/raj/rajCharacterImageChanger/RajCharacterImageChangerData');
-let Npc = require('core/characters/Npc');
-let NpcData = require('core/characters/NpcData');
-let NpcGroupsManager = require('core/characters/NpcGroupsManager');
-let SearchPath = require('core/searchPath/SearchPath');
-let EmotionsData = require('core/emotions/EmotionsData');
-var RajMapEventsData = require('core/raj/rajMapEvents/RajMapEventsData');
-let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+const RajCharacterImageChangerData = require('@core/raj/rajCharacterImageChanger/RajCharacterImageChangerData');
+let Npc = require('@core/characters/Npc');
+let NpcData = require('@core/characters/NpcData');
+let NpcGroupsManager = require('@core/characters/NpcGroupsManager');
+let SearchPath = require('@core/searchPath/SearchPath');
+let EmotionsData = require('@core/emotions/EmotionsData');
+var RajMapEventsData = require('@core/raj/rajMapEvents/RajMapEventsData');
+let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let RajData = require('@core/raj/RajData');
 
 module.exports = function() {
 
@@ -19,7 +20,8 @@ module.exports = function() {
     let npc = {};
     let deleteNpc = {};
     //let allGroups 				= {};
-    let externalPropertiesCache = {};
+    //let externalPropertiesCache = {};
+    let srajCache = {};
     let npcPos = {};
     let NPC_LANG = 'npc';
     let t = [
@@ -75,29 +77,38 @@ module.exports = function() {
         npcPos = {};
     };
 
-    const setInExternalPropertiesCache = (id, data) => {
-        externalPropertiesCache[id] = data;
+    const setInSrajCache = (id, data) => {
+        //externalPropertiesCache[id] = data;
+        srajCache[id] = data;
     };
 
-    const checkDataHasExternalProperties = (data) => {
-        if (!data || !elementIsObject(data) || !data.external_properties) return false;
+    const checkDataHasSraj = (data) => {
+        //if (!data || !elementIsObject(data) || !data.external_properties) return false;
+        if (!data || !elementIsObject(data) || !isset(data.srajId)) return false;
 
         return true;
     };
 
-    const getExternalProperties = (id) => {
-        return externalPropertiesCache[id] ? externalPropertiesCache[id] : null;
+    const getSraj = (id) => {
+        //return externalPropertiesCache[id] ? externalPropertiesCache[id] : null;
+        return srajCache[id] ? srajCache[id] : null;
     }
 
     const updateData_npcs_del = (data) => {
         for (let npcData of data) {
             let npcId = npcData.id;
+            let sraj_cancel = npcData.sraj_cancel;
 
             if (!checkNpc(npcId)) {
                 //errorReport(moduleData.fileName, "updateData_npcs_del", `Npc id: ${npcId} not exist!`);
                 continue
             }
             let oneNpc = getById(npcId);
+
+            if (sraj_cancel) {
+                oneNpc.callSrajCancel();
+            }
+
 
             if (isset(npcData.respBaseSeconds)) setRespBaseSecondsInNpcData(oneNpc, npcData.respBaseSeconds)
 
@@ -121,7 +132,7 @@ module.exports = function() {
         let type = obj.d.type;
         let wt = obj.d.wt;
 
-        if (type == 2 || type == 3) {
+        if (type == 2 || type == 3 || type == 9) {
             kind = HandHeldMiniMapData.KIND.NORMAL_MONSTER;
             let _kind = getDescriptionOfKindMonster(wt);
             if (_kind) kind = _kind;
@@ -191,20 +202,27 @@ module.exports = function() {
             oneNpc.firstAfterUpdate();
 
             if (!initLoadTime) {
-                Engine.rajMapEvents.callAllActionsBySpecificEventAndNpc(RajMapEventsData.ON_RESPAWN_NPC, {
-                    npcId: id
+                //Engine.rajController.addToCallbackQueue(function () {
+                Engine.rajController.parseObject({
+                    [RajData.CALLBACK_INTERNAL_FUNCTION]: true
+                }, false, false, function() {
+                    Engine.rajMapEvents.callAllActionsBySpecificEventAndNpc(RajMapEventsData.ON_RESPAWN_NPC, {
+                        npcId: id
+                    });
+                    Engine.rajCharacterImageChangerManager.callAllActionsBySpecificEventAndNpc(RajCharacterImageChangerData.KIND.ON_RESPAWN, {
+                        npcId: id
+                    });
                 });
-                Engine.rajCharacterImageChangerManager.callAllActionsBySpecificEventAndNpc(RajCharacterImageChangerData.KIND.ON_RESPAWN, {
-                    npcId: id
-                });
+                //})
             }
 
             API.callEvent(Engine.apiData.NEW_NPC, oneNpc);
             getEngine().questTracking.checkAddNpcAndAdd(oneNpc);
         }
 
-        if (checkDataHasExternalProperties(npcData)) {
-            setInExternalPropertiesCache(id, npcData.external_properties);
+        if (checkDataHasSraj(npcData)) {
+            //setInExternalPropertiesCache(id, npcData.external_properties);
+            setInSrajCache(id, oneNpc.getSraj());
         }
     };
 
@@ -245,12 +263,19 @@ module.exports = function() {
         let iconId = data.icon.id;
         let icon = Engine.npcIconManager.getNpcIcon(iconId);
 
-        if (icon != null) data.icon = icon;
-        else {
-
-            if (data.icon.special) data.icon = data.icon.special;
-            else errorReport(moduleData.fileName, "mergeNpcDataWithNpcIconData", "nima", data)
+        if (!icon) {
+            errorReport(moduleData.fileName, "mergeNpcDataWithNpcIconData", "nima", data)
+            icon = '../img/def-npc-sprite.gif';
         }
+
+        data.icon = icon;
+
+        //if (icon != null) data.icon = icon;
+        //else {
+        //
+        //	if (data.icon.special) 		data.icon = data.icon.special;
+        //	else 						errorReport(moduleData.fileName, "mergeNpcDataWithNpcIconData", "nima", data)
+        //}
     };
 
     const draw = function(ctx) {
@@ -352,84 +377,89 @@ module.exports = function() {
 
     };
 
-    const getTip = function(obj) {
-        //var t = [
-        //	_t('wt_titan', null, 'npc'), _t('wt_hero', null, 'npc'), _t('wt_elite3', null, 'npc'),
-        //	_t('eliteI', null, 'npc'), _t('easy_enemy', null, 'npc'), _t('great_enemy', null, 'npc'),
-        //	_t('big_enemy', null, 'npc'), _t('normal_enemy', null, 'npc'), _t('in_group', null, 'npc'),
-        //	_t('eliteII', null, 'npc'), _t('wt_colossus', null, 'npc')
-        //];
-        var hero = Engine.hero;
-        var rpg = Engine.worldConfig.getRpg();
-        var n = obj.d;
-        //var notip = false;
-        var tip = "<div><strong>" + parseBasicBB(n.nick, false) + "</strong></div>"; // second argument for not escapeHTML
-        if (CFG.debug || n.type != 4) {
-            if (n.wt > 99) tip += '<i>' + t[0] + '</i>'; //tytan
-            else if (n.wt > 89) tip += '<i>' + t[10] + '</i>'; //kolos
-            else if (n.wt > 79) tip += '<i>' + t[1] + '</i>'; //heros
-            else if (n.wt > 29) tip += '<i>' + t[2] + '</i>'; //elita III
-            else if (n.wt > 19) {
-                tip += '<i>' + t[9] + '</i>';
-                //notip = !rpg;
-            } else if (n.wt > 9) tip += '<i>' + t[3] + '</i>'; //elita
-            var label = '';
-            var lvlcol = '';
-            var grp = '';
-            var lvlinfo = null;
+    const getTip = function(obj, options) {
+        const defaultOptions = {
+            withIcon: false,
+        }
+        options = {
+            ...defaultOptions,
+            ...options
+        };
 
+        const npcData = obj.d;
+        let tip = `<div><strong>${parseBasicBB(npcData.nick, false)}</strong></div>`;
+        if (getDebug() || npcData.type !== 4) {
+            let additionalTipContent = '';
+            let lvlColor = 'inherit';
             let level;
 
             if (obj.hasOwnProperty('elasticLevel')) {
-                let _npc = npc[n.id];
-
-                if (_npc) level = obj.elasticLevel;
-                else {
-                    warningReport(moduleData.fileName, 'getTip', `Npc ${n.id} not exist in npc list`, npc);
-                    level = n.lvl;
-                }
-
-            } else level = n.lvl;
-
-            if (n.type == 2 || n.type == 3) {
-                var dl = level - hero.d.lvl;
-                if (dl < -(Engine.worldConfig.getDropDestroyLvl())) {
-                    lvlcol = 'style="color:#888"';
-                    lvlinfo = t[4];
-                } else if (dl > 10) {
-                    lvlcol = 'style="color:#f50"';
-                    lvlinfo = t[5];
-                } else if (dl > 5) {
-                    lvlcol = 'style="color:#ff0"';
-                    lvlinfo = t[6];
+                let _npc = npc[npcData.id];
+                if (_npc) {
+                    level = obj.elasticLevel;
                 } else {
-                    lvlinfo = t[7];
+                    warningReport(moduleData.fileName, 'getTip', `Npc ${npcData.id} not exist in npc list`, npc);
+                    level = npcData.lvl;
                 }
-            }
-            //if (n.grp) console.log(n.grp, n.nick, n.id);
-            if (rpg) {
-                label = lvlinfo ? lvlinfo : '';
-                grp = n.grp ? t[8] : '';
             } else {
-                let coma = level == 0 ? '' : ', ';
-                label = level ? (level) + " lvl" : '';
-                grp = n.grp ? `${coma}grp` : '';
+                level = npcData.lvl;
             }
 
-            tip += '<span ' + lvlcol + '>' + label + grp + '</span>';
+            if (npcData.type == 2 || npcData.type == 3) {
+                var dl = level - getHeroLevel();
+                if (dl < -(Engine.worldConfig.getDropDestroyLvl())) {
+                    lvlColor = '#888';
+                } else if (dl > 10) {
+                    lvlColor = '#f50';
+                } else if (dl > 5) {
+                    lvlColor = '#ff0';
+                }
+            }
+
+            const lvlText = level ? level : '';
+            const profText = npcData.prof ? npcData.prof : '';
+            const profAndLvlLabel = profText || lvlText ? `(${lvlText}${profText})` : '';
+            tip = `<div style="color: ${lvlColor};"><strong>${parseBasicBB(npcData.nick, false)} ${profAndLvlLabel}</strong></div>`;
+
+            if (npcData.wt > 99) additionalTipContent += '<i class="npc-class">' + t[0] + '</i>'; //tytan
+            else if (npcData.wt > 89) additionalTipContent += '<i class="npc-class">' + t[10] + '</i>'; //kolos
+            else if (npcData.wt > 79) additionalTipContent += '<i class="npc-class">' + t[1] + '</i>'; //heros
+            else if (npcData.wt > 29) additionalTipContent += '<i class="npc-class">' + t[2] + '</i>'; //elita III
+            else if (npcData.wt > 19) additionalTipContent += '<i class="npc-class">' + t[9] + '</i>'; //elita II
+            else if (npcData.wt > 9) additionalTipContent += '<i class="npc-class">' + t[3] + '</i>'; //elita
+
+            const groupLabel = npcData.grp ? _t('in_group2', null, 'npc') : '';
+            additionalTipContent += groupLabel;
+
+            if (npcData.difficulty) {
+                const difficultyLabel = `<div>${getDifficultyTranslation(npcData)}</div>`;
+                additionalTipContent += difficultyLabel;
+            }
+
+            if (options.withIcon) {
+                additionalTipContent += `<div class="mt-2 text-center"><img src="${CFG.a_npath + npcData.icon}" style="display: inline-block; max-width: 100%;"></div>`;
+            }
+
+            if (additionalTipContent) {
+                tip += `<div class="line"></div>${additionalTipContent}`;
+            }
         }
 
         if (!obj.getId) return tip; /// EXCEPTION HERO_RESP can not id!!!!!!!!!!
 
         tip += setEmoSections(obj);
 
-        const debug = getTipDebugContent(n);
+        const debug = getTipDebugContent(npcData);
         tip += debug;
 
         return tip;
     };
 
-    const getTipDebugContent = (npc) => CFG.debug ? `<br><span class="debug-content">
+    const getDifficultyTranslation = (npc) => {
+        return npc.difficulty ? _t('difficulty_' + NpcData.DIFFICULTIES[npc.difficulty], null, 'npc') : '';
+    }
+
+    const getTipDebugContent = (npc) => getDebug() ? `<br><span class="debug-content">
 			id: ${npc.id},
 			tpl: ${npc.tpl}
 		</span>` : '';
@@ -541,7 +571,7 @@ module.exports = function() {
 
             let oneNpc = npc[i];
 
-            if (oneNpc.isIconInvisible() && !CFG.debug) {
+            if (oneNpc.isIconInvisible() && !getDebug()) {
                 continue;
             }
 
@@ -738,6 +768,18 @@ module.exports = function() {
         }
     }
 
+    const refreshFilter = () => {
+        for (let id in npc) {
+            npc[id].updateFilterImage();
+        }
+    }
+
+    const refreshAggressiveEmo = () => {
+        for (let id in npc) {
+            npc[id].manageAggressiveEmo();
+        }
+    }
+
     this.init = init;
     this.clearDataToDraw = clearDataToDraw;
     this.findKindNpc = findKindNpc;
@@ -746,7 +788,7 @@ module.exports = function() {
     this.getDeleteNpc = getDeleteNpc;
     this.check = check;
     this.isGateUrl = isGateUrl;
-    this.getExternalProperties = getExternalProperties;
+    this.getSraj = getSraj;
     this.updateData_npcs_del = updateData_npcs_del;
     this.updateData = updateData;
     this.draw = draw;
@@ -768,4 +810,6 @@ module.exports = function() {
     this.isTalkNpc = isTalkNpc;
     this.manageDisplayOfNpcEmo = manageDisplayOfNpcEmo;
     this.clearAllCharacterBlur = clearAllCharacterBlur;
+    this.refreshFilter = refreshFilter;
+    this.refreshAggressiveEmo = refreshAggressiveEmo;
 };

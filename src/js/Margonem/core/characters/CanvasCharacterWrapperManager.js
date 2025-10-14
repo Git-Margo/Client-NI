@@ -1,6 +1,6 @@
-let CharacterData = require('core/characters/CharactersData')
-let CanvasOutfitWrapper = require('core/characters/CanvasOutfitWrapper');
-let CanvasPetWrapper = require('core/characters/CanvasPetWrapper');
+let CharacterData = require('@core/characters/CharactersData')
+let CanvasOutfitWrapper = require('@core/characters/CanvasOutfitWrapper');
+let CanvasPetWrapper = require('@core/characters/CanvasPetWrapper');
 
 module.exports = function() {
     let list = {};

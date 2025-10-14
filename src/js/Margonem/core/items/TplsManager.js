@@ -1,7 +1,7 @@
 /**
  * Created by lukasz on 2014-10-21.
  */
-var Tpl = require('core/items/Item');
+var Tpl = require('@core/items/Item');
 
 function isset(x) {
     return typeof(x) != 'undefined';
@@ -83,6 +83,10 @@ module.exports = new(function() {
     this.createViewIcon = function(itemId, viewName, tplLoc) {
 
         let i = self.getTplByIdAndLoc(itemId, tplLoc); // This is not good solution, but... Sometimes tpl have the same tplId, then you should use argument loc too :(
+        if (i === null) {
+            errorReport('TplsManager.js', 'createViewIcon', 'Item tpl not exist: ' + itemId + ' in loc: ' + tplLoc);
+            return null;
+        }
 
         let $clone = i.$.clone(true);
         let loc = i.loc;
@@ -184,6 +188,11 @@ module.exports = new(function() {
 
         //if (!views[idItem][viewName].length) delete views[idItem][viewName];
     };
+
+    this.deleteViewIconByTargetEl = (idItem, viewName, $targetEl) => {
+        const index = this.getViewIndexByIdAndLocAndHtmlEl(idItem, viewName, $targetEl);
+        if (index >= 0) this.deleteViewIcon(idItem, viewName, index);
+    }
 
     this.removeAllViewInArrayByIdItemAndViewNameAndLoc = function(idItem, viewName, loc) {
         let allViewOfOneViewNameData = views[idItem][viewName];
@@ -393,7 +402,10 @@ module.exports = new(function() {
         return obj;
     };
 
-    this.changeItemAmount = function(item, $item, serverAmount, recalcPrice = false) {
+    this.changeItemAmount = function(item, $item, serverAmount, options = {
+        refreshPrice: false,
+        recalcPrice: false
+    }) {
         var newVal;
         var $cloneAmount = $item.find('.amount');
 
@@ -408,13 +420,15 @@ module.exports = new(function() {
             $item.append($newAmount);
         }
         self.changeAmountInTip(item, $item, newVal, {
-            recalcPrice,
+            refreshPrice: options.refreshPrice,
+            recalcPrice: options.recalcPrice,
             serverAmount
         });
     };
 
     this.changeAmountInTip = function(item, $item, newVal, {
         recalcPrice = false,
+        refreshPrice = false,
         serverAmount
     }) {
         newVal = formNumberToNumbersGroup(newVal);
@@ -425,8 +439,10 @@ module.exports = new(function() {
         $tip.find('.amount').remove();
         $tip.find('.item').append($('<div>').html(newVal).addClass('amount'));
 
-        if (recalcPrice) {
-            const newPrice = item.pr * serverAmount;
+        if (recalcPrice || refreshPrice) {
+            let newPrice;
+            if (refreshPrice) newPrice = item.pr * 1;
+            if (recalcPrice) newPrice = item.pr * serverAmount;
             $tip.find('.value-item .val').text(round(newPrice, (newPrice < 10000 ? 10 : 2)));
         }
 
@@ -434,7 +450,8 @@ module.exports = new(function() {
 
         if ($amountText.length > 0) $amountText.html(newVal);
         else {
-            var cursedFlag = isset(item._cachedStats.cursed);
+            // var cursedFlag = isset(item._cachedStats.cursed);
+            var cursedFlag = item.issetCursedStat();
             //var valAndTag = '<span class="amount-text">' + newVal + '</span>';
 
             var strTab = [
@@ -553,9 +570,13 @@ module.exports = new(function() {
     }
 
     this.getViewByIdAndLoc = function(id, viewNameGroup) {
+        return this.getViewsByIdAndLoc(id, viewNameGroup)[0][0]
+    };
+
+    this.getViewsByIdAndLoc = function(id, viewNameGroup) {
         let allViewNameGroups = views[id];
         if (isset(allViewNameGroups[viewNameGroup])) {
-            return allViewNameGroups[viewNameGroup][0][0];
+            return allViewNameGroups[viewNameGroup];
         }
     };
 
@@ -572,36 +593,42 @@ module.exports = new(function() {
         return a;
     };
 
-    this.updateTrackHighlights = () => {
-        for (let loc in tpls) {
-            for (let id in tpls[loc]) {
-                let oneTplItem = tpls[loc][id];
-                oneTplItem.$.find('.highlight').removeClass('track');
-                if (this.getAllViewsById(id).length === 0) continue;
-                this.getAllViewsById(id)[0].find('.highlight').removeClass('track');
-            }
-        }
+    this.getViewIndexByIdAndLocAndHtmlEl = (id, loc, $targetEl) => {
+        const views = this.getViewsByIdAndLoc(id, loc);
+        if (views) return views.findIndex((el) => $targetEl[0] === el[0][0]);
+        return -1;
+    }
 
-        return
-        if (Engine.questTrack && Engine.questTrack.activeTrack) {
-            for (let c in Engine.questTrack.tasks) {
-
-
-                for (let _loc in tpls) {
-                    for (let id in tpls[_loc]) {
-                        let oneTplItem = tpls[_loc][id];
-                        if (oneTplItem.name == Engine.questTrack.tasks[c].name && Engine.questTrack.tasks[c].type === 'item') {
-                            oneTplItem.$.find('.highlight').addClass('track');
-                            // if (oneTplItem.loc === "m" || this.getAllViewsById(id).length === 0) continue;
-                            this.getAllViewsById(id)[0].find('.highlight').addClass('track').removeClass('nodisp');
-                        }
-                    }
-                }
-
-
-            }
-        }
-    };
+    //this.updateTrackHighlights = () => {
+    //	for (let loc in tpls) {
+    //		for (let id in tpls[loc]) {
+    //			let oneTplItem = tpls[loc][id];
+    //			oneTplItem.$.find('.highlight').removeClass('track');
+    //			if (this.getAllViewsById(id).length === 0) continue;
+    //			this.getAllViewsById(id)[0].find('.highlight').removeClass('track');
+    //		}
+    //	}
+    //
+    //	return
+    //	if (Engine.questTrack && Engine.questTrack.activeTrack) {
+    //		for (let c in Engine.questTrack.tasks) {
+    //
+    //
+    //			for (let _loc in tpls) {
+    //				for (let id in tpls[_loc]) {
+    //					let oneTplItem = tpls[_loc][id];
+    //					if (oneTplItem.name == Engine.questTrack.tasks[c].name && Engine.questTrack.tasks[c].type === 'item') {
+    //						oneTplItem.$.find('.highlight').addClass('track');
+    //						// if (oneTplItem.loc === "m" || this.getAllViewsById(id).length === 0) continue;
+    //						this.getAllViewsById(id)[0].find('.highlight').addClass('track').removeClass('nodisp');
+    //					}
+    //				}
+    //			}
+    //
+    //
+    //		}
+    //	}
+    //};
 
     this.getViews = function() {
         return views;

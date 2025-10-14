@@ -1,11 +1,11 @@
 /**
  * Created by lukasz on 12.09.14.
  */
-var Other = require('core/characters/Other');
-var Emotions = require('core/emotions/EmotionsManager');
-const OthersContextMenuData = require('core/characters/OthersContextMenuData');
-const SocietyData = require('core/society/SocietyData');
-const HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
+var Other = require('@core/characters/Other');
+var Emotions = require('@core/emotions/EmotionsManager');
+const OthersContextMenuData = require('@core/characters/OthersContextMenuData');
+const SocietyData = require('@core/society/SocietyData');
+const HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
 module.exports = function() {
     var list = {};
 
@@ -62,6 +62,12 @@ module.exports = function() {
             }
         }
     };
+
+    this.otherTipRefresh = () => {
+        for (let k in list) {
+            list[k].tipUpdate();
+        }
+    }
 
     this.draw = function(ctx) {
         for (var i in npc) {
@@ -264,7 +270,7 @@ module.exports = function() {
         if (canAddShowProfile) {
             const {
                 showProfile
-            } = require('core/HelpersTS.ts');
+            } = require('@core/HelpersTS.ts');
             contextMenu.push([
                 _t('show_profile', null, 'menu'),
                 () => showProfile(player.accountId, player.charId)
@@ -333,6 +339,12 @@ module.exports = function() {
         }
     };
 
+    const refreshFilter = () => {
+        for (let id in list) {
+            list[id].updateFilterImage();
+        }
+    }
+
     //const refreshOtherKind = (id) => {
     //	let other = this.getById(id);
     //
@@ -347,5 +359,6 @@ module.exports = function() {
     this.clearDataToDraw = clearDataToDraw;
     //this.refreshOtherKind = refreshOtherKind;
     this.findKindOther = findKindOther;
+    this.refreshFilter = refreshFilter;
 
 };

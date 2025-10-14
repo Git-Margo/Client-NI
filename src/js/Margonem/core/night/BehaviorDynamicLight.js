@@ -1,10 +1,12 @@
-let BehaviorDynamicLightData = require('core/night/BehaviorDynamicLightData');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let DynamicLightCommons = require('core/night/DynamicLightCommons');
-let BehaviorManager = require('core/raj/BehaviorManager');
-let RajMoveNoise = require('core/raj/RajMoveNoise');
-let LightData = require('core/night/LightData');
-let VectorCalculate = require('core/VectorCalculate');
+let BehaviorDynamicLightData = require('@core/night/BehaviorDynamicLightData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let DynamicLightCommons = require('@core/night/DynamicLightCommons');
+let BehaviorManager = require('@core/raj/BehaviorManager');
+let RajMoveNoise = require('@core/raj/RajMoveNoise');
+let LightData = require('@core/night/LightData');
+let VectorCalculate = require('@core/VectorCalculate');
+let RajObjectInterface = require('@core/raj/RajObjectInterface');
+let RajData = require('@core/raj/RajData');
 
 module.exports = function() {
 
@@ -50,11 +52,16 @@ module.exports = function() {
     const init = () => {
         dynamicLightCommons = new DynamicLightCommons();
         setBattle(false);
+        implementRajInterface();
         initBehaviorManager();
         initRajMoveNoise();
 
         behaviorManager.setBehaviorRepeat(BehaviorDynamicLightData.defaultData.BEHAVIOR_REPEAT);
     };
+
+    const implementRajInterface = () => {
+        (new RajObjectInterface()).implementRajObject(this, RajData.BEHAVIOR_DYNAMIC_LIGHT);
+    }
 
     const initRajMoveNoise = () => {
         rajMoveNoise = new RajMoveNoise();
@@ -133,15 +140,19 @@ module.exports = function() {
 
         if (data.master) dynamicLightCommons.setMaster(id, data.master, LightData.DYNAMIC_LIGHT_KIND.BEHAVIOR_DYNAMIC_LIGHT, additionalData);
 
+        this.updateDataRajObject(data);
+
         behaviorManager.callBehavior();
     };
 
-    const update = (dt) => {
+    const update = (dt, actualFrame) => {
 
         let behaviorName = behaviorManager.getActualBehaviorName();
         let BEHAVIOR = BehaviorDynamicLightData.behavior;
         let master = dynamicLightCommons.getMaster();
         let updatePosByMasterPos = checkUpdatePosByMaterPos();
+        let realXYPos = battle ? true : false;
+        let halfTileSize = CFG.halfTileSize;
 
 
         if (master) {
@@ -157,8 +168,13 @@ module.exports = function() {
         rajMoveNoise.updateMoveNoise(dt);
 
         if (updatePosByMasterPos) {
-            setX(master.rx);
-            setY(master.ry);
+            if (realXYPos) {
+
+            } else {
+
+                setX(master.rx);
+                setY(master.ry);
+            }
         }
 
 
@@ -184,13 +200,9 @@ module.exports = function() {
             light.setXMoveNoise(rajMoveNoise.getXMoveNoise());
             light.setYMoveNoise(rajMoveNoise.getYMoveNoise());
 
-            if (updatePosByMasterPos) {
-                light.setX(master.rx);
-                light.setY(master.ry);
-            } else {
-                light.setX(lightXPos);
-                light.setY(lightYPos);
-            }
+            if (updatePosByMasterPos) light.updatePosByMaster(master);
+            else light.updatePos(lightXPos, lightYPos);
+
         }
 
 
@@ -840,6 +852,10 @@ module.exports = function() {
     }
 
     const draw = (mainNightCtx, actualFrame) => {
+
+        if (battle) {
+            debugger;
+        }
 
         let xNoise = rajMoveNoise.getXMoveNoise();
         let yNoise = rajMoveNoise.getYMoveNoise();

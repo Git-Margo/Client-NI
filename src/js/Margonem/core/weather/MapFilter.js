@@ -1,6 +1,6 @@
-//let RajRandomElements       = require('core/raj/RajRandomElements');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
+//let RajRandomElements       = require('@core/raj/RajRandomElements');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
 
 module.exports = function() {
 

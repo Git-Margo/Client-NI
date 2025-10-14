@@ -1,5 +1,5 @@
-//var wnd = require('core/Window');
-var tpl = require('core/Templates');
+//var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
 module.exports = function(Par) {
     var self = this;
     var content;
@@ -108,7 +108,7 @@ module.exports = function(Par) {
         ];
         var ranks = Par.getProp('ranks');
         var cR = Engine.hero.d.clan.rank;
-        var rank = Par.getMemberList()[id][7];
+        var rank = Par.getMemberList()[id][8];
         var r1 = [];
         var r2 = [{
                 'text': Par.tLang('clan_sl'),

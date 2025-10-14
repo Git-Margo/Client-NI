@@ -48,6 +48,7 @@ module.exports = function() {
             nick: respData.name,
             icon: respData.icon,
             lvl: respData.lvl,
+            prof: respData.prof,
             kind: heroRespKind[respData.kind],
             wt: respData.wtype,
             resp: respData.resp,

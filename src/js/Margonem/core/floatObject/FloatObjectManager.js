@@ -1,11 +1,11 @@
-let FloatObject = require('core/floatObject/FloatObject.js');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let RajRandomElements = require('core/raj/RajRandomElements');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let RajMoveNoise = require('core/raj/RajMoveNoise');
-let FloatObjectData = require('core/floatObject/FloatObjectData');
+let FloatObject = require('@core/floatObject/FloatObject.js');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let RajRandomElements = require('@core/raj/RajRandomElements');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let RajMoveNoise = require('@core/raj/RajMoveNoise');
+let FloatObjectData = require('@core/floatObject/FloatObjectData');
 
 module.exports = function() {
 
@@ -54,7 +54,7 @@ module.exports = function() {
                         type: TYPE.FLOAT_OR_GET_CHARACTER_DATA_OR_GET_RANDOM_ELEMENTS
                     },
                     color: {
-                        type: TYPE.RGB_OR_RGBA_COLOR,
+                        type: TYPE.RGB_OR_RGBA_COLOR_OR_A,
                         optional: true
                     },
                     offsetX: {
@@ -447,6 +447,12 @@ module.exports = function() {
         onClear();
     }
 
+    const refreshFilter = () => {
+        for (let id in list) {
+            list[id].updateFilterImage();
+        }
+    }
+
     this.init = init;
     this.update = update;
     this.onClear = onClear;
@@ -458,5 +464,6 @@ module.exports = function() {
     this.getById = getById;
     this.checkObjectExist = checkObjectExist;
     this.updateBehavior = updateBehavior;
+    this.refreshFilter = refreshFilter;
 
 };

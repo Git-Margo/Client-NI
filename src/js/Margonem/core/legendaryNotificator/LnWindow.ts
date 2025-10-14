@@ -1,4 +1,4 @@
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 import LnData from './LnData';
 import LegendaryNotificator, {
     LnLang

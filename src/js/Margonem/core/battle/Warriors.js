@@ -2,8 +2,8 @@
  * Created by Michnik on 2016-01-04.
  */
 
-var OneWarrior = require('core/battle/OneWarrior');
-var tpl = require('core/Templates');
+var OneWarrior = require('@core/battle/OneWarrior');
+var tpl = require('@core/Templates');
 
 module.exports = function() {
 
@@ -343,6 +343,26 @@ module.exports = function() {
 
 
         return sumWidth;
+    };
+
+    this.afterUpdate = () => {
+        this.setFocusOnWarriors();
+    };
+
+    this.setFocusOnWarriors = () => {
+        for (let i in Engine.battle.warriorsList) {
+            if (Engine.battle.warriorsList[i].getFocusedBy() !== null) Engine.battle.warriorsList[i].updateWarrior({
+                focusedBy: null
+            }, true);
+        }
+
+        const me = Engine.battle.getWarrior(Engine.hero.d.id)
+        const focusSourcePlayerId = me.focus;
+        if (focusSourcePlayerId) {
+            Engine.battle.getWarrior(focusSourcePlayerId).updateWarrior({
+                focusedBy: me.name
+            }, true);
+        }
     };
 
     this.update = function(w, isAuto) {

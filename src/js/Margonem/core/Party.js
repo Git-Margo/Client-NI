@@ -1,13 +1,13 @@
 /**
  * Created by lukasz on 2015-04-23.
  */
-var Tpl = require('core/Templates');
-var ChatData = require('core/chat/ChatData');
-const OthersContextMenuData = require('core/characters/OthersContextMenuData');
+var Tpl = require('@core/Templates');
+var ChatData = require('@core/chat/ChatData');
+const OthersContextMenuData = require('@core/characters/OthersContextMenuData');
 
 
-let StorageFuncWindow = require('core/window/StorageFuncWindow');
-var Chat = require('core/Chat');
+let StorageFuncWindow = require('@core/window/StorageFuncWindow');
+//var Chat = require('@core/Chat');
 module.exports = function(data) {
     var leader = null;
     var self = this;
@@ -51,9 +51,9 @@ module.exports = function(data) {
             if (!others[k]) continue;
 
             if (!temp) {
-                if (others[k].d.lvl > Engine.hero.d.lvl) temp = others[k];
+                if (others[k].getLevel() > getHeroLevel()) temp = others[k];
             } else {
-                if (temp.d.lvl < others[k].d.lvl) temp = others[k];
+                if (temp.getLevel() < others[k].getLevel()) temp = others[k];
             }
         }
 
@@ -443,6 +443,7 @@ module.exports = function(data) {
     this.init = function(data) {
         //Engine.chat.setVisibleCard(2, 1);
 
+        Engine.npcs.refreshAggressiveEmo();
         Engine.widgetManager.widgets.toggleWidgetDisplay(Engine.widgetsData.name.PARTY, true);
         this.updateAmountOnWidget();
         self.setHId(data);
@@ -507,6 +508,7 @@ module.exports = function(data) {
         //Engine.chatController.getChatWindow().setChannel(ChatData.CHANNEL.GLOBAL);
 
         Engine.party = false;
+        Engine.npcs.refreshAggressiveEmo();
 
         wnd.remove();
     };

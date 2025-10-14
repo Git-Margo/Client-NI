@@ -1,6 +1,6 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-const RajActionData = require('core/raj/rajAction/RajActionData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+const RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 
@@ -45,6 +45,10 @@ module.exports = function() {
                         optional: true
                     },
                     displayOnMiniMap: {
+                        type: TYPE.BOOL,
+                        optional: true
+                    },
+                    displayEmo: {
                         type: TYPE.BOOL,
                         optional: true
                     }
@@ -119,6 +123,7 @@ module.exports = function() {
         npcHideList[data.target.id] = {
             showTip: isset(data.showTip) ? data.showTip : true,
             displayOnMiniMap: isset(data.displayOnMiniMap) ? data.displayOnMiniMap : false,
+            displayEmo: isset(data.displayEmo) ? data.displayEmo : false
         }
     };
 
@@ -363,6 +368,12 @@ module.exports = function() {
         return npcHideList[id].displayOnMiniMap;
     };
 
+    const checkNpcDisplayEmo = (id) => {
+        if (!checkNpcHide(id)) return true;
+
+        return npcHideList[id].displayEmo;
+    };
+
     const checkHeroDisplayOnMiniMap = () => {
         if (!checkHeroHide()) return true;
 
@@ -410,10 +421,40 @@ module.exports = function() {
         }
     };
 
+    const checkDisplayEmo = (character) => {
+        let kind = character.canvasObjectType;
+
+        if (!kind) return true;
+
+        switch (kind) {
+            case CanvasObjectTypeData.HERO:
+                return false;
+            case CanvasObjectTypeData.PET:
+                return false;
+            case CanvasObjectTypeData.FAKE_NPC:
+                return false;
+            case CanvasObjectTypeData.NPC:
+                return checkNpcDisplayEmo(character.d.id);
+            case CanvasObjectTypeData.OTHER:
+                return false;
+            case CanvasObjectTypeData.M_ITEM:
+                return false;
+            case CanvasObjectTypeData.GATEWAY:
+                return false;
+            case CanvasObjectTypeData.MAP:
+                return false;
+            case CanvasObjectTypeData.HEROES_RESP:
+                return false;
+            default:
+                errorReport(moduleData.fileName, "checkDisplayEmo", "undefined kind!", kind);
+        }
+    }
+
     this.init = init;
     this.updateData = updateData;
     this.checkHideObject = checkHideObject;
     this.checkDisplayOnMiniMap = checkDisplayOnMiniMap;
+    this.checkDisplayEmo = checkDisplayEmo;
     this.checkShowTip = checkShowTip;
     this.onClear = onClear;
 }

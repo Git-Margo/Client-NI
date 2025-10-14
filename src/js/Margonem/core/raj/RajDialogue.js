@@ -1,6 +1,6 @@
-const RajGetSpecificData = require('core/raj/RajGetSpecificData');
-const RajActionManager = require('core/raj/rajAction/RajActionManager');
-const RajActionData = require('core/raj/rajAction/RajActionData');
+const RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+const RajActionManager = require('@core/raj/rajAction/RajActionManager');
+const RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 

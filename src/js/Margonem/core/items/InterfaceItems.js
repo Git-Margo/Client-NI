@@ -1,7 +1,7 @@
-//var Items = require('core/items/ItemsManager');
-var Storage = require('core/Storage');
-var Tpl = require('core/Templates');
-var ItemClass = require('core/items/ItemClass');
+//var Items = require('@core/items/ItemsManager');
+var Storage = require('@core/Storage');
+var Tpl = require('@core/Templates');
+var ItemClass = require('@core/items/ItemClass');
 module.exports = function() {
 
     var self = this;
@@ -197,7 +197,8 @@ module.exports = function() {
     };
 
     this.isntRightItem = function(data, alert) {
-        if (isset(data._cachedStats.emo)) {
+        // if (isset(data._cachedStats.emo)) {
+        if (data.issetEmoStat()) {
             if (alert) mAlert(_t('emo_alert'));
             return true;
         }
@@ -205,7 +206,8 @@ module.exports = function() {
             if (alert) mAlert(_t('only_to_eat'));
             return true;
         }
-        if (isset(data._cachedStats.expires) && data.checkExpires()) {
+        // if (isset(data._cachedStats.expires) && data.checkExpires()) {
+        if (data.issetExpiresStat() && data.checkExpires()) {
             if (alert) message(_t('item_expired_info'));
             return true;
         }
@@ -213,13 +215,13 @@ module.exports = function() {
     };
 
     this.setPosItem = function($item, float, index) {
-        var dx = index * 41 + 2;
-        var pos = float == 'left' ? ['', dx] : [dx, ''];
-        $item.css({
-            top: 3,
-            //right: pos[0],
-            left: 2
-        })
+        //var dx = index * 41 + 2;
+        //var pos = float == 'left' ? ['', dx] : [dx, ''];
+        //$item.css({
+        //	top: 3,
+        //	//right: pos[0],
+        //	left: 2
+        //})
     };
 
     this.prepareMenuToPutItemInSlot = (item, e) => {
@@ -255,20 +257,52 @@ module.exports = function() {
 
     this.afterUpdateCallback = function(oldState) {
         var $bItem = $("#bottomItem" + this.id);
-        if ($bItem) this.updadeViewAfterUpdateItem($bItem);
+
+        if ($bItem) {
+            this.updadeViewAfterUpdateItem($bItem);
+        }
+
+        if (oldState.x != this.x || oldState.y != this.y) {
+            return;
+        }
+
+        // if (
+        // 	this._cachedStats.timelimit &&
+        // 	this._cachedStats.timelimit.split(',')[1] &&
+        // 	this._cachedStats.timelimit.split(',')[1] > actualTs) {
+        // 	console.log('change timelimit item');
+        // 	self.changeOnNewItem(this);
+        //
+        // }
+
+        afterUpdateCallbackTimelimit(this);
+    };
+
+    const afterUpdateCallbackTimelimit = (item) => {
+        if (!item.issetTimelimitStat()) {
+            return;
+        }
+
+        let timelimit = item.getTimelimitStat();
+
+        if (!timelimit) {
+            return;
+        }
+
+        let timelimitSplit = timelimit.split(',');
+
+        if (timelimitSplit.length < 2) {
+            return;
+        }
+
+        let timeLimit1 = timelimitSplit[1];
         let actualTs = ts() / 1000;
 
-        if (oldState.x != this.x || oldState.y != this.y) return; //only change pos in eq
-
-        if (
-            this._cachedStats.timelimit &&
-            this._cachedStats.timelimit.split(',')[1] &&
-            this._cachedStats.timelimit.split(',')[1] > actualTs) {
+        if (timeLimit1 && timeLimit1 > actualTs) {
             console.log('change timelimit item');
-            self.changeOnNewItem(this);
-
+            self.changeOnNewItem(item);
         }
-    };
+    }
 
     this.deleteCallback = function() {
         self.changeOnNewItem(this);
@@ -284,7 +318,8 @@ module.exports = function() {
         let lookForName = data.name;
         let lookForCl = data.cl;
         let $emptySlot = $("#bottomItem" + data.id).parent();
-        let existTimeLimit = data._cachedStats.timelimit;
+        // let existTimeLimit = data._cachedStats.timelimit;
+        let existTimeLimit = data.getTimelimitStat();
         let itemTimeLimit = []; // [ts, itemData]
         //let actualTs = ts() / 1000;
 
@@ -304,17 +339,22 @@ module.exports = function() {
 
             if (data.id == i.id) continue; //after update case
 
-            if (i.haveStat('custom_teleport')) {
-                let customTeleport = i.getCustomTeleport();
+            //if (i.haveStat('custom_teleport')) {
+            if (i.issetCustom_teleportStat()) {
+                let customTeleport = i.getCustom_teleportStat();
 
-                if (customTeleport != data.getCustomTeleport()) continue
+                if (customTeleport != data.getCustom_teleportStat()) continue
 
             }
 
 
-            if (existTimeLimit && i._cachedStats.timelimit) {
+            let timeLimitStat = i.getTimelimitStat();
 
-                let timeLimit = i._cachedStats.timelimit.split(',')[1];
+            // if (existTimeLimit && i._cachedStats.timelimit) {
+            if (existTimeLimit && timeLimitStat) {
+
+                // let timeLimit = i._cachedStats.timelimit.split(',')[1];
+                let timeLimit = timeLimitStat.split(',')[1];
 
                 if (timeLimit) {
                     timeLimit = parseInt(timeLimit);
@@ -396,13 +436,13 @@ module.exports = function() {
         }
     };
 
-    function getTimelimitItems(name) {
-        let items = Engine.heroEquipment.getHItems();
-        let a = []
-        for (let k in items) {
-            if (items[k]._cachedStats.hasOwnProperty('timelimit') && items[k].name == name) a.push($('.item-id-' + items[k].id))
-        }
-        return a;
-    }
+    // function getTimelimitItems (name) {
+    // 	let items = Engine.heroEquipment.getHItems();
+    // 	let a = []
+    // 	for (let k in items) {
+    // 		if (items[k]._cachedStats.hasOwnProperty('timelimit') && items[k].name == name) a.push($('.item-id-' + items[k].id))
+    // 	}
+    // 	return a;
+    // }
 
 };

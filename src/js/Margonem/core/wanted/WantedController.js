@@ -2,10 +2,10 @@
  * Created by Michnik on 2015-04-21.
  */
 
-var Storage = require('core/Storage');
-var Chat = require('core/Chat');
-var Character = require('core/characters/Character');
-var WantedList = require('core/wanted/WantedList');
+var Storage = require('@core/Storage');
+//var Chat = require('@core/Chat');
+var Character = require('@core/characters/Character');
+var WantedList = require('@core/wanted/WantedList');
 
 var WantedController = function() {
     var self = this;

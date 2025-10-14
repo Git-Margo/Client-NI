@@ -1,8 +1,8 @@
-var ChatData = require('core/chat/ChatData.js');
-var Tpl = require('core/Templates');
-var ChatMessageWithMarkReplace = require('core/chat/ChatMessageWithMarkReplace');
-var MCAddon = require('core/MCAddon');
-var SMCAddon = require('core/SMCAddon');
+var ChatData = require('@core/chat/ChatData.js');
+var Tpl = require('@core/Templates');
+var ChatMessageWithMarkReplace = require('@core/chat/ChatMessageWithMarkReplace');
+var MCAddon = require('@core/MCAddon');
+var SMCAddon = require('@core/SMCAddon');
 const {
     showProfile
 } = require('../HelpersTS');
@@ -109,12 +109,17 @@ module.exports = function() {
         let color = $chatMsg.css("color");
 
         let chatConfig = getEngine().chatController.getChatConfig();
-        let heroMessage = getEngine().hero.d.nick == author;
+        //let heroMessage             = getEngine().hero.d.nick == author;
+        let heroMessage = isHeroMessage();
         let configChannelColor = chatConfig.getChannelColor(channel, heroMessage);
 
 
         $chatMsg.css("color", configChannelColor);
     };
+
+    const isHeroMessage = () => {
+        return getEngine().hero.d.nick == author;
+    }
 
     const setSectionDisplay = ($element, state) => {
         let elementVisibleState = $element.css('display') == "inline";
@@ -282,7 +287,6 @@ module.exports = function() {
         });
 
         clickData.$clickField.on('contextmenu', function(e, mE) {
-            console.log(clickData);
             let menu = [];
 
             let $clickMsg = $(this).parent().parent();
@@ -294,7 +298,7 @@ module.exports = function() {
             addToEnemies(clickData.nick, menu);
             addToParty(clickData.id, menu);
             showPlayerProfile(clickData.acc, clickData.id, menu);
-            checkSmc(clickData.nick, menu);
+            checkSmc(clickData.id, clickData.nick, menu);
 
             //e.preventDefault();
 
@@ -383,20 +387,16 @@ module.exports = function() {
         }]);
     };
 
-    const checkSmc = (nick, menu) => {
+    const checkSmc = (id, nick, menu) => {
         var rights = getEngine().hero.d.uprawnienia;
-        if (rights == 0) return;
-        if (nick == getEngine().hero.d.nick || nick == 'System') return;
+        if (rights === 0) return;
+        if (id === getEngine().hero.d.id || nick === 'System') return;
 
         menu.push(['MC Panel', function() {
-            if (!getEngine().mcAddon) {
-                getEngine().mcAddon = new MCAddon(self);
-                getEngine().mcAddon.init();
-            }
-            getEngine().mcAddon.update(nick);
+            _g(`administration&targetId=${id}`);
         }]);
 
-        if (rights == 4 || rights == 16) {
+        if (rights === 4 || rights === 16) {
             menu.push(['SMC Panel', function() {
                 if (getEngine().smcAddon) getEngine().smcAddon.close();
                 getEngine().smcAddon = new SMCAddon(nick);
@@ -806,6 +806,7 @@ module.exports = function() {
     this.getId = getId;
     this.getStyle = getStyle;
     this.isCodeMessage = isCodeMessage;
+    this.isHeroMessage = isHeroMessage;
     this.updateMessage = updateMessage;
     //this.getCommercials = getCommercials;
     this.remove = remove;

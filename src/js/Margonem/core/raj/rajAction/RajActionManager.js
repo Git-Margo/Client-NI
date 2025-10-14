@@ -1,8 +1,7 @@
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let RajRandomElements = require('core/raj/RajRandomElements');
-let RajObject = require('core/raj/RajObject');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let RajRandomElements = require('@core/raj/RajRandomElements');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 module.exports = function() {
     const moduleData = {
@@ -371,14 +370,14 @@ module.exports = function() {
         switch (actionName) {
             case ACTION_CREATE:
                 if (exist) {
-                    if (isDebug()) warningReport(moduleData.fileName, FUNC, `can not call CREATE action in module: ${parentModule} for id: ${data.id}, because already exist!`, data);
+                    if (getDebug(CFG.DEBUG_KEYS.SRAJ)) warningReport(moduleData.fileName, FUNC, `can not call CREATE action in module: ${parentModule} for id: ${data.id}, because already exist!`, data);
                     return;
                 }
                 createProcedure(arguments);
                 break;
             case ACTION_REMOVE:
                 if (!exist) {
-                    if (isDebug()) warningReport(moduleData.fileName, FUNC, `can not call REMOVE action in module: ${parentModule} for id: ${data.id}, because not exist!`, data);
+                    if (getDebug(CFG.DEBUG_KEYS.SRAJ)) warningReport(moduleData.fileName, FUNC, `can not call REMOVE action in module: ${parentModule} for id: ${data.id}, because not exist!`, data);
                     return;
                 }
                 removeProcedure(arguments);
@@ -397,7 +396,7 @@ module.exports = function() {
                 break;
             case ACTION_UPDATE:
                 if (!exist) {
-                    if (isDebug()) errorReport(moduleData.fileName, FUNC, `can not call UPDATE action in module: ${parentModule} for id: ${data.id}, because not exist!`, data);
+                    if (getDebug(CFG.DEBUG_KEYS.SRAJ)) errorReport(moduleData.fileName, FUNC, `can not call UPDATE action in module: ${parentModule} for id: ${data.id}, because not exist!`, data);
                     return;
                 }
                 updateProcedure(arguments);
@@ -426,19 +425,22 @@ module.exports = function() {
 
         }
 
-        if (!getEngine().rajCase.checkFullFillCase(data.case, additionalData)) {
-            return;
-        }
+        // if (!getEngine().rajCase.checkFullFillCase(data.case, additionalData)) {
+        //     return;
+        // }
+        //
+        // if (data.target) {
+        //     if (data.target.kind == RajActionData.TARGET_KIND.THIS_NPC_INSTANCE) {
+        //         data.target.kind = CanvasObjectTypeData.NPC;
+        //         data.target.id = additionalData.npcId;
+        //     }
+        // }
+        //
+        //
+        // createFunc.apply(null, args);
 
-        if (data.target) {
-            if (data.target.kind == RajActionData.TARGET_KIND.THIS_NPC_INSTANCE) {
-                data.target.kind = CanvasObjectTypeData.NPC;
-                data.target.id = additionalData.npcId;
-            }
-        }
 
-
-        createFunc.apply(null, args);
+        createFuncCallback(args, data, additionalData);
 
         //if (srajObject && data.configurationType) {
         //if (srajObject) {
@@ -456,6 +458,89 @@ module.exports = function() {
         //}
     };
 
+    const createFuncCallback = (args, data, additionalData) => {
+        if (!checkFullFillCase(data.case, additionalData)) {
+
+            let raj = Engine.rajController;
+
+            if (raj.getAddSrajToCaseQueue()) {
+                raj.addToCaseSrajQueue({
+                    callback: () => {
+                        createFuncCallback(args, data, additionalData)
+                    }
+                });
+            }
+            return;
+        }
+
+        if (data.target) {
+            fillNpcInstanceTarget(data, additionalData);
+        }
+
+        createFunc.apply(null, args);
+    }
+
+    const removeFuncCallback = (args, data, additionalData) => {
+        if (!checkFullFillCase(data.case, additionalData)) {
+
+            let raj = Engine.rajController;
+
+            if (raj.getAddSrajToCaseQueue()) {
+                raj.addToCaseSrajQueue({
+                    callback: () => {
+                        removeFuncCallback(args, data, additionalData)
+                    }
+                });
+            }
+
+            return;
+        }
+
+        if (data.target) {
+            fillNpcInstanceTarget(data, additionalData);
+        }
+
+        removeFunc.apply(null, args);
+    }
+
+    const clearFuncCallback = (args, data, additionalData) => {
+        if (!getEngine().rajCase.checkFullFillCase(data.case, additionalData)) {
+
+            let raj = Engine.rajController;
+
+            if (raj.getAddSrajToCaseQueue()) {
+                raj.addToCaseSrajQueue({
+                    callback: () => {
+                        clearFuncCallback(args, data, additionalData)
+                    }
+                });
+            }
+
+            return;
+        }
+
+        clearFunc.apply(null, args);
+    }
+
+    const updateFuncCallback = (args, data, additionalData) => {
+        if (!getEngine().rajCase.checkFullFillCase(data.case, additionalData)) {
+
+            let raj = Engine.rajController;
+
+            if (raj.getAddSrajToCaseQueue()) {
+                raj.addToCaseSrajQueue({
+                    callback: () => {
+                        updateFuncCallback(args, data, additionalData)
+                    }
+                });
+            }
+
+            return;
+        }
+
+        updateFunc.apply(null, args);
+    }
+
     const checkCorrectRajConfigurationType = (configurationType) => {
         const CONFIGURATION_TYPE = RajActionData.CONFIGURATION_TYPE;
         switch (configurationType) {
@@ -471,43 +556,6 @@ module.exports = function() {
 
     }
 
-    //const attachRajObject = (obj) => {
-    //    let rajObject = new RajObject();
-    //    rajObject.init(obj);
-    //
-    //    obj.getRajObject = () => {
-    //        return rajObject;
-    //    };
-
-    //obj.checkDrawRajObject = () => {
-    //    return rajObject.checkDrawRajObject();
-    //};
-
-    //obj.setConfigurationType = (_configurationType) => {
-    //    rajObject.setConfigurationType(_configurationType);
-    //};
-
-    //obj.setAlwaysDraw = (_alwaysDraw) => {
-    //    rajObject.setAlwaysDraw(_alwaysDraw);
-    //};
-
-    //obj.getConfigurationType = () => {
-    //    return rajObject.getConfigurationType();
-    //};
-
-    //obj.getAlwaysDraw = () => {
-    //    return rajObject.getAlwaysDraw();
-    //};
-
-    //return rajObject
-    //};
-    //
-    //const updateRajObject = (data) => {
-    //    if (data.configurationType && checkCorrectRajConfigurationType(data.configurationType)) {
-    //        srajObject.setConfigurationType(data.configurationType);
-    //    }
-    //}
-
     const removeProcedure = (args) => {
         const FUNC = "removeProcedure";
 
@@ -519,19 +567,29 @@ module.exports = function() {
             return;
         }
 
-        if (!getEngine().rajCase.checkFullFillCase(data.case, additionalData)) {
-            return;
-        }
+        // if (!getEngine().rajCase.checkFullFillCase(data.case, additionalData)) {
+        //     return;
+        // }
+        //
+        // if (data.target) {
+        //     if (data.target.kind == RajActionData.TARGET_KIND.THIS_NPC_INSTANCE) {
+        //         data.target.kind = CanvasObjectTypeData.NPC;
+        //         data.target.id = additionalData.npcId;
+        //     }
+        // }
+        //
+        // removeFunc.apply(null, args);
 
-        if (data.target) {
-            if (data.target.kind == RajActionData.TARGET_KIND.THIS_NPC_INSTANCE) {
-                data.target.kind = CanvasObjectTypeData.NPC;
-                data.target.id = additionalData.npcId;
-            }
-        }
+        removeFuncCallback(args, data, additionalData);
 
-        removeFunc.apply(null, args);
     };
+
+    const fillNpcInstanceTarget = (data, additionalData) => {
+        if (data.target.kind == RajActionData.TARGET_KIND.THIS_NPC_INSTANCE) {
+            data.target.kind = CanvasObjectTypeData.NPC;
+            data.target.id = additionalData.npcId;
+        }
+    }
 
     const updateProcedure = (args) => {
         let data = args[0];
@@ -548,12 +606,18 @@ module.exports = function() {
         let data = args[0];
         let additionalData = args[1];
 
-        if (!getEngine().rajCase.checkFullFillCase(data.case, additionalData)) {
-            return;
-        }
+        // if (!getEngine().rajCase.checkFullFillCase(data.case, additionalData)) {
+        //     return;
+        // }
+        //
+        // clearFunc.apply(null, args);
 
-        clearFunc.apply(null, args);
+        clearFuncCallback(args, data, additionalData);
     };
+
+    const checkFullFillCase = (caseData, additionalData) => {
+        return getEngine().rajCase.checkFullFillCase(caseData, additionalData)
+    }
 
     const checkActionExist = (name) => {
         return actions[name] ? true : false
@@ -796,7 +860,10 @@ module.exports = function() {
                 if (!checkRGBAObject(parentModule, FUNC, oneAttrData, data)) shouldCorrect = TYPE.RGBA_COLOR;
                 break;
             case TYPE.RGB_OR_RGBA_COLOR:
-                if (!checkRGBOrRGBAObject(parentModule, FUNC, oneAttrData, data)) shouldCorrect = TYPE.RGB_OR_RGBA_COLOR;
+                if (!checkRGBOrRGBAObject(parentModule, FUNC, oneAttrData, data, true)) shouldCorrect = TYPE.RGB_OR_RGBA_COLOR;
+                break;
+            case TYPE.RGB_OR_RGBA_COLOR_OR_A:
+                if (!checkRGBOrRGBAObject(parentModule, FUNC, oneAttrData, data, true)) shouldCorrect = TYPE.RGB_OR_RGBA_COLOR_OR_A;
                 break;
             case TYPE.RGB_OR_RGBA_COLOR_GET_RANDOM_ELEMENTS:
                 if (!checkRGBOrRGBAObject(parentModule, FUNC, oneAttrData, data) || cGCD(oneAttrData)) shouldCorrect = TYPE.RGB_OR_RGBA_COLOR_GET_RANDOM_ELEMENTS;

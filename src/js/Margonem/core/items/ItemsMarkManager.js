@@ -1,5 +1,5 @@
-let ItemState = require('core/items/ItemState');
-let ItemLocation = require('core/items/ItemLocation');
+let ItemState = require('@core/items/ItemState');
+let ItemLocation = require('@core/items/ItemLocation');
 
 module.exports = function() {
 
@@ -18,7 +18,7 @@ module.exports = function() {
     this.newItem = function(item) {
         // if (Engine.hero.d.lvl < 25 && item.loc === "g" && !notOwnItem(item.id, item) && item.st === 0) { //for low lvl, items with "g" loc, own
         //if (Engine.hero.d.lvl < 25 && item.st === 0) {
-        if (Engine.hero.d.lvl < 25 && ItemState.isInBagSt(item.st)) {
+        if (getHeroLevel() < 25 && ItemState.isInBagSt(item.st)) {
 
             if (this.checkHealItem(item) && this.checkLvlRequired(item)) {
                 this.healItems.push(item.id);
@@ -28,7 +28,7 @@ module.exports = function() {
             if (this.checkLootBox(item)) {
                 this.lootboxes.push(item.id);
                 //this.markLootBoxes();
-                this.markOneLootBox(item.id, Engine.hero.d.lvl);
+                this.markOneLootBox(item.id, getHeroLevel());
             }
 
         }
@@ -67,7 +67,7 @@ module.exports = function() {
     this.removeItem = function(item) {
         // if (item.loc != "g" || Engine.hero.d.lvl >= 25) return;
         //if (item.loc != Engine.itemsFetchData.NEW_EQUIP_ITEM.loc || Engine.hero.d.lvl >= 25) return;
-        if (!ItemLocation.isEquipItemLoc(item.loc) || Engine.hero.d.lvl >= 25) return;
+        if (!ItemLocation.isEquipItemLoc(item.loc) || getHeroLevel() >= 25) return;
         this.healItems = this.healItems.filter(function(it) {
             return it != item.id; // remove id from heal items array
         });
@@ -76,18 +76,21 @@ module.exports = function() {
         });
     };
 
-    this.checkLvlRequired = (item) => !isset(item.getLvl()) || item.getLvl() <= Engine.hero.d.lvl;
+    this.checkLvlRequired = (item) => !isset(item.getLvlStat()) || item.getLvlStat() <= getHeroLevel();
 
     this.checkHealItem = function(item) {
-        return (isset(item._cachedStats.leczy) || isset(item._cachedStats.fullheal) || isset(item._cachedStats.perheal))
+        // return (isset(item._cachedStats.leczy) || isset(item._cachedStats.fullheal) || isset(item._cachedStats.perheal))
+        return item.issetLeczyStat() || item.issetFullhealStat() || item.issetPerhealStat()
     };
 
     this.checkLootBox = function(item) {
-        return (isset(item._cachedStats['lootbox']) || isset(item._cachedStats['lootbox2']));
+        // return (isset(item._cachedStats['lootbox']) || isset(item._cachedStats['lootbox2']));
+        return item.issetLootboxStat() || item.issetLootbox2Stat();
     };
 
     this.checkExpiresItem = function(item) {
-        return (isset(item._cachedStats['expires']));
+        // return (isset(item._cachedStats['expires']));
+        return item.issetExpiresStat();
     };
 
     this.checkEnhanceReagentItem = (item) => {
@@ -97,7 +100,8 @@ module.exports = function() {
     }
 
     this.checkNoBonusItem = function(item) {
-        return isset(item._cachedStats['bonus_not_selected']);
+        // return isset(item._cachedStats['bonus_not_selected']);
+        return item.issetBonus_not_selectedStat();
     };
 
     this.isLowHealth = function(hpp = false) {
@@ -152,7 +156,8 @@ module.exports = function() {
         //let clToRemove = 'mark--lootbox';
         let cl = 'noBonus';
 
-        if (isset(item._cachedStats['bonus_not_selected']) && isOwnItem(item)) {
+        // if (isset(item._cachedStats['bonus_not_selected']) && isOwnItem(item)) {
+        if (item.issetBonus_not_selectedStat() && isOwnItem(item)) {
             this.addClassToElements(item.$, cl, item);
             //if (views.length > 0) this.addClassToElements(views, cl, item);
         } else {
@@ -190,7 +195,7 @@ module.exports = function() {
     this.markLootBoxes = function(lvl = false) {
         if (!this.lootboxes.length) return;
 
-        lvl = !lvl ? Engine.hero.d.lvl : lvl;
+        lvl = !lvl ? getHeroLevel() : lvl;
 
         for (let id of this.lootboxes) {
             this.markOneLootBox(id, lvl);
@@ -203,7 +208,10 @@ module.exports = function() {
 
         if (!item) return
 
-        let showNotif = !item._cachedStats['lvl'] || item._cachedStats['lvl'] <= lvl;
+        // let showNotif = !item._cachedStats['lvl'] || item._cachedStats['lvl'] <= lvl;
+
+        let lvlStat = item.getLvlStat();
+        let showNotif = !lvlStat || lvlStat <= lvl;
 
 
         if (showNotif) this.addClassToElements(item.$, cl, item);
@@ -214,11 +222,14 @@ module.exports = function() {
         let cl = 'expired';
 
         const update = () => {
-            if (item._cachedStats['expires'] - unix_time() < 0) {
+            // if (item._cachedStats['expires'] - unix_time() < 0) {
+            let expiresStat = item.getExpiresStat()
+            if (expiresStat - unix_time() < 0) {
                 this.addClassToElements(item.$, cl, item);
                 //this.addClassToElements(views, cl, item);
                 if (isset(item.expireInterval)) clearInterval(item.expireInterval);
-            } else if (item._cachedStats['expires'] - unix_time() < 3 * 86400) {
+                // } else if (item._cachedStats['expires'] - unix_time() < 3 * 86400) {
+            } else if (expiresStat - unix_time() < 3 * 86400) {
                 // if (item.cl === 18 && item.loc === 'g') { //for keys with expires < 3 days in bag
                 //     this.addClassToElements(item.$, veryLowValueCl, item);
                 //     //this.addClassToElements(views, veryLowCl, item);
@@ -261,18 +272,18 @@ module.exports = function() {
     };
 
     this.heroHpChanged = function(hp) {
-        if (Engine.hero.d.lvl >= 25) return;
+        if (getHeroLevel() >= 25) return;
         let hpp = Math.ceil(hp * 100);
         this.markHealItems(hpp);
     };
 
     this.heroLvlChanged = function(lvl) {
-        if (Engine.hero.d.lvl >= 25) return;
+        if (getHeroLevel() >= 25) return;
         this.markLootBoxes(lvl);
     };
 
     this.compareAllItems = function(otherItems = {}) {
-        if (Engine.hero.d.lvl > 25) return;
+        if (getHeroLevel() > 25) return;
         if (Engine.shop) {
             let shopItems = Engine.shop.items;
             Object.assign(otherItems, shopItems);

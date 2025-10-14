@@ -1,4 +1,4 @@
-let CanvasObjectCommons = require('core/characters/CanvasObjectCommons.js');
+let CanvasObjectCommons = require('@core/characters/CanvasObjectCommons.js');
 
 module.exports = function() {
 

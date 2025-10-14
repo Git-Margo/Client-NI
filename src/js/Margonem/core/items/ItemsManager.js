@@ -1,8 +1,8 @@
 /**
  * Created by lukasz on 2014-10-21.
  */
-var Item = require('core/items/Item');
-var Storage = require('core/Storage');
+var Item = require('@core/items/Item');
+var Storage = require('@core/Storage');
 
 function isset(x) {
     return typeof(x) != 'undefined';
@@ -104,8 +104,13 @@ module.exports = function() {
         context.drawImage(oldCanvas, 0, 0);
         //noticeContext.clearRect(0, 0, noticeCanvas.width, noticeCanvas.height);
 
-        i.updateDynamicTips($clone, /timelimit=([0-9]+)/, 1000);
-        i.updateDynamicTips($clone, /expires=([0-9]+)/, 1000);
+        // i.updateDynamicTips($clone, /timelimit=([0-9]+)/, 1000);
+        // i.updateDynamicTips($clone, /expires=([0-9]+)/, 1000);
+
+        if (i.issetTimelimitStat() || i.issetExpiresStat()) {
+            i.updateDynamicTips($clone, 1000);
+        }
+
 
         let viewData; // = [$clone, context, newCanvas];
 
@@ -337,14 +342,14 @@ module.exports = function() {
 
     this.newItem = function(i, d, idFetchPackage, getNow) {
         if (Engine.reload && isset(d.loc) && d.loc == 'g' &&
-            !(isset(Engine.hero.oldLvl) && Engine.hero.oldLvl > Engine.hero.d.lvl && Engine.hero.d.lvl === 1) // dirty fix for lvl-down to 1 (items update - for Berufs)
+            !(isset(Engine.hero.oldLvl) && Engine.hero.oldLvl > getHeroLevel() && getHeroLevel() === 1) // dirty fix for lvl-down to 1 (items update - for Berufs)
         ) return;
         var item = new Item(i, d, 'item');
         items[i] = item;
 
         item.setIdFetchPackage(idFetchPackage);
-        item.update(d);
         if (getNow) item.firstGetNow();
+        item.update(d);
 
         //this.newItemInLocation(d.loc, item, iteration);       <--------------------- MOVE TO ITEM UPDATE ICON CASE
         //Engine.itemsMarkManager.newItem(item);                <--------------------- MOVE TO ITEM UPDATE ICON CASE
@@ -476,29 +481,29 @@ module.exports = function() {
         };
     };
 
-    this.updateTrackHighlights = function() {
-        for (let i in items) {
-            items[i].$.find('.highlight').removeClass('track');
-            //if (items[i].loc === "m" || Engine.items.getAllViewsById(i).length === 0) continue;
-            if (items[i].loc === Engine.itemsFetchData.NEW_GROUND_ITEM.loc || Engine.items.getAllViewsById(i).length === 0) continue;
-            Engine.items.getAllViewsById(i)[0].find('.highlight').removeClass('track');
-        }
-
-
-        return;
-        if (Engine.questTrack && Engine.questTrack.activeTrack) {
-            for (let c in Engine.questTrack.tasks) {
-                for (let j in items) {
-                    if (items[j].name == Engine.questTrack.tasks[c].name && Engine.questTrack.tasks[c].type === 'item') {
-                        items[j].$.find('.highlight').addClass('track');
-                        //if (items[j].loc === "m" || Engine.items.getAllViewsById(j).length === 0) continue;
-                        if (items[j].loc === Engine.itemsFetchData.NEW_GROUND_ITEM.loc || Engine.items.getAllViewsById(j).length === 0) continue;
-                        Engine.items.getAllViewsById(j)[0].find('.highlight').addClass('track').removeClass('nodisp');
-                    }
-                }
-            }
-        }
-    };
+    //this.updateTrackHighlights = function() {
+    //	for (let i in items) {
+    //		items[i].$.find('.highlight').removeClass('track');
+    //		//if (items[i].loc === "m" || Engine.items.getAllViewsById(i).length === 0) continue;
+    //		if (items[i].loc === Engine.itemsFetchData.NEW_GROUND_ITEM.loc || Engine.items.getAllViewsById(i).length === 0) continue;
+    //		Engine.items.getAllViewsById(i)[0].find('.highlight').removeClass('track');
+    //	}
+    //
+    //
+    //	return;
+    //	if (Engine.questTrack && Engine.questTrack.activeTrack) {
+    //		for (let c in Engine.questTrack.tasks) {
+    //			for (let j in items) {
+    //				if (items[j].name == Engine.questTrack.tasks[c].name && Engine.questTrack.tasks[c].type === 'item') {
+    //					items[j].$.find('.highlight').addClass('track');
+    //					//if (items[j].loc === "m" || Engine.items.getAllViewsById(j).length === 0) continue;
+    //					if (items[j].loc === Engine.itemsFetchData.NEW_GROUND_ITEM.loc || Engine.items.getAllViewsById(j).length === 0) continue;
+    //					Engine.items.getAllViewsById(j)[0].find('.highlight').addClass('track').removeClass('nodisp');
+    //				}
+    //			}
+    //		}
+    //	}
+    //};
 
     this.testMyItems = function() {
         let o = {};
@@ -621,9 +626,10 @@ module.exports = function() {
             case e.itemsFetchData.NEW_PRIVATE_DEPO_ITEM.loc:
                 if (e.depo) {
                     let activeCard = e.depo.getVisible();
-                    let nrCardOfItem = Math.floor(item.getX() / 12);
+                    //let nrCardOfItem 	= Math.floor(item.getX() / 14);
+                    let tabIndexOfItem = e.depo.getTabIndexOfItem(item);
 
-                    if (activeCard != nrCardOfItem) {
+                    if (activeCard != tabIndexOfItem) {
                         return false
                     }
                 }

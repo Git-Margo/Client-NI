@@ -1,3 +1,6 @@
+const {
+    getIconClose
+} = require('@core/HelpersTS');
 module.exports = function() {
     var self = this;
     var maxZIndex = 10;
@@ -82,8 +85,9 @@ module.exports = function() {
     };
 
     this.addCloseBtn = (item) => {
-        let close = document.createElement('div');
+        const close = document.createElement('div');
         close.className = 'close';
+        close.appendChild(getIconClose(true)[0]);
         close.addEventListener('click', this.onCloseClick.bind(this));
         $(close).tip(_t('delete'));
         item.appendChild(close);

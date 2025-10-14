@@ -1,10 +1,12 @@
-var tpl = require('core/Templates');
-// var Storage = require('core/Storage');
-var ServerStorageData = require('core/storage/ServerStorageData.js');
+const tpl = require('@core/Templates');
+const ServerStorageData = require('@core/storage/ServerStorageData.js');
+const Checkbox = require('@core/components/Checkbox');
+
 module.exports = function() {
     var self = this;
     var content;
     var goods = {};
+    let checkboxList = {}
 
     this.init = function() {
         this.initGoods();
@@ -89,31 +91,56 @@ module.exports = function() {
     };
 
     this.saveGoodsToStorage = function(objToSendToServerStorage) {
-        var allCheckbox = content.find('.one-checkbox');
-        var size = allCheckbox.length;
-        for (var i = 0; i < size; i++) {
-            var $e = allCheckbox.eq(i);
-            var kind = $e.data('kind');
-            if (!isset(goods[kind])) continue;
-            var state = $e.find('.checkbox').hasClass('active');
+        //var allCheckbox = content.find('.one-checkbox');
+        //var size = allCheckbox.length;
+        //for (var i = 0; i < size; i++) {
+        //	var $e = allCheckbox.eq(i);
+        //	var kind = $e.data('kind');
+        //	if (!isset(goods[kind])) continue;
+        //	var state = $e.find('.checkbox').hasClass('active');
+        //	goods[kind].state = state;
+        //	//Storage.set('greatMerchamp/' + kind, state);
+        //	objToSendToServerStorage[kind] = state;
+        //}
+
+        for (let kind in checkboxList) {
+            if (!isset(goods[kind])) {
+                continue;
+            }
+
+            let state = checkboxList[kind].getChecked();
+
             goods[kind].state = state;
-            //Storage.set('greatMerchamp/' + kind, state);
             objToSendToServerStorage[kind] = state;
         }
-        //allCheckbox.eq(0).data('kind')
     };
 
     this.createCheckbox = function(name, state, gr, $wrapper) {
-        var $oneCheck = tpl.get('one-checkbox');
-        var str = _t(name, null, 'greatMerchamp');
-        $wrapper.find('.gr-' + gr).append($oneCheck);
-        $oneCheck.data('kind', name);
-        $oneCheck.find('.checkbox').addClass(state ? 'active' : '');
-        $oneCheck.find('.label').html(str);
-        $oneCheck.click(function() {
-            var $check = $(this).find('.checkbox');
-            $check.toggleClass('active');
-        });
+        //var $oneCheck = tpl.get('one-checkbox');
+        //var str = _t(name, null, 'greatMerchamp');
+        //$wrapper.find('.gr-' + gr).append($oneCheck);
+        //$oneCheck.data('kind', name);
+        //$oneCheck.find('.checkbox').addClass(state ? 'active' : '');
+        //$oneCheck.find('.label').html(str);
+        //$oneCheck.click(function () {
+        //	var $check = $(this).find('.checkbox');
+        //	$check.toggleClass('active');
+        //});
+
+        let checkbox = new Checkbox.default({
+                label: _t(name, null, 'greatMerchamp'),
+                i: name,
+                checked: state,
+                highlight: false
+            },
+            (state) => {
+
+            }
+        );
+
+        checkboxList[name] = checkbox
+
+        $wrapper.find('.gr-' + gr).append($(checkbox.getCheckbox()));
     };
 
     this.close = function() {

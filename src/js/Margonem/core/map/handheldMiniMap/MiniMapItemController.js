@@ -1,6 +1,6 @@
- //let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObjectNew');
- let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObject');
- let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
+ //let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObjectNew');
+ let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObject');
+ let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
 
 
  module.exports = function() {

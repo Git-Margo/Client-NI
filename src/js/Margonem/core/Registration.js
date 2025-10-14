@@ -1,9 +1,9 @@
 /**
  * Created by Michnik on 2015-05-27.
  */
-var Tpl = require('core/Templates');
-//var Storage = require('core/Storage');
-//var Items = require('core/items/ItemsManager');
+var Tpl = require('@core/Templates');
+//var Storage = require('@core/Storage');
+//var Items = require('@core/items/ItemsManager');
 module.exports = function() {
     var self = this;
     var sections = null;
@@ -172,6 +172,7 @@ module.exports = function() {
         if (msg.login > 1 && msg.email > 1 && msg.marketing_consent > 1) {
             self.close();
             Engine.interface.get$interfaceLayer().find('.bm-register').css('display', 'none');
+            Engine.interface.get$interfaceLayer().find('.bm-register-light-mode').css('display', 'none');
             message('COMPLETED REGISTRATION!');
             return
         }

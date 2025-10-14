@@ -1,5 +1,5 @@
-let ItemState = require('core/items/ItemState');
-let ItemData = require('core/items/data/ItemData');
+let ItemState = require('@core/items/ItemState');
+let ItemData = require('@core/items/data/ItemData');
 
 module.exports = function() {
 
@@ -73,6 +73,14 @@ module.exports = function() {
                 'lvl': ['<', 20]
             }],
             [itemsDisableData.EXTRACTION]: [],
+            [itemsDisableData.SOCKET_ENCHANTMENT_SOURCE]: [{
+                'socket_content': ['>', 0]
+            }],
+            [itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER]: [],
+            [itemsDisableData.SOCKET_EXTRACTION]: [{
+                'socket_content': ['==', 0]
+            }],
+            [itemsDisableData.SOCKET_COMPOSITION]: [],
             [itemsDisableData.BONUS_RESELECT]: []
         };
 
@@ -87,6 +95,10 @@ module.exports = function() {
             [itemsDisableData.ENHANCE]: [],
             [itemsDisableData.ENHANCE_INGR]: [],
             [itemsDisableData.EXTRACTION]: ['enhancement_upgrade_lvl'],
+            [itemsDisableData.SOCKET_ENCHANTMENT_SOURCE]: [],
+            [itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER]: ['socket_enhancer'],
+            [itemsDisableData.SOCKET_EXTRACTION]: [],
+            [itemsDisableData.SOCKET_COMPOSITION]: ['socket_component'],
             [itemsDisableData.BONUS_RESELECT]: ['bonus']
         };
 
@@ -103,6 +115,10 @@ module.exports = function() {
             [itemsDisableData.ENHANCE]: [],
             [itemsDisableData.ENHANCE_INGR]: [],
             [itemsDisableData.EXTRACTION]: [],
+            [itemsDisableData.SOCKET_ENCHANTMENT_SOURCE]: [],
+            [itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER]: [],
+            [itemsDisableData.SOCKET_EXTRACTION]: [],
+            [itemsDisableData.SOCKET_COMPOSITION]: [],
             [itemsDisableData.BONUS_RESELECT]: []
         };
 
@@ -117,6 +133,10 @@ module.exports = function() {
             [itemsDisableData.ENHANCE]: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 29],
             [itemsDisableData.ENHANCE_INGR]: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 29],
             [itemsDisableData.EXTRACTION]: [],
+            [itemsDisableData.SOCKET_ENCHANTMENT_SOURCE]: [],
+            [itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER]: [],
+            [itemsDisableData.SOCKET_EXTRACTION]: [],
+            [itemsDisableData.SOCKET_COMPOSITION]: [],
             [itemsDisableData.BONUS_RESELECT]: []
         };
 
@@ -131,6 +151,10 @@ module.exports = function() {
             [itemsDisableData.ENHANCE]: null,
             [itemsDisableData.ENHANCE_INGR]: null,
             [itemsDisableData.EXTRACTION]: null,
+            [itemsDisableData.SOCKET_ENCHANTMENT_SOURCE]: null,
+            [itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER]: null,
+            [itemsDisableData.SOCKET_EXTRACTION]: null,
+            [itemsDisableData.SOCKET_COMPOSITION]: null,
             [itemsDisableData.BONUS_RESELECT]: null
         };
 
@@ -145,6 +169,10 @@ module.exports = function() {
             [itemsDisableData.ENHANCE]: null,
             [itemsDisableData.ENHANCE_INGR]: null, // This array is add dynamically --> this.startSpecificItemKindDisable as option
             [itemsDisableData.EXTRACTION]: null,
+            [itemsDisableData.SOCKET_ENCHANTMENT_SOURCE]: null,
+            [itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER]: null,
+            [itemsDisableData.SOCKET_EXTRACTION]: null,
+            [itemsDisableData.SOCKET_COMPOSITION]: null,
             [itemsDisableData.BONUS_RESELECT]: null
         };
 
@@ -167,6 +195,10 @@ module.exports = function() {
             [itemsDisableData.ENHANCE]: 'all',
             [itemsDisableData.ENHANCE_INGR]: 'all',
             [itemsDisableData.EXTRACTION]: null,
+            [itemsDisableData.SOCKET_ENCHANTMENT_SOURCE]: null,
+            [itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER]: null,
+            [itemsDisableData.SOCKET_EXTRACTION]: null,
+            [itemsDisableData.SOCKET_COMPOSITION]: null,
             [itemsDisableData.BONUS_RESELECT]: null
         };
 
@@ -181,6 +213,10 @@ module.exports = function() {
             [itemsDisableData.ENHANCE]: false,
             [itemsDisableData.ENHANCE_INGR]: true,
             [itemsDisableData.EXTRACTION]: true,
+            [itemsDisableData.SOCKET_ENCHANTMENT_SOURCE]: false,
+            [itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER]: true,
+            [itemsDisableData.SOCKET_EXTRACTION]: false,
+            [itemsDisableData.SOCKET_COMPOSITION]: false,
             [itemsDisableData.BONUS_RESELECT]: true
         };
 
@@ -373,16 +409,17 @@ module.exports = function() {
     this.statCheckCanDisabled = (item, oneStat) => {
         if (typeof oneStat === 'object') {
             for (const stat in oneStat) {
-                if (item.haveStat(stat)) {
+                if (item.issetItemStat(stat)) {
                     const [operator, value] = oneStat[stat],
-                        itemStatValue = item._cachedStats[stat];
+                        // itemStatValue = item._cachedStats[stat];
+                        itemStatValue = item.getItemStat(stat);
                     if (count(operator, itemStatValue, value)) return true; // e.g (itemLvl < lvl)
                 } else {
                     return true;
                 }
             }
         } else {
-            if (item.haveStat(oneStat)) return true;
+            if (item.issetItemStat(oneStat)) return true;
         }
         return false;
     };
@@ -419,7 +456,8 @@ module.exports = function() {
             //if (k == 'shop' && this.isOnlyBuyShop()) continue;
             if (k == Engine.itemsDisableData.SHOP && this.isOnlyBuyShop()) continue;
             if (expiresData == null) continue;
-            if (!item.haveStat('expires')) continue;
+            //if (!item.haveStat('expires'))           					continue;
+            if (!item.issetExpiresStat()) continue;
 
             let isExpired = item.checkExpires();
 

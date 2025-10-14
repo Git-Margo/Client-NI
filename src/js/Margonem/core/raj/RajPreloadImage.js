@@ -1,5 +1,5 @@
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 

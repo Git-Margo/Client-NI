@@ -1,7 +1,7 @@
-const RajData = require('core/raj/RajData');
-const RajRandomData = require('core/raj/rajRandom/RajRandomData.js');
-const RajActionManager = require('core/raj/rajAction/RajActionManager');
-const RajActionData = require('core/raj/rajAction/RajActionData');
+const RajData = require('@core/raj/RajData');
+const RajRandomData = require('@core/raj/rajRandom/RajRandomData.js');
+const RajActionManager = require('@core/raj/rajAction/RajActionManager');
+const RajActionData = require('@core/raj/rajAction/RajActionData');
 
 
 module.exports = function() {

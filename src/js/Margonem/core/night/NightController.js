@@ -1,8 +1,8 @@
-//let RajData      			= require('core/raj/RajData');
-let LightPoint = require('core/night/LightPoint');
-let FramesWithHoles = require('core/FramesWithHoles');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+//let RajData      			= require('@core/raj/RajData');
+let LightPoint = require('@core/night/LightPoint');
+let FramesWithHoles = require('@core/FramesWithHoles');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 
@@ -402,7 +402,7 @@ module.exports = function() {
     const setNightBackground = () => {
 
 
-        if (getEngine().map.config.getIsQuestFogEnabled()) {
+        if (getEngine().map.config.getQuestFog()) {
             return;
         }
 
@@ -458,7 +458,7 @@ module.exports = function() {
 
     const drawAllCharactersWitchDynamicHoles = () => {
 
-        mainNightCtx.save();
+        //mainNightCtx.save();
         mainNightCtx.globalCompositeOperation = 'destination-out';
 
         let dynamicLightList = Engine.dynamicLightsManager.getDynamicLightList();
@@ -476,10 +476,15 @@ module.exports = function() {
         let behaviorDynamicLightList = Engine.behaviorDynamicLightsManager.getBehaviorDynamicLightList();
 
         for (let k in behaviorDynamicLightList) {
-            behaviorDynamicLightList[k].draw(mainNightCtx, actualFrame);
-        }
+            let behaviorDynamicLight = behaviorDynamicLightList[k];
+            let f = behaviorDynamicLight.checkDrawRajObject;
 
-        mainNightCtx.restore();
+            if (!f || f && f()) {
+                behaviorDynamicLightList[k].draw(mainNightCtx, actualFrame);
+            }
+        }
+        mainNightCtx.globalCompositeOperation = "source-over";
+        //mainNightCtx.restore();
     };
 
     const checkDynamicLightsExist = () => {
@@ -506,6 +511,10 @@ module.exports = function() {
 
         var left = x * tileSize - Engine.map.offset[0] + clip0 - mapShift[0];
         var top = y * tileSize - Engine.map.offset[1] + clip1 - mapShift[1];;
+
+        if (!mainNightCanvas.width || !mainNightCanvas.height) {
+            return
+        }
 
         if (dynamicLight) {
 
@@ -596,19 +605,24 @@ module.exports = function() {
             //return;
         }
 
-        devConsoleLog(
-            [
-                "night",
-                'hour', hour,
-                "newOpacity", newNightOpacityVal,
-                'oldOpacity', dayNightCycleOpacity,
-                'minAlpha', minAlpha,
-                'objColor.a', objColor.a,
-                'normalizeOverrideDayNightCycleAlpha', Engine.overrideDayNightCycle.getAlphaFactor()
-            ]);
+        if (getDebug(CFG.DEBUG_KEYS.SRAJ)) {
+            devConsoleLog(
+                [
+                    "night",
+                    'hour', hour,
+                    "newOpacity", newNightOpacityVal,
+                    'oldOpacity', dayNightCycleOpacity,
+                    'minAlpha', minAlpha,
+                    'objColor.a', objColor.a,
+                    'normalizeOverrideDayNightCycleAlpha', Engine.overrideDayNightCycle.getAlphaFactor()
+                ]);
+        }
+
 
         if (dayNightCycleOpacity != newNightOpacityVal) {
-            devConsoleLog(['CHANGE', newNightOpacityVal, hour]);
+            if (getDebug(CFG.DEBUG_KEYS.SRAJ)) {
+                devConsoleLog(['CHANGE', newNightOpacityVal, hour]);
+            }
             createNight(true, newNightOpacityVal)
         }
     };
@@ -637,6 +651,8 @@ module.exports = function() {
     const resetLightPointsList = () => {
         lightPointsList = [];
     };
+
+
 
     const getOrder = function() {
         //return 399;
@@ -717,8 +733,9 @@ module.exports = function() {
 
         for (let k in behaviorDynamicLightList) {
             let add = false;
-            let onlyNight = behaviorDynamicLightList[k].getOnlyNight();
-            let oneBehaviorDynamicLight = behaviorDynamicLightList[k].getLight();
+            let oneBehaviorDynamicObject = behaviorDynamicLightList[k];
+            let onlyNight = oneBehaviorDynamicObject.getOnlyNight();
+            let oneBehaviorDynamicLight = oneBehaviorDynamicObject.getLight();
 
             if (!oneBehaviorDynamicLight) continue;
 
@@ -729,7 +746,13 @@ module.exports = function() {
             } else add = true;
 
 
-            if (add) a.push(oneBehaviorDynamicLight);
+            if (add) {
+                let f = oneBehaviorDynamicObject.checkDrawRajObject;
+
+                if (!f || f && f()) {
+                    a.push(oneBehaviorDynamicLight);
+                }
+            }
         }
 
         if (ready) a.push(this);
@@ -776,6 +799,12 @@ module.exports = function() {
         alwaysDraw = _alwaysDraw
     };
 
+    const refreshFilter = () => {
+        for (let i = 0; i < lightPointsList.length; i++) {
+            lightPointsList[i].updateFilterImage();
+        }
+    }
+
     this.getAlwaysDraw = getAlwaysDraw;
     this.setAlwaysDraw = setAlwaysDraw;
 
@@ -802,4 +831,5 @@ module.exports = function() {
     this.getDayNightCycleOpacity = getDayNightCycleOpacity;
     this.rebulitInterval = rebulitInterval;
     this.getRayData = getRayData;
+    this.refreshFilter = refreshFilter;
 };

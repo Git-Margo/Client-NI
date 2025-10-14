@@ -5,7 +5,7 @@ import {
 
 export {};
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 declare const _t: (name: string, val ? : string | {} | null, category ? : string) => string;
 

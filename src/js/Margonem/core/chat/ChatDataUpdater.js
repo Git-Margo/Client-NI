@@ -1,7 +1,7 @@
-var ChatData = require('core/chat/ChatData');
-let CodeMessageData = require('core/codeMessage/CodeMessageData');
+var ChatData = require('@core/chat/ChatData');
+let CodeMessageData = require('@core/codeMessage/CodeMessageData');
 
-var ServerStorageData = require('core/storage/ServerStorageData.js');
+var ServerStorageData = require('@core/storage/ServerStorageData.js');
 
 module.exports = function() {
 
@@ -287,6 +287,8 @@ module.exports = function() {
             };
 
             getEngine().chatController.addMessage(preparedMessageData)
+
+            getEngine().chatController.soundNoticePrivateMessage(id, channel);
         }
     };
 

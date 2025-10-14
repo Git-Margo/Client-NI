@@ -1,6 +1,6 @@
-let ProfData = require('core/characters/ProfData');
-var TutorialData = require('core/tutorial/TutorialData');
-var SkillsData = require('core/skills/SkillsData');
+let ProfData = require('@core/characters/ProfData');
+var TutorialData = require('@core/tutorial/TutorialData');
+var SkillsData = require('@core/skills/SkillsData');
 
 module.exports = function() {
 

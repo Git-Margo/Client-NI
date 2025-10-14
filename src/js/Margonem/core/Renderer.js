@@ -6,18 +6,22 @@ module.exports = function() {
     let list = [];
     let highestOrderWithoutSortList = [];
     let weatherOrderWithoutSortList = [];
+    let mapBorderOrderWithoutSortList = [];
     let activeColliders = [];
+    let fullNightDataDrawer = [];
 
     let nightObject = null;
     let questObject = null;
     let warShadowObject = null;
 
-    const HIGHEST_ORDER_WITHOUT_SORT = 20005;
-    const WAR_SHADOW_ORDER_WITHOUT_SORT = 20004;
-    const QUEST_MAP_ORDER_WITHOUT_SORT = 20003;
+    const HIGHEST_ORDER_WITHOUT_SORT = 20006;
+    const WAR_SHADOW_ORDER_WITHOUT_SORT = 20005;
+    const QUEST_MAP_ORDER_WITHOUT_SORT = 20004;
+    const MAP_BORDER_ORDER_WITHOUT_SORT = 20003;
     const NIGHT_ORDER_WITHOUT_SORT = 20002;
-    const WEATHER_ORDER_WITHOUT_SORT = 20001;
-    const WITHOUT_SORT = 20000;
+    const FULL_BLACK_NIGHT_DATA_DRAWER_WITHOUT_SORT = 20001;
+    const WEATHER_ORDER_WITHOUT_SORT = 20000;
+    const WITHOUT_SORT = 19999;
 
     let screeSize = {
         x: null,
@@ -57,6 +61,11 @@ module.exports = function() {
                         continue;
                     }
 
+                    if (order == MAP_BORDER_ORDER_WITHOUT_SORT) {
+                        mapBorderOrderWithoutSortList.push(e);
+                        continue;
+                    }
+
                     if (order == QUEST_MAP_ORDER_WITHOUT_SORT) {
                         questObject = e;
                         continue;
@@ -64,6 +73,11 @@ module.exports = function() {
 
                     if (order == NIGHT_ORDER_WITHOUT_SORT) {
                         nightObject = e;
+                        continue;
+                    }
+
+                    if (order == FULL_BLACK_NIGHT_DATA_DRAWER_WITHOUT_SORT) {
+                        fullNightDataDrawer.push(e);
                         continue;
                     }
 
@@ -121,6 +135,14 @@ module.exports = function() {
 
         for (let j = 0; j < weatherOrderWithoutSortList.length; j++) {
             weatherOrderWithoutSortList[j].draw(ctx);
+        }
+
+        for (let j = 0; j < mapBorderOrderWithoutSortList.length; j++) {
+            mapBorderOrderWithoutSortList[j].draw(ctx);
+        }
+
+        for (let j = 0; j < fullNightDataDrawer.length; j++) {
+            fullNightDataDrawer[j].draw(ctx);
         }
 
         if (nightObject) {
@@ -201,9 +223,17 @@ module.exports = function() {
         return QUEST_MAP_ORDER_WITHOUT_SORT;
     };
 
+    this.getMapBorderOrderWithoutSort = () => {
+        return MAP_BORDER_ORDER_WITHOUT_SORT;
+    };
+
     this.getWarShadowOrderWithoutSort = () => {
         return WAR_SHADOW_ORDER_WITHOUT_SORT;
     };
+
+    this.getFullBlackNightDataDrawerWithoutSort = () => {
+        return FULL_BLACK_NIGHT_DATA_DRAWER_WITHOUT_SORT
+    }
 
     this.getNightOrderWithoutSort = () => {
         return NIGHT_ORDER_WITHOUT_SORT;
@@ -217,6 +247,8 @@ module.exports = function() {
         list = [];
         weatherOrderWithoutSortList = [];
         highestOrderWithoutSortList = [];
+        mapBorderOrderWithoutSortList = [];
+        fullNightDataDrawer = [];
 
         nightObject = null;
         questObject = null;

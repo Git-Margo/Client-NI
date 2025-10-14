@@ -1,8 +1,8 @@
-let ScreenEffect = require('core/screenEffects/ScreenEffect.js');
-let ScreenEffectData = require('core/screenEffects/ScreenEffectData.js');
-//let RajRandomElements   = require('core/raj/RajRandomElements');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+let ScreenEffect = require('@core/screenEffects/ScreenEffect.js');
+let ScreenEffectData = require('@core/screenEffects/ScreenEffectData.js');
+//let RajRandomElements   = require('@core/raj/RajRandomElements');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 
@@ -20,6 +20,7 @@ module.exports = function() {
     const initRajActionsManager = () => {
         const TYPE = RajActionData.TYPE;
         const mode = ScreenEffectData.mode;
+        const position = ScreenEffectData.position;
 
         rajActionManager = new RajActionManager();
         rajActionManager.init(
@@ -99,6 +100,30 @@ module.exports = function() {
                                                             type: TYPE.RGBA_COLOR
                                                         }
                                                     }
+                                                }
+                                            },
+                                            [mode.IMAGE]: {
+                                                url: true,
+                                                withCreateInstantFadeIn: {
+                                                    type: TYPE.BOOL,
+                                                    optional: true
+                                                },
+                                                withRemoveInstantFadeOut: {
+                                                    type: TYPE.BOOL,
+                                                    optional: true
+                                                },
+                                                //position                    : {specificVal: [position.CENTER, position.LEFT_TOP, position.LEFT_BOTTOM, position.RIGHT_TOP, position.RIGHT_BOTTOM]},
+                                                //position                    : {type: TYPE.ARRAY, elementInArray: {
+                                                //
+                                                //    }
+                                                //}
+                                                horizontal: {
+                                                    specificVal: [position.LEFT, position.CENTER, position.RIGHT],
+                                                    optional: true
+                                                },
+                                                vertical: {
+                                                    specificVal: [position.TOP, position.CENTER, position.BOTTOM],
+                                                    optional: true
                                                 }
                                             }
                                         }
@@ -234,6 +259,7 @@ module.exports = function() {
     this.getDrawableList = getDrawableList;
     this.update = update;
     this.updateData = updateData;
+    this.checkEffectExist = checkEffectExist;
     this.removeScreenEffect = removeScreenEffect;
     this.resize = resize;
 }

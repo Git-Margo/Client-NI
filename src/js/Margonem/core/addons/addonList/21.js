@@ -1,5 +1,5 @@
-const Slider = require('core/components/Slider');
-const ServerStorageData = require('core/storage/ServerStorageData.js');
+const Slider = require('@core/components/Slider');
+const ServerStorageData = require('@core/storage/ServerStorageData.js');
 
 
 module.exports = function() {

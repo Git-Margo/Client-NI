@@ -6,13 +6,22 @@ module.exports = {
     },
     MY_AUCTION: 'MY_AUCTION',
     UPDATE_PAGES: 'UPDATE_PAGES',
+    PREFIX_CARD: "CARD_",
+    // KIND_MY_AUCTION 	: {
+    // 	MY_AUCTION_OFF	: 1,
+    // 	MY_WATCH		: 3,
+    // 	MY_BID			: 2
+    // },
+    // KIND_OTHERS_AUCTION: {
+    // 	ALL_AUCTION: 4
+    // },
     KIND_MY_AUCTION: {
-        MY_AUCTION_OFF: 1,
-        MY_WATCH: 3,
-        MY_BID: 2
+        MY_AUCTION_OFF: "MY_AUCTION_OFF",
+        MY_WATCH: "MY_WATCH",
+        MY_BID: "MY_BID"
     },
     KIND_OTHERS_AUCTION: {
-        ALL_AUCTION: 4
+        ALL_AUCTION: "ALL_AUCTION"
     },
     TYPE_OF_AUCTION: {
         NORMAL: 'NORMAL',

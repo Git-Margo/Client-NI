@@ -1,4 +1,4 @@
-var Finder = require('core/searchPath/finder/Finder');
+var Finder = require('@core/searchPath/finder/Finder');
 
 var ChunkAreaFinder = function(node) {
     Finder.call(this);

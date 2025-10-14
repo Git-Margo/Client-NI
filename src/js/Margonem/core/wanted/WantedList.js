@@ -1,10 +1,10 @@
 /**
  * Created by Michnik on 2015-04-21.
  */
-var Tpl = require('core/Templates');
-// var Window = require('core/Window');
-var Store = require('core/Storage');
-var StorageFuncWindow = require('core/window/StorageFuncWindow');
+var Tpl = require('@core/Templates');
+// var Window = require('@core/Window');
+var Store = require('@core/Storage');
+var StorageFuncWindow = require('@core/window/StorageFuncWindow');
 
 module.exports = function() {
     var self = this;
@@ -92,10 +92,22 @@ module.exports = function() {
     };
 
     this.createWantedTip = function($oneW, oneD) {
-        var prof = isset(oneD.prof) ? oneD.prof : '';
-        var lvl = oneD.lvl == 0 ? '' : '(' + oneD.lvl + prof + ')';
+        //var prof = isset(oneD.prof) ? oneD.prof : '';
+        //var lvl = oneD.lvl == 0 ? '' : '(' + oneD.lvl + prof + ')';
+
+        let charData = {
+            showNick: true,
+            nick: oneD.nick,
+            level: oneD.lvl,
+            prof: oneD.prof,
+            operationLevel: oneD.oplvl,
+            htmlElement: true
+        };
+        let info = getCharacterInfo(charData);
+
         var wanted = '<div class=wanted></div>';
-        var nick = '<div class="nick">' + oneD.nick + ' ' + lvl + '</div>';
+        //var nick = '<div class="nick">' + oneD.nick + ' ' + lvl + '</div>';
+        var nick = '<div class="nick">' + info + '</div>';
         const avatar = $('<div class="avatar-icon" />');
         createImgStyle(avatar, CFG.a_opath + oneD.icon);
         var wrapper = '<div class="info-wrapper">' + nick + '</div>';

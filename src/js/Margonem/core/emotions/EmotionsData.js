@@ -1,5 +1,6 @@
 module.exports = {
     OBJECT_TYPE: {
+        MAP: 4,
         PET: 3,
         NPC: 2,
         OTHER: 1,
@@ -24,7 +25,8 @@ module.exports = {
         YELLOW_EXCLAMATION: 'y_exclamation',
         NORMAL_QUEST: "NORMAL_QUEST",
         ELITE_HERE: "elite_here",
-        AGGRESSIVE: "aggressive",
+        AGGRESSIVE_1: "aggressive_1",
+        AGGRESSIVE_2: "aggressive_2",
         WALKOVER: "walkOver",
 
         FLAG_ENGLAND: 'flag-anglia.gif',

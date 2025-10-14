@@ -1,5 +1,5 @@
-var tpl = require('core/Templates');
-var StorageFuncBattle = require('core/battle/StorageFuncBattle');
+var tpl = require('@core/Templates');
+var StorageFuncBattle = require('@core/battle/StorageFuncBattle');
 
 module.exports = function() {
 
@@ -133,6 +133,7 @@ module.exports = function() {
             }
         });
         wnd.addToAlertLayer();
+        wnd.updateSizeWindow();
         wnd.center();
 
         $crazyWndScrollbar = wnd.$.find('.scroll-wrapper');
@@ -161,6 +162,10 @@ module.exports = function() {
     }
 
     const updateScrollbar = () => {
+        if (!$crazyWndScrollbar) {
+            return
+        }
+
         $crazyWndScrollbar.trigger('updateWhenBottom');
     }
 
@@ -215,6 +220,11 @@ module.exports = function() {
         else hide();
     }
 
+    const addToLogLogContent = ($logContent) => {
+        let $scroll = wnd.$.find('.scroll-pane');
+        $scroll[0].innerHTML += $logContent[0].innerHTML;
+    };
+
     //const toggleSizeOpt = () => {
     //    setSizeOpt(sizeOpt + 1);
     //
@@ -233,5 +243,6 @@ module.exports = function() {
     this.hide = hide;
     this.clear = clear;
     this.appendMsg = appendMsg;
+    this.addToLogLogContent = addToLogLogContent;
 
 }

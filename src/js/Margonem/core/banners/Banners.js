@@ -1,8 +1,7 @@
-const KUTE = require("kute.js").default;
-const tpl = require('core/Templates');
-const StaminaShop = require('core/shop/StaminaShop');
-const DraconiteShop = require('core/shop/DraconiteShop');
-const Premium = require('core/Premium');
+const tpl = require('@core/Templates');
+const StaminaShop = require('@core/shop/StaminaShop');
+const DraconiteShop = require('@core/shop/DraconiteShop');
+const Premium = require('@core/Premium');
 
 module.exports = function() {
     let now;
@@ -68,7 +67,7 @@ module.exports = function() {
         for (const i in dataBanners) {
             if (isset(dataBanners[i]) && dataBanners[i]) {
                 if (!isset(dataBanners[i].lvl) ||
-                    isset(dataBanners[i].lvl) && Engine.hero.d.lvl >= dataBanners[i].lvl[0] && Engine.hero.d.lvl <= dataBanners[i].lvl[1]) {
+                    isset(dataBanners[i].lvl) && getHeroLevel() >= dataBanners[i].lvl[0] && getHeroLevel() <= dataBanners[i].lvl[1]) {
                     t.push(i);
                 }
             }
@@ -78,7 +77,11 @@ module.exports = function() {
 
     this.initContent = () => {
         $content = tpl.get('b_wrapper');
-        Engine.interface.get$interfaceLayer().find('.right-column').find('.inner-wrapper .bottom-wrapper').append($content);
+        //Engine.interface.get$interfaceLayer().find('.right-column').find('.inner-wrapper .bottom-wrapper').append($content);
+
+        let $rightMainColumnWrapper = Engine.interface.getRightMainColumnWrapper();
+
+        $rightMainColumnWrapper.find('.bottom-wrapper').append($content);
     };
 
     this.initHover = () => {
@@ -227,17 +230,20 @@ module.exports = function() {
             block = false;
         }
 
-        //if (!Engine.opt(8)) {
         if (isSettingsOptionsInterfaceAnimationOn()) {
-            KUTE.fromTo('.all-b', {
-                translateX: -BANNER_WIDTH * 2
-            }, {
-                translateX: -BANNER_WIDTH
-            }, {
+            const element = document.querySelector('.all-b');
+            const animation = element.animate([{
+                    transform: `translateX(${-BANNER_WIDTH * 2}px)`
+                },
+                {
+                    transform: `translateX(${-BANNER_WIDTH}px)`
+                }
+            ], {
                 duration: 500,
-                easing: 'easingCubicOut',
-                onComplete
-            }).start();
+                easing: 'cubic-bezier(0.33, 1, 0.68, 1)',
+                fill: 'forwards'
+            });
+            animation.onfinish = onComplete;
         } else {
             onComplete();
         }
@@ -256,21 +262,23 @@ module.exports = function() {
         const $banners = $content.find('.all-b');
         const onComplete = () => {
             $banners.children().first().remove();
-            $banners.css('transform', `translateX(-${BANNER_WIDTH}px)`);
             block = false;
         }
 
-        //if (!Engine.opt(8)) {
         if (isSettingsOptionsInterfaceAnimationOn()) {
-            KUTE.fromTo('.all-b', {
-                translateX: -BANNER_WIDTH
-            }, {
-                translateX: -BANNER_WIDTH * 2
-            }, {
+            const element = document.querySelector('.all-b');
+            const animation = element.animate([{
+                    transform: `translateX(${-BANNER_WIDTH}px)`
+                },
+                {
+                    transform: `translateX(${-BANNER_WIDTH * 2}px)`
+                }
+            ], {
                 duration: 500,
-                easing: 'easingCubicOut',
-                onComplete
-            }).start();
+                easing: 'cubic-bezier(0.33, 1, 0.68, 1)',
+                fill: 'backwards'
+            });
+            animation.onfinish = onComplete;
         } else {
             onComplete();
         }

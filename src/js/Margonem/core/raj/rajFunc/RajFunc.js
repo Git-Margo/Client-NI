@@ -1,4 +1,4 @@
-const RajFuncData = require('core/raj/rajFunc/RajFuncData.js');
+const RajFuncData = require('@core/raj/rajFunc/RajFuncData.js');
 
 module.exports = function() {
 
@@ -51,7 +51,7 @@ module.exports = function() {
     };
 
     const getFunc = (fullRecordData, data) => {
-        if (isset(data.x)) debugger;
+        //if (isset(data.x)) debugger;
         if (!checkCorrectDataGetFunc(data)) return null;
 
         let result = getFuncResult(data);
@@ -73,6 +73,7 @@ module.exports = function() {
 
         const RESULT_TYPE = RajFuncData.resultType;
         const LINEAR = RajFuncData.kind.LINEAR;
+        const PARABOLA = RajFuncData.kind.PARABOLA;
 
         if (![RESULT_TYPE.INT, RESULT_TYPE.FLOAT].includes(data.resultType)) {
             errorReport(moduleData.fileName, FUNC, ' Available val of resultType attr : int or float!', data);
@@ -94,8 +95,9 @@ module.exports = function() {
             return false;
         }
 
-        if (data.kind != LINEAR) {
-            errorReport(moduleData.fileName, FUNC, 'Only kind linear is supported!', data);
+        //if (data.kind != LINEAR) {
+        if (![LINEAR, PARABOLA].includes(data.kind)) {
+            errorReport(moduleData.fileName, FUNC, 'Only kind linear, or parabola is supported!', data);
             return false;
         }
 
@@ -139,6 +141,36 @@ module.exports = function() {
 
         }
 
+
+        if (data.kind == PARABOLA) {
+            if (!isset(data.pattern.a)) {
+                errorReport(moduleData.fileName, FUNC, 'Attr pattern.a is obligatory!', data);
+                return false;
+            }
+            if (!isNumberFunc(data.pattern.a)) {
+                errorReport(moduleData.fileName, FUNC, 'Attr pattern.a have to number!', data);
+                return false;
+            }
+            if (isset(data.pattern.p)) {
+
+                if (!isNumberFunc(data.pattern.p)) {
+                    errorReport(moduleData.fileName, FUNC, 'Attr pattern.b have to number!', data);
+                    return false;
+                }
+            }
+            if (isset(data.pattern.q)) {
+
+                if (!isNumberFunc(data.pattern.q)) {
+                    errorReport(moduleData.fileName, FUNC, 'Attr pattern.b have to number!', data);
+                    return false;
+                }
+            }
+            if (data.pattern.a == 0) {
+                errorReport(moduleData.fileName, FUNC, 'In parabola attr pattern.a can not be 0!', data);
+                return false;
+            }
+        }
+
         return true;
     };
 
@@ -149,6 +181,8 @@ module.exports = function() {
         let outputYVarName = RajFuncData.defaultData.outputYVarName;
         let vector = [0, 0];
         let patternB = 0;
+        let patternP = 0;
+        let patternQ = 0;
 
         let pattern = data.pattern;
         let inputX = data.inputX;
@@ -157,14 +191,29 @@ module.exports = function() {
         if (isset(data.outputXVarName)) outputXVarName = data.outputXVarName;
         if (isset(data.outputYVarName)) outputYVarName = data.outputYVarName;
         if (isset(data.pattern.b)) patternB = data.pattern.b;
+        if (isset(data.pattern.p)) patternP = data.pattern.p;
+        if (isset(data.pattern.q)) patternQ = data.pattern.q;
         if (isset(data.vector)) {
             vector[0] = data.vector[0];
             vector[1] = data.vector[1];
         }
 
+        //debugger;
+        //result[outputXVarName] = data.inputX + vector[0];
 
-        result[outputXVarName] = data.inputX + vector[0];
-        result[outputYVarName] = getYFromLinearFunc(inputX, pattern.a, patternB, vector, data.resultType);
+        let funcResultByKind = null;
+
+        switch (data.kind) {
+            case RajFuncData.kind.LINEAR:
+                result[outputXVarName] = data.inputX + vector[0];
+                funcResultByKind = getYFromLinearFunc(inputX, pattern.a, patternB, vector, data.resultType);
+                break;
+            case RajFuncData.kind.PARABOLA:
+                result[outputXVarName] = data.inputX;
+                funcResultByKind = getYFromParabolaFunc(inputX, pattern.a, patternP, patternQ, data.resultType);
+                break;
+        }
+        result[outputYVarName] = funcResultByKind;
 
         return result;
     };
@@ -173,6 +222,22 @@ module.exports = function() {
         let y = a * x + b;
 
         y += vector[1];
+
+        const RESULT_TYPE = RajFuncData.resultType;
+
+        switch (resultType) {
+            case RESULT_TYPE.INT:
+                return Math.round(y);
+            case RESULT_TYPE.FLOAT:
+                return y;
+        }
+    };
+
+    const getYFromParabolaFunc = (x, a, p, q, resultType) => {
+        //let y = a * Math.pow(x, 2) + b * x + c;
+        let y = a * Math.pow(x - p, 2) + q;
+
+        //y += vector[1];
 
         const RESULT_TYPE = RajFuncData.resultType;
 

@@ -3,38 +3,20 @@ import {
     siblings
 } from './HelpersTS';
 import Button from './components/Button';
+import CharacterList, {
+    TCharacterData
+} from "./CharacterList";
 
-const Tpl = require('core/Templates');
-const Storage = require('core/Storage');
+const Tpl = require('@core/Templates');
+var Storage = require('@core/Storage');
 
 declare const Engine: any;
 declare const _t: any;
 declare const _g: any;
-declare const CFG: any;
 declare const setCookie: any;
-declare const getCookie: any;
 declare const getMainDomain: any;
-declare const createImgStyle: any;
-
-type TCharacterData = {
-    clan: number;
-    clan_rank: number;
-    gender: string;
-    icon: string;
-    id: number;
-    last: number;
-    lvl: number;
-    nick: string;
-    prof: string;
-    world: string;
-};
-
-type TList = {
-    [name: string]: TCharacterData;
-};
 
 export default class ChangePlayer {
-    private list: TList = {};
     private id: null | number = null;
 
     private wnd: any;
@@ -44,8 +26,20 @@ export default class ChangePlayer {
     private bottomContainerEl: HTMLElement;
     private errorContainerEl: HTMLElement;
     private successContainerEl: HTMLElement;
+    private charlist: CharacterList;
+    private sizeArray: {
+        w ? : number,
+        h ? : number
+    } [] = [{
+            w: 235
+        },
+        {
+            w: 330
+        }
+    ];
 
     constructor() {
+        this.charlist = Engine.characterList;
         this.initWindow();
         this.initScroll();
 
@@ -55,7 +49,11 @@ export default class ChangePlayer {
         this.characterGroupContainerEl = this.wndEl.querySelector('.relogger__top .relogger__characters') as HTMLElement;
         this.bottomContainerEl = this.wndEl.querySelector('.relogger__bottom') as HTMLElement;
 
-        this.call();
+        if (this.charlist.getList().length > 0) {
+            this.createList();
+        } else {
+            this.setErrorLabel()
+        }
         this.createLogoutBtn();
     }
 
@@ -67,10 +65,6 @@ export default class ChangePlayer {
 
     updateScroll() {
         $('.scroll-wrapper', this.wnd.$).trigger('update');
-    }
-
-    getList() {
-        return this.list;
     }
 
     createLogoutBtn() {
@@ -89,7 +83,7 @@ export default class ChangePlayer {
 
     getDestinationCharacter() {
         if (this.id !== null) {
-            return this.list[this.id];
+            return this.charlist.getCharacter(this.id);
         }
         return null;
     }
@@ -104,6 +98,10 @@ export default class ChangePlayer {
             nameRefInParent: 'wnd',
             type: Engine.windowsData.type.TRANSPARENT,
             addClass: 'relogger-window',
+            manageSize: {
+                sizeArray: this.sizeArray,
+                callback: () => this.windowResizeCallback()
+            },
             manageCollapse: {
                 defaultVal: 0,
                 callbackFn: (state: boolean) => this.collapse(state) /* , leftPos: '100px'*/
@@ -119,46 +117,40 @@ export default class ChangePlayer {
             },
         });
         this.wndEl = this.wnd.$[0];
+        this.wnd.updatePos();
         this.wnd.addToAlertLayer();
+        this.wnd.updateSizeWindow();
+    }
+
+    windowResizeCallback() {
+        const contentEl = this.wndEl.querySelector('.relogger') as HTMLElement;
+        const targetWidth = this.sizeArray[0].w;
+        const isAtTargetWidth = contentEl.offsetWidth === targetWidth;
+
+        contentEl.classList.toggle('relogger--bigger', !isAtTargetWidth);
+        this.updateScroll();
     }
 
     collapse(state: boolean) {
         this.updateScroll();
     }
 
-    call() {
-        const hs3 = getCookie('hs3');
-        const url = Engine.worldConfig.getApiDomain() + '/account/charlist?hs3=' + hs3;
-        this.clearError();
-
-        $.ajax({
-            url: url,
-            xhrFields: {
-                withCredentials: true,
-            },
-            crossDomain: true,
-            success: (data) => {
-                if ((typeof data === 'object' && data.error) || data === 'no cookies' || data.length === 0) {
-                    this.onError();
-                    return;
-                }
-                this.onSuccess(data);
-            },
-            error: () => {
-                this.onError();
-            },
-        });
-    }
-
-    onSuccess(data: any) {
-        const accountId = Engine.hero.d.account;
-        Storage.set(`charlist/${accountId}`, data);
-        this.prepareList(data);
-        // console.log(this.list);
+    createList() {
+        this.clearError()
         this.createWorldList();
         this.createCharacters();
         this.selectCurrentWorld();
         this.updateScroll();
+    }
+
+    changePlayer(characterId: number) {
+        if (Engine.hero.d.id == characterId) return;
+        if (Engine.logOff) {
+            _g('logoff&a=stop');
+            setTimeout(this.changePlayerRequest.bind(null, characterId), 300);
+        } else {
+            this.changePlayerRequest(characterId);
+        }
     }
 
     changePlayerRequest = (id: number) => {
@@ -170,63 +162,22 @@ export default class ChangePlayer {
     };
 
     createCharacters() {
-        const sortedCharacters = Object.values(this.list).sort(
-            (a, b) =>
-            a.lvl - b.lvl || // sort by lvl
-            a.nick.localeCompare(b.nick), // sort alphabetically
-        );
-
-        sortedCharacters.map((char) => {
-            const worldName = char.world;
-            const characterEl = this.createOneCharacter(char) as HTMLElement;
+        this.charlist.getSortedCharacters().map((character) => {
+            const worldName = character.world;
+            const characterEl = this.createOneCharacter(character) as HTMLElement;
             this.characterGroupContainerEl.querySelector(`[data-world=${worldName}]`) !.appendChild(characterEl);
         });
     }
 
     createOneCharacter(charData: TCharacterData) {
-        const characterEl = document.createElement('div') as HTMLElement;
-        characterEl.classList.add('relogger__one-character');
-        // characterEl.classList.add(`d-${id}`);
-        if (Engine.hero.d.id == charData.id) {
-            characterEl.classList.add('disabled');
-        }
-        // createImgStyle($(characterEl), CFG.a_opath + icon, { height: '28px', width: '32px', }, { 'background-size': '400% 400%' }, 32);
-        createImgStyle($(characterEl), CFG.a_opath + charData.icon, {
-            height: '28px',
-            width: '32px',
-        }, {
-            'background-size': '400% 400%'
-        }, 32);
-        $(characterEl).tip(this.getCharacterTip(charData));
-        characterEl.addEventListener('click', () => {
-            if (Engine.hero.d.id == charData.id) return;
-            if (Engine.logOff) {
-                _g('logoff&a=stop');
-                setTimeout(this.changePlayerRequest.bind(null, charData.id), 300);
-            } else {
-                this.changePlayerRequest(charData.id);
-            }
+        return this.charlist.createCharacterAvatar(charData, {
+            onClickCallback: () => this.changePlayer(charData.id),
+            cssClass: 'relogger__one-character',
+            currentDisabled: true,
+            ...(Engine.hero.d.id === charData.id && {
+                customTip: _t('current_character', null, 'change_player')
+            })
         });
-        return characterEl;
-    }
-
-    getCharacterTip({
-        id,
-        lvl,
-        prof,
-        nick
-    }: TCharacterData) {
-        if (Engine.hero.d.id == id) return _t('current_character', null, 'change_player');
-
-        const data = {
-            nick,
-            d: {
-                id,
-                lvl,
-                prof,
-            },
-        };
-        return Engine.hero.setTipHeader(data);
     }
 
     createWorldCharacterGroup(world: string) {
@@ -237,7 +188,7 @@ export default class ChangePlayer {
     }
 
     createWorldList() {
-        const worlds = this.getWorldList();
+        const worlds = this.charlist.getWorldList();
         worlds.map((world) => {
             const worldEl = document.createElement('div');
             worldEl.classList.add('relogger__one-world');
@@ -247,17 +198,6 @@ export default class ChangePlayer {
             this.worldsContainerEl.appendChild(worldEl);
             this.createWorldCharacterGroup(world);
         });
-    }
-
-    getWorldList() {
-        const worlds: string[] = [];
-        Object.keys(this.list).map((e: string) => {
-            const worldName = this.list[e].world;
-            if (!worlds.includes(worldName)) {
-                worlds.push(worldName);
-            }
-        });
-        return worlds.sort();
     }
 
     selectWorld(world: string) {
@@ -277,23 +217,6 @@ export default class ChangePlayer {
         this.selectWorld(currentWorld);
     }
 
-    onError() {
-        const accountId = Engine.hero.d.account;
-        const oldData = Storage.get(`charlist/${accountId}`);
-        if (oldData) {
-            this.onSuccess(oldData);
-        } else {
-            this.setErrorLabel();
-        }
-    }
-
-    prepareList(_list: any) {
-        for (let i = 0; i < _list.length; i++) {
-            let id = parseInt(_list[i].id);
-            this.list[id] = _list[i];
-        }
-    }
-
     setErrorLabel() {
         this.errorContainerEl.textContent = _t('change_player_error %l%', {
             '%l%': getMainDomain()
@@ -307,12 +230,23 @@ export default class ChangePlayer {
         this.successContainerEl.style.display = 'block';
     }
 
-    reloadPlayer(idHero: number) {
-        const player = this.list[idHero];
+    reloadPlayer(characterId: number) {
+        const player = this.charlist.getCharacter(characterId);
+        if (!player) return;
+
         const d = new Date();
         d.setTime(d.getTime() + 3600000 * 24 * 30);
         const l = getMainDomain();
-        setCookie('mchar_id', idHero, d, '/', 'margonem.' + l, true);
+        setCookie('mchar_id', characterId, d, '/', 'margonem.' + l, true);
+
+        //let sub       = location.hostname.split('.')[0];
+        //
+        //if (sub == 'tabaluga') {
+        //  Storage.easySet(player.world, "CURRENT_SEVER");
+        //  location.reload();
+        //  return;
+        //}
+
         window.location.replace('https://' + player.world + '.margonem.' + l);
     }
 

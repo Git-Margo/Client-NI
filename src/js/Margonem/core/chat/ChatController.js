@@ -1,14 +1,14 @@
-var ChatData = require('core/chat/ChatData.js');
-var ChatConfig = require('core/chat/ChatConfig.js');
-var ChatInputWrapper = require('core/chat/ChatInputWrapper');
-var ChatChannelCardWrapper = require('core/chat/ChatChannelCardWrapper');
-var ChatMessageWrapper = require('core/chat/ChatMessageWrapper');
-var ChatWindow = require('core/chat/ChatWindow');
-var ChatMessage = require('core/chat/ChatMessage');
-var ChatChannelsAvailable = require('core/chat/ChatChannelsAvailable');
-var ChatPrivateMessageData = require('core/chat/ChatPrivateMessageData');
-var ChatDataUpdater = require('core/chat/ChatDataUpdater');
-var ServerStorageData = require('core/storage/ServerStorageData.js');
+var ChatData = require('@core/chat/ChatData.js');
+var ChatConfig = require('@core/chat/ChatConfig.js');
+var ChatInputWrapper = require('@core/chat/ChatInputWrapper');
+var ChatChannelCardWrapper = require('@core/chat/ChatChannelCardWrapper');
+var ChatMessageWrapper = require('@core/chat/ChatMessageWrapper');
+var ChatWindow = require('@core/chat/ChatWindow');
+var ChatMessage = require('@core/chat/ChatMessage');
+var ChatChannelsAvailable = require('@core/chat/ChatChannelsAvailable');
+var ChatPrivateMessageData = require('@core/chat/ChatPrivateMessageData');
+var ChatDataUpdater = require('@core/chat/ChatDataUpdater');
+var ServerStorageData = require('@core/storage/ServerStorageData.js');
 
 module.exports = function() {
 
@@ -148,6 +148,38 @@ module.exports = function() {
         newMessage.appendMessageToChannel(!getEngine().allInit);
     };
 
+    const soundNoticePrivateMessage = (id, channel) => {
+
+
+        const CHANNEL = ChatData.CHANNEL;
+
+        if (channel != CHANNEL.PRIVATE) {
+            return;
+        }
+
+        if (getEngine().isInitLoadTime()) {
+            return;
+        }
+
+        if (!checkMessageExist(id, channel)) {
+            return;
+        }
+
+        let oneMessage = getMessage(id, channel);
+
+        if (oneMessage.isHeroMessage()) {
+            return;
+        }
+
+        let sm = getEngine().soundManager;
+
+        if (!sm.getStateSoundNotifById(0)) {
+            return;
+        }
+
+        sm.createNotifSound(0);
+    };
+
 
 
     //const showCommercials = (data, kind) => {
@@ -177,6 +209,10 @@ module.exports = function() {
     const checkMessageExist = (id, channel) => {
         return messageList[channel][id] ? true : false;
     };
+
+    const getMessage = (id, channel) => {
+        return messageList[channel][id]
+    }
 
     const addToMessageList = (newMessage, id, channel) => {
         messageList[channel][id] = newMessage;
@@ -237,6 +273,7 @@ module.exports = function() {
     this.addMessage = addMessage;
     this.rebuiltMessage = rebuiltMessage;
     this.checkMessageExist = checkMessageExist;
+    this.soundNoticePrivateMessage = soundNoticePrivateMessage;
     this.addToMessageList = addToMessageList;
     this.clearMessageList = clearMessageList;
     this.chatLang = chatLang;

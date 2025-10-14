@@ -1,21 +1,21 @@
-let FloatObjectData = require('core/floatObject/FloatObjectData');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-var DynamicLightIdManager = require('core/night/DynamicLightIdManager');
-var ObjectDynamicLightManager = require('core/night/ObjectDynamicLightManager');
-var CanvasFade = require('core/canvasFade/CanvasFade.js');
-var CanvasFadeData = require('core/canvasFade/CanvasFadeData.js');
-let RajBehaviorCommons = require('core/raj/RajBehaviorCommons');
-let BehaviorManager = require('core/raj/BehaviorManager');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-let VectorCalculate = require('core/VectorCalculate');
-let RajRotation = require('core/raj/RajRotation');
-let RajMoveNoise = require('core/raj/RajMoveNoise');
-let RajScale = require('core/raj/RajScale');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let KindOrderObject = require('core/raj/kindOrderObject/KindOrderObject');
-//let RajObject      			    = require('core/raj/RajObject');
-let RajObjectInterface = require('core/raj/RajObjectInterface');
-let RajData = require('core/raj/RajData');
+let FloatObjectData = require('@core/floatObject/FloatObjectData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+var DynamicLightIdManager = require('@core/night/DynamicLightIdManager');
+var ObjectDynamicLightManager = require('@core/night/ObjectDynamicLightManager');
+var CanvasFade = require('@core/canvasFade/CanvasFade.js');
+var CanvasFadeData = require('@core/canvasFade/CanvasFadeData.js');
+let RajBehaviorCommons = require('@core/raj/RajBehaviorCommons');
+let BehaviorManager = require('@core/raj/BehaviorManager');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+let VectorCalculate = require('@core/VectorCalculate');
+let RajRotation = require('@core/raj/RajRotation');
+let RajMoveNoise = require('@core/raj/RajMoveNoise');
+let RajScale = require('@core/raj/RajScale');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let KindOrderObject = require('@core/raj/kindOrderObject/KindOrderObject');
+//let RajObject      			    = require('@core/raj/RajObject');
+let RajObjectInterface = require('@core/raj/RajObjectInterface');
+let RajData = require('@core/raj/RajData');
 
 module.exports = function() {
 
@@ -60,6 +60,7 @@ module.exports = function() {
     let ready = false;
     let image = null;
     let removed = false;
+    let src = null;
 
     let additionalData = null;
 
@@ -117,6 +118,14 @@ module.exports = function() {
 
         behaviorManager.callBehavior();
     };
+
+    const setSrc = (_src) => {
+        src = _src
+    }
+
+    const getSrc = () => {
+        return src;
+    }
 
     const implementRajInterface = () => {
         (new RajObjectInterface()).implementRajObject(this, RajData.FLOAT_OBJECT);
@@ -352,17 +361,23 @@ module.exports = function() {
 
         let self = this;
 
-        Engine.imgLoader.onload(CFG.a_rajGraphics + url, false, false, (i) => {
+        let fullUrl = CFG.a_rajGraphics + url;
+
+        setSrc(fullUrl);
+
+        Engine.imgLoader.onload(fullUrl, false, false, (i) => {
 
             let _img;
+            setImage(i);
+            updateFilterImage();
 
-            if (color) _img = getImageColorMask(i);
-            else _img = i;
+            if (color) _img = getImageColorMask(image);
+            else _img = image;
 
             setImage(_img);
 
-            self.fw = i.width;
-            self.fh = i.height;
+            self.fw = image.width;
+            self.fh = image.height;
             self.halffw = self.fw / 2;
 
             setReady(true);
@@ -370,6 +385,9 @@ module.exports = function() {
     };
 
     const loadGif = (fullUrl, divide) => {
+
+        setSrc(fullUrl)
+
         Engine.imgLoader.onload(fullUrl, {
                 speed: false,
                 externalSource: cdnUrl
@@ -394,6 +412,26 @@ module.exports = function() {
         );
     };
 
+    const updateFilterImage = () => {
+        let KIND = FloatObjectData.kind;
+        let gif = null;
+
+        switch (kind) {
+            case KIND.SPRITE:
+                gif = false
+                break;
+            case KIND.GIF:
+            case KIND.FAKE_NPC:
+            case KIND.IDLE_FAKE_NPC_FRAME:
+                gif = true;
+                break;
+        }
+
+        let img = getEngine().canvasFilter.updateFilter(getSrc(), image, gif);
+
+        setImage(img)
+    }
+
     const getDataGif = (f, i, divide) => {
         return {
             fw: f.hdr.width / divide,
@@ -407,11 +445,12 @@ module.exports = function() {
     const afterOnload = (i) => {
         let _img;
 
-        if (color) _img = getImageColorMask(i);
-        else _img = i;
+        updateFilterImage();
+
+        if (color) _img = getImageColorMask(image);
+        else _img = image;
 
         setImage(_img);
-
         setReady(true);
     };
 
@@ -927,7 +966,7 @@ module.exports = function() {
             heightScale = clipImg.heightScale;
         }
 
-        if (CFG.debugRender) {
+        if (getDebug(CFG.DEBUG_KEYS.RENDER_DEBUG)) {
             ctx.strokeStyle = "yellow";
             ctx.strokeRect(clipImg.left, clipImg.top, clipImg.width, clipImg.height)
         }
@@ -940,7 +979,7 @@ module.exports = function() {
             clipImg.width, clipImg.height
         );
 
-        if (CFG.debugRender) {
+        if (getDebug(CFG.DEBUG_KEYS.RENDER_DEBUG)) {
             ctx.fillStyle = "yellow";
             ctx.font = "12px";
             ctx.fillText(id, clipImg.left + 2, clipImg.top + 10);
@@ -1562,5 +1601,6 @@ module.exports = function() {
     this.setNewBehaviourData = setNewBehaviourData
     this.prepareBehaviorList = prepareBehaviorList;
     this.getObjectDynamicLightManager = getObjectDynamicLightManager;
+    this.updateFilterImage = updateFilterImage;
 
 };

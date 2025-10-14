@@ -1,5 +1,5 @@
-var Storage = require('core/Storage');
-var StorageData = require('core/StorageData');
+var Storage = require('@core/Storage');
+var StorageData = require('@core/StorageData');
 
 module.exports = new(function() {
 
@@ -14,9 +14,18 @@ module.exports = new(function() {
     const ATTACH_BATTLE_PREDICTION_HELP_WINDOW = BATTLE_PANEL.ATTACH_BATTLE_PREDICTION_HELP_WINDOW;
     const BATTLE_LOG_HELP_WINDOW_SIZE_OPT = BATTLE_PANEL.BATTLE_LOG_HELP_WINDOW_SIZE_OPT;
     const BATTLE_PREDICTION_HELP_WINDOW_SIZE_OPT = BATTLE_PANEL.BATTLE_PREDICTION_HELP_WINDOW_SIZE_OPT;
+    const WIDGET_VISIBILITY_IN_BATTLE = BATTLE_PANEL.WIDGET_VISIBILITY_IN_BATTLE;
 
     this.getBattlePanelState = () => {
         return Storage.easyGet(MAIN_KEY, BATTLE_PANEL_SIZE);
+    };
+
+    this.setWidgetVisibleInBattleState = (newState) => {
+        Storage.easySet(newState, MAIN_KEY, WIDGET_VISIBILITY_IN_BATTLE);
+    };
+
+    this.getWidgetVisibleInBattleState = () => {
+        return Storage.easyGet(MAIN_KEY, WIDGET_VISIBILITY_IN_BATTLE);
     };
 
     this.setBattlePanelState = (newState) => {

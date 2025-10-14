@@ -6,6 +6,7 @@ let o = {
         //HELP: 'keyboard',
         SETTINGS: 'config',
         FULL_SCREEN: 'windows',
+        REFRESH_PAGE: 'refreshPage',
         ADDONS: 'puzzle',
         CLAN: 'clans',
         MAP: 'globe',
@@ -31,12 +32,13 @@ let o = {
         CLAN_MSG: 'send-clan-msg',
         [NEWS]: 'news-icon',
         BATTLE_PASS: 'battle-pass-widget-icon',
-        ACHIEVEMENTS: 'achievements-icon',
+
         MATCHMAKING: 'matchmaking-icon',
         [REWARDS_CALENDAR]: 'rewards-calendar',
         ZOOM: 'zoom-in-out-panel',
         PAD: 'padController',
         WORLD: 'world-icon',
+        LOOT_FILTER: "loot-filter-icon",
 
 
         addon_1: 'addon_1',
@@ -56,6 +58,7 @@ let o = {
         //[NEWS]: 				      {nameWidget:[NEWS], nameNotice: 1},
         //[REWARDS_CALENDAR]: 	{nameWidget:[REWARDS_CALENDAR], nameNotice: 2, alwaysAvailable: false}
     },
+    IN_WINDOW: 'in-window',
     pos: {
         TOP_LEFT: 'top-left',
         TOP_RIGHT: 'top-right',

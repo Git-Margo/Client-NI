@@ -1,6 +1,6 @@
-let CharacterEffectsData = require('core/characterEffects/CharacterEffectsData');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-//var RajData = require('core/raj/RajData');
+let CharacterEffectsData = require('@core/characterEffects/CharacterEffectsData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+//var RajData = require('@core/raj/RajData');
 
 module.exports = function() {
 
@@ -402,6 +402,15 @@ module.exports = function() {
     //};
 
     const updateData = (_data, additionalData) => {
+
+
+
+        let rajActionManager = Engine.characterEffectsMapManager.getRajActionManager(); // TODO: remove characterBattleEffects
+
+        if (rajActionManager.checkClearForObjectWithListActionId(_data, additionalData)) {
+            rajActionManager.clearDataForObjectWithListActionId(_data, additionalData, Engine.characterEffectsMapManager);
+            return;
+        }
 
 
         if (!Engine.characterEffectsMapManager.getRajActionManager().checkCorrectMainData(_data, additionalData)) {

@@ -1,5 +1,8 @@
-// var wnd = require('core/Window');
-var tpl = require('core/Templates');
+// var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
+const {
+    getIconClose
+} = require('@core/HelpersTS');
 module.exports = function(Par) {
     var self = this;
     var content;
@@ -92,10 +95,10 @@ module.exports = function(Par) {
             Par.tLang('del_friend_enemy_clan')
         ];
         var cl = [
-            'medium-height-td table-header',
-            'table-header',
-            'table-header',
-            'table-header'
+            'medium-height-td table-header interface-element-table-header-1-background',
+            'table-header interface-element-table-header-1-background',
+            'table-header interface-element-table-header-1-background',
+            'table-header interface-element-table-header-1-background'
         ];
         if (edit)
             return Par.createRecords(t, cl);
@@ -113,12 +116,12 @@ module.exports = function(Par) {
             Par.tLang('del_friend_enemy_clan')
         ];
         var cl = [
-            'table-header',
-            'table-header',
-            'table-header',
-            'table-header',
-            'table-header',
-            'table-header '
+            'table-header interface-element-table-header-1-background',
+            'table-header interface-element-table-header-1-background',
+            'table-header interface-element-table-header-1-background',
+            'table-header interface-element-table-header-1-background',
+            'table-header interface-element-table-header-1-background',
+            'table-header interface-element-table-header-1-background '
         ];
         if (edit)
             return Par.createRecords(t, cl);
@@ -166,9 +169,8 @@ module.exports = function(Par) {
 
     this.createDeletekBut = function(id, who) {
         var $but = tpl.get('button').addClass('small');
-        //var bck = $('<div>').addClass('add-bck');
-        var bck = tpl.get('add-bck');
-        $but.append(bck);
+        const $closeIcon = getIconClose(false);
+        $but.append($closeIcon);
         $but.click(function() {
             var msg = 'cancel_' + (who == 'e' ? 'war' : 'alignment');
             Par.alert(Par.tLang(msg), function() {

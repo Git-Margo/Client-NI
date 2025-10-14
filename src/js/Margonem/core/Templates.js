@@ -1,5 +1,5 @@
 //const htmlTemplates = require('templates/templates.html');
-const TemplatesData = require('core/TemplatesData');
+const TemplatesData = require('@core/TemplatesData');
 
 function Templates() {
 
@@ -74,6 +74,11 @@ function Templates() {
      * data-trans="attr#key_name#catalogue" - _t(key_name, null, catalogue) - will be put in "attr" html attribute
      * data-trans="#key_name#catalogue" - _t(key_name, null, catalogue); (using catalogue but no attr)
      */
+    this.getEl = (name) => {
+        return this.getTpl(name, {
+            jQueryObject: false
+        });
+    }
     this.getTpl = (name, passedOptions = {}) => {
         this.mergeOptions(passedOptions);
 
@@ -149,4 +154,7 @@ function Templates() {
 let templates = new Templates();
 templates.init();
 
-module.exports.get = templates.getTpl;
+module.exports = {
+    get: templates.getTpl,
+    getEl: templates.getEl
+};

@@ -1,3 +1,5 @@
+var WidgetsData = require('@core/interface/widgets/WidgetsData');
+
 let KEY = {
     _DEFAULT: "_DEFAULT",
     _920_X_555: "_920_X_555",
@@ -12,6 +14,21 @@ let KEY = {
     _1853_X_900: "_1853_X_900",
     _1920_X_1080: "_1920_X_1080"
 };
+
+const IN_WINDOW = WidgetsData.IN_WINDOW;
+const TOP_LEFT = WidgetsData.pos.TOP_LEFT;
+const TOP_RIGHT = WidgetsData.pos.TOP_RIGHT;
+const BOTTOM_LEFT = WidgetsData.pos.BOTTOM_LEFT;
+const BOTTOM_RIGHT = WidgetsData.pos.BOTTOM_RIGHT;
+const BOTTOM_RIGHT_ADDITIONAL = WidgetsData.pos.BOTTOM_RIGHT_ADDITIONAL;
+const BOTTOM_LEFT_ADDITIONAL = WidgetsData.pos.BOTTOM_LEFT_ADDITIONAL;
+const TOP_RIGHT_ADDITIONAL = WidgetsData.pos.TOP_RIGHT_ADDITIONAL;
+const TOP_LEFT_ADDITIONAL = WidgetsData.pos.TOP_LEFT_ADDITIONAL;
+
+const smallWidgetSize = 32;
+const smallStandardWidgetSize = 36;
+const standardWidgetSize = 44;
+const bigWidgetSize = 57;
 
 module.exports = {
     KEY: KEY,
@@ -129,18 +146,152 @@ module.exports = {
             k: "px"
         }
     },
-    WIDGET_SIZE_BY_RES: {
-        [KEY._DEFAULT]: 44,
-        [KEY._920_X_555]: 32,
-        [KEY._1173_X_555]: 36,
-        [KEY._1024_X_768]: 36,
-        [KEY._1277_X_768]: 44,
-        [KEY._1200_X_675]: 44,
-        [KEY._1253_X_675]: 44,
-        [KEY._1366_X_768]: 44,
-        [KEY._1619_X_768]: 44,
-        [KEY._1600_X_900]: 44,
-        [KEY._1853_X_900]: 44,
-        [KEY._1920_X_1080]: 44
+    //WIDGET_SIZE_BY_RES: {
+    //    [KEY._DEFAULT]       : 44,
+    //    [KEY._920_X_555]     : 32,
+    //    [KEY._1173_X_555]    : 36,
+    //    [KEY._1024_X_768]    : 36,
+    //    [KEY._1277_X_768]    : 44,
+    //    [KEY._1200_X_675]    : 44,
+    //    [KEY._1253_X_675]    : 44,
+    //    [KEY._1366_X_768]    : 44,
+    //    [KEY._1619_X_768]    : 44,
+    //    [KEY._1600_X_900]    : 44,
+    //    [KEY._1853_X_900]    : 44,
+    //    [KEY._1920_X_1080]   : 44
+    //},
+
+    WIDGET_BAR_COLUMN_VISIBILITY_TOGGLE_SIZE: bigWidgetSize,
+
+    BIG_WIDGET_SIZE: bigWidgetSize,
+    STANDARD_WIDGET_SIZE: standardWidgetSize,
+    SMALL_WIDGET_SIZE: smallWidgetSize,
+    WIDGET_SIZE_BY_RES_AND_POS: {
+        MOBILE: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: smallWidgetSize,
+            [TOP_RIGHT]: smallWidgetSize,
+            [BOTTOM_LEFT]: bigWidgetSize,
+            [BOTTOM_RIGHT]: bigWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: bigWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: bigWidgetSize
+        },
+        MOBILE_CLASSIC: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._DEFAULT]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._920_X_555]: {
+            [IN_WINDOW]: smallWidgetSize,
+            [TOP_LEFT]: smallWidgetSize,
+            [TOP_RIGHT]: smallWidgetSize,
+            [BOTTOM_LEFT]: smallWidgetSize,
+            [BOTTOM_RIGHT]: smallWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: smallWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: smallWidgetSize
+        },
+        [KEY._1173_X_555]: {
+            [IN_WINDOW]: smallWidgetSize,
+            [TOP_LEFT]: smallWidgetSize,
+            [TOP_RIGHT]: smallWidgetSize,
+            [BOTTOM_LEFT]: smallWidgetSize,
+            [BOTTOM_RIGHT]: smallWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: smallWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: smallWidgetSize
+        },
+        [KEY._1024_X_768]: {
+            [IN_WINDOW]: smallStandardWidgetSize,
+            [TOP_LEFT]: smallStandardWidgetSize,
+            [TOP_RIGHT]: smallStandardWidgetSize,
+            [BOTTOM_LEFT]: smallStandardWidgetSize,
+            [BOTTOM_RIGHT]: smallStandardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: smallStandardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: smallStandardWidgetSize
+        },
+        [KEY._1277_X_768]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._1200_X_675]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._1253_X_675]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._1366_X_768]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._1619_X_768]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._1600_X_900]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._1853_X_900]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        },
+        [KEY._1920_X_1080]: {
+            [IN_WINDOW]: standardWidgetSize,
+            [TOP_LEFT]: standardWidgetSize,
+            [TOP_RIGHT]: standardWidgetSize,
+            [BOTTOM_LEFT]: standardWidgetSize,
+            [BOTTOM_RIGHT]: standardWidgetSize,
+            [BOTTOM_RIGHT_ADDITIONAL]: standardWidgetSize,
+            [BOTTOM_LEFT_ADDITIONAL]: standardWidgetSize
+        }
     }
 };

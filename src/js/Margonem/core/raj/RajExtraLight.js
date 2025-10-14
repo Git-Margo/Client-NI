@@ -1,11 +1,11 @@
-//let RajData                 = require('core/raj/RajData');
-//let LightPoint              = require('core/night/LightPoint');
-let FramesWithHoles = require('core/FramesWithHoles');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let RajRandomElements = require('core/raj/RajRandomElements');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+//let RajData                 = require('@core/raj/RajData');
+//let LightPoint              = require('@core/night/LightPoint');
+let FramesWithHoles = require('@core/FramesWithHoles');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let RajRandomElements = require('@core/raj/RajRandomElements');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 module.exports = function() {
 
@@ -185,10 +185,11 @@ module.exports = function() {
 
     const drawExtraLightOnFrameOfNight = (oneExtraLight, frameOfNight, indexFrameOfNight) => {
         let ctx = frameOfNight.getContext("2d");
-        ctx.save();
+        //ctx.save();
         ctx.globalCompositeOperation = 'destination-out';
         framesWithHoles.drawOneHole(oneExtraLight.onePointDataArrayHole[indexFrameOfNight], ctx, true);
-        ctx.restore();
+        ctx.globalCompositeOperation = 'source-over';
+        //ctx.restore();
     };
 
     const removeOnePointOnExistFramesOfNight = (id) => {
@@ -213,10 +214,12 @@ module.exports = function() {
 
         data.stop0 = "rgba(0,0,0," + (nightOpacity) + ")";
         data.stop1 = "rgba(0,0,0," + (0.2 * nightOpacity) + ")";
-        ctx.save();
+        //ctx.save();
         ctx.globalCompositeOperation = 'lighter';
         framesWithHoles.drawOneHole(data, ctx, true);
-        ctx.restore();
+        ctx.globalCompositeOperation = "source-over";
+
+        //ctx.restore();
     };
 
 
@@ -476,11 +479,19 @@ module.exports = function() {
 
 
     const clearAndRemoveCallback = () => {
-        debugger;
         for (let id in extraLight) {
             rajRemoveActionBeyondManager(id);
         }
         onClear();
+    }
+
+    const refreshFilter = () => {
+        for (let id in extraLight) {
+            let light = extraLight[id].light;
+            if (light) {
+                light.updateFilterImage();
+            }
+        }
     }
 
     this.init = init;
@@ -493,4 +504,5 @@ module.exports = function() {
     this.clearAndRemoveCallback = clearAndRemoveCallback;
     this.addExtraLightsToAlreadyCreateFrameOfNight = addExtraLightsToAlreadyCreateFrameOfNight;
     this.updateData = updateData;
+    this.refreshFilter = refreshFilter;
 };

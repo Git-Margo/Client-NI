@@ -1,9 +1,9 @@
 /**
  * Created by Michnik on 2015-08-11.
  */
-var Tpl = require('core/Templates');
-// var Wnd = require('core/Window');
-var DraconiteShop = require('core/shop/DraconiteShop');
+var Tpl = require('@core/Templates');
+// var Wnd = require('@core/Window');
+var DraconiteShop = require('@core/shop/DraconiteShop');
 module.exports = function() {
     var self = this;
 
@@ -105,9 +105,9 @@ module.exports = function() {
         var b1 = $sw.find('.middle-graphics').length > 0;
         if (!b1) return;
 
-        var add = $sw.hasClass('scrollable') ? 23 : 20;
-        var w = $w.find('.scroll-pane').width();
-        $w.find('.middle-graphics').width(w + add);
+        //var add = $sw.hasClass('scrollable') ? 23 : 20;
+        //var w = $w.find('.scroll-pane').width();
+        //$w.find('.middle-graphics').width(w + add);
     };
 
     this.createBtnCallback = function() {

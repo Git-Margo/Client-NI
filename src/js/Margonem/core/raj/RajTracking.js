@@ -1,6 +1,6 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 
 module.exports = function() {
@@ -35,7 +35,7 @@ module.exports = function() {
                         optional: true,
                         type: {
                             name: TYPE.TARGET,
-                            option: [CanvasObjectTypeData.FLOAT_OBJECT, CanvasObjectTypeData.FAKE_NPC, CanvasObjectTypeData.PET]
+                            option: [CanvasObjectTypeData.HERO, CanvasObjectTypeData.FLOAT_OBJECT, CanvasObjectTypeData.FAKE_NPC, CanvasObjectTypeData.PET]
                         }
                     },
                     target: {
@@ -114,9 +114,9 @@ module.exports = function() {
     };
 
     const createAction = (data, additionalData) => {
-        if (!checkParentCorrect(data)) {
-            return;
-        }
+        //if (!checkParentCorrect(data)) {
+        //    return;
+        //}
 
         clear();
 

@@ -1,4 +1,4 @@
-var CostNode = require('core/searchPath/nodes/CostNode');
+var CostNode = require('@core/searchPath/nodes/CostNode');
 var ContextMapNode = function(node) {
     this.baseNode = node;
     this.neighbors = [];

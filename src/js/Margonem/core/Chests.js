@@ -1,8 +1,8 @@
-// var wnd = require('core/Window');
-var tpl = require('core/Templates');
-var Premium = require('core/Premium');
-var DraconiteShop = require('core/shop/DraconiteShop');
-//var Items = require('core/items/ItemsManager');
+// var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
+var Premium = require('@core/Premium');
+var DraconiteShop = require('@core/shop/DraconiteShop');
+//var Items = require('@core/items/ItemsManager');
 
 module.exports = function(chestData) {
     var self = this;
@@ -89,18 +89,7 @@ module.exports = function(chestData) {
 
     this.acceptBuy = function(price, buyId) {
         if (Engine.hero.d.credits < price) mAlert(_t('low_sl'));
-        else {
-            var data = {
-                ik: "oimg",
-                ip: "/draconite_small.gif",
-                //it: '<span class="red">' + price + '</span>',
-                it: price,
-                m: "yesno2",
-                q: _t('accept_dragon_chest', null, 'shop'),
-                re: 'shop&buy=' + buyId + ',1&sell='
-            };
-            askAlert(data);
-        }
+        else _g(`shop&buy=${buyId},1&sell=`);
     };
 
     this.newItem = (item, finish) => {

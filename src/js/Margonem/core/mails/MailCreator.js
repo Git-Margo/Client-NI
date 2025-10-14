@@ -1,5 +1,5 @@
-const InputMaskData = require('core/InputMaskData');
-const tpl = require('core/Templates');
+const InputMaskData = require('@core/InputMaskData');
+const tpl = require('@core/Templates');
 const MailsData = require('./MailsData').default;
 
 module.exports = function(content) {
@@ -42,7 +42,8 @@ module.exports = function(content) {
     };
 
     const setSendItem = (item) => {
-        if (checkSoulbound(item)) {
+        //if (checkSoulbound(item)) {
+        if (item.issetSoulboundStat()) {
             mAlert(_t('soulbound_item', null, 'mails'));
             return;
         }
@@ -124,9 +125,9 @@ module.exports = function(content) {
         Engine.itemsMovedManager.removeItem(id);
     };
 
-    const checkSoulbound = (item) => {
-        return isset(item._cachedStats['soulbound']);
-    };
+    //const checkSoulbound = (item) => {
+    //    return isset(item._cachedStats['soulbound']);
+    //};
 
     const createBackgroundInButton = (addClass, $button) => {
         const $bck = tpl.get('add-bck').addClass(addClass);

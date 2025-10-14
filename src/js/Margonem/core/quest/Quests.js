@@ -1,13 +1,16 @@
 /**
  * Created by lukasz on 2015-01-07.
  */
-var Tpl = require('core/Templates');
-var Storage = require('core/Storage');
-var TextModifyByTag = require('core/TextModifyByTag');
-let QuestData = require('core/quest/QuestData');
+var Tpl = require('@core/Templates');
+var Storage = require('@core/Storage');
+var TextModifyByTag = require('@core/TextModifyByTag');
+let QuestData = require('@core/quest/QuestData');
 const {
     isMan
 } = require('../HelpersTS');
+const {
+    getIconClose
+} = require('@core/HelpersTS');
 
 module.exports = function() {
     var self = this;
@@ -101,9 +104,9 @@ module.exports = function() {
         var b1 = $sw.find('.middle-graphics').length > 0;
         if (!b1) return;
 
-        var add = $sw.hasClass('scrollable') ? 23 : 20;
-        var w = $w.find('.scroll-pane').width();
-        $w.find('.middle-graphics').width(w + add);
+        //var add = $sw.hasClass('scrollable') ? 23 : 20;
+        //var w = $w.find('.scroll-pane').width();
+        //$w.find('.middle-graphics').width(w + add);
     };
 
     this.getQuestData = (id) => {
@@ -120,7 +123,8 @@ module.exports = function() {
 
     const refreshClassInAllButtons = (classToRefresh) => {
 
-        let activeQuestTrackingQuest = getEngine().questTracking.getActiveQuestTrackingInStorage();
+        //let activeQuestTrackingQuest = getEngine().questTracking.getActiveQuestTrackingInStorage();
+        let activeQuestTrackingQuest = getEngine().questTracking.getActiveServerTrackingQuest();
 
         for (let questId in questsData) {
             let buttons = getQuestButtonsArray(questId);
@@ -223,7 +227,9 @@ module.exports = function() {
         let data = this.prepareTypMonsterData(_data);
 
         const gender = isset(Engine.hero.d.gender) ? Engine.hero.isMan() : isMan(allData.h.gender);
+
         data = TextModifyByTag.sexModify(data, gender);
+        data = oneQuantityModify(data);
 
         var quests = $(data);
         for (var i = 0; i < quests.length; i++) {
@@ -246,15 +252,45 @@ module.exports = function() {
             let itemsArray = [];
             for (let j = 0; j < length; j++) {
                 let text = itemsToBring.eq(j).text();
-                text = text.replace("ZdobÄdÅº: ", "");
+
+
+                if (isPl()) {
+
+                    text = text.replace("ZdobÄdÅº: ", "");
+                    //text = text.replace("Zabij (z duÅ¼ynÄ): ", "");
+
+                    text = text.replace("UÅ¼yj przedmiotu: ", "");
+                    text = text.replace("Kup przedmiot: ", "");
+                    text = text.replace("ZdobÄdÅº przedmiot z potwora: ", "");
+                    text = text.replace("ZdobÄdÅº przedmiot: ", "");
+                    text = text.replace("WymieÅ na przedmiot: ", "");
+                    text = text.replace("UÅ¼yj recepty: ", "");
+                }
+
+                if (isEn()) {
+
+                    text = text.replace("Bring: ", "");
+                    //text = text.replace("Zabij (z duÅ¼ynÄ): ", "");
+
+                    text = text.replace("Use item: ", "");
+                    text = text.replace("Buy item: ", "");
+                    text = text.replace("Loot item: ", "");
+                    text = text.replace("Get item: ", "");
+                    text = text.replace("Barter item: ", "");
+                    text = text.replace("Use craft: ", "");
+                }
+
                 text = text.replace(/\s\([0-9]+\/[0-9]+\)/, "");
+
                 itemsArray.push(text);
             }
 
             $box.find('.d-table').remove();
 
             $box.addClass('quest-' + qId);
-            $box.find('.quest-title').html(title);
+            $box.find('.quest-debug-id').html(qId);
+            //$box.find('.quest-title').html(title);
+            cutTextAndAddTip($box.find('.quest-title'), title, 2);
 
             if ($temp.find('[data-cancellable]').length > 0) {
                 this.leaveQuest($temp, $buttons, qId);
@@ -273,6 +309,16 @@ module.exports = function() {
         addHighlightsInQuestItems();
     };
 
+    const oneQuantityModify = (_data) => {
+        return _data.replace(/((<span>UkoÅczone misje:<\/span> \(\d\/\d\))|.*?\(\d\/\d\))/g, function(match) {
+            if (match.includes('<span>UkoÅczone misje:</span>')) {
+                return match; // keep if it's "UkoÅczone misje"
+            } else {
+                return match.replace(/ (\(0\/1\)|\(1\/1\))/, ''); // remove (0/1) & (0/1) from other matches
+            }
+        });
+    }
+
     const checkItemsExistAddAddQuestHihglight = (itemName) => {
         getEngine().heroEquipment.setClassInItemsHighlightIfExist(itemName, QuestData.HIGHLIGHT_CLASS.QUEST)
     };
@@ -288,7 +334,8 @@ module.exports = function() {
 
         if (!questsData) return;
 
-        let activeQuestTrackingId = getEngine().questTracking.getActiveQuestTrackingInStorage();
+        //let activeQuestTrackingId = getEngine().questTracking.getActiveQuestTrackingInStorage();
+        let activeQuestTrackingId = getEngine().questTracking.getActiveServerTrackingQuest();
         if (activeQuestTrackingId == null) return;
 
         let oneQuestData = questsData[activeQuestTrackingId];
@@ -310,12 +357,14 @@ module.exports = function() {
         }
 
         getEngine().heroEquipment.clearHighlightInItems(QuestData.HIGHLIGHT_CLASS.QUEST);
+        if (getEngine().shop) getEngine().shop.removeClassInHighlighst(QuestData.HIGHLIGHT_CLASS.QUEST);
     };
 
     const checkItemIsQuestItemAndAddHigllight = (name, id) => {
         if (!questsData) return;
 
-        let activeQuestTrackingId = getEngine().questTracking.getActiveQuestTrackingInStorage();
+        //let activeQuestTrackingId = getEngine().questTracking.getActiveQuestTrackingInStorage();
+        let activeQuestTrackingId = getEngine().questTracking.getActiveServerTrackingQuest();
         if (activeQuestTrackingId == null) return;
 
         let oneQuestData = questsData[activeQuestTrackingId];
@@ -377,14 +426,14 @@ module.exports = function() {
 
     this.leaveQuest = function($temp, $buttons, id) {
         var $abandonBtn = Tpl.get('button').addClass('small green remove');
-        $abandonBtn.find('.label').html('0').css('visibility', 'hidden');
+        $abandonBtn.find('.label').html('0').css('display', 'none');
         $abandonBtn.tip(_t('removequest'));
         $abandonBtn.on('click', function(e) {
             e.stopPropagation();
             self.cancelQuest(id);
         });
-        var bck = Tpl.get('add-bck').addClass('delete');
-        $abandonBtn.append(bck);
+        const $closeIcon = getIconClose(false);
+        $abandonBtn.append($closeIcon);
         $buttons.push($abandonBtn);
     };
 
@@ -429,7 +478,8 @@ module.exports = function() {
         $trackBtn.on('click', function(e) {
             e.stopPropagation();
 
-            let activeQuestTrackingInStorage = getEngine().questTracking.getActiveQuestTrackingInStorage();
+            //let activeQuestTrackingInStorage 	= getEngine().questTracking.getActiveQuestTrackingInStorage();
+            let activeQuestTrackingInStorage = getEngine().questTracking.getActiveServerTrackingQuest();
             let questId = activeQuestTrackingInStorage == id ? 0 : id;
             _g('quests&a=track_set&quest_id=' + questId);
         });

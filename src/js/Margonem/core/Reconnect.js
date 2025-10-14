@@ -1,4 +1,4 @@
-// var Console = require('core/Console');
+// var Console = require('@core/Console');
 module.exports = new(function() {
     var interval = null;
     var firstSuccess = true;
@@ -32,7 +32,8 @@ module.exports = new(function() {
 
     this.countDown = function() {
         if (timeout <= 0) {
-            window.location.reload();
+            //window.location.reload();
+            pageReload();
         } else {
             timeout--;
             //var $w = Console.wnd.$;

@@ -1,4 +1,4 @@
-var ChunkAreaFinder = require('core/searchPath/finder/ChunkAreaFinder');
+var ChunkAreaFinder = require('@core/searchPath/finder/ChunkAreaFinder');
 var MapChunk = function(id, x, y, size, map) {
     this.id = id;
     this.x = x;

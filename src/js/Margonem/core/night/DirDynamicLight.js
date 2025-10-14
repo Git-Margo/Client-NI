@@ -1,8 +1,8 @@
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let DynamicLightCommons = require('core/night/DynamicLightCommons');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-let LightData = require('core/night/LightData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let DynamicLightCommons = require('@core/night/DynamicLightCommons');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+let LightData = require('@core/night/LightData');
 
 module.exports = function() {
 
@@ -11,12 +11,18 @@ module.exports = function() {
     };
     let onlyNight = true;
     let master = null;
+    let id = null;
+    let srajData = null;
+    let additionalDataObject;
     let dirData = null;
+
+    let battle = null;
 
     const BASE = "BASE";
 
     const init = () => {
         initDirData();
+        setBattle(false);
 
         //dynamicLightCommons = new DynamicLightCommons();
         //dynamicLightCommons2 = new DynamicLightCommons();
@@ -80,7 +86,25 @@ module.exports = function() {
      onlyNight = d.light.onlyNight;
      };
      */
-    const updateData = (id, data, additionalData) => {
+
+    const setSrajData = (_srajData) => {
+        srajData = _srajData;
+    };
+
+    const setBattle = (_battle) => {
+        battle = _battle;
+    }
+
+    const setAdditionalData = (additionalData) => {
+        additionalDataObject = additionalData
+    };
+
+    const updateData = (_id, data, additionalData, _framesWithHoles) => {
+
+        setSrajData(data);
+        setAdditionalData(additionalData);
+
+        setBattle(data.battle ? true : false);
 
         //let data = {
         //    "action" : "CREATE",
@@ -110,7 +134,7 @@ module.exports = function() {
 
         let d = o.d;
 
-        createOneDirData(BASE, id, o, LightData.DYNAMIC_LIGHT_KIND.DYNAMIC_DIR_CHARACTER_LIGHT, additionalData);
+        createOneDirData(BASE, _id, o, LightData.DYNAMIC_LIGHT_KIND.DYNAMIC_DIR_CHARACTER_LIGHT, additionalData, _framesWithHoles);
 
         let dynamicLightCommons = getDynamicLightCommonsByDir(BASE);
 
@@ -119,11 +143,12 @@ module.exports = function() {
         //setMaster(id, o.master, additionalData);
 
         master = dynamicLightCommons.getMaster();
+        id = _id
 
-        fillAllDirection(id, o, data.d, additionalData);
+        fillAllDirection(_id, o, data.d, additionalData, _framesWithHoles);
     };
 
-    const fillAllDirection = (id, o, allDirData, additionalData) => {
+    const fillAllDirection = (_id, o, allDirData, additionalData, _framesWithHoles) => {
 
         let a = [HeroDirectionData.N, HeroDirectionData.E, HeroDirectionData.S, HeroDirectionData.W];
 
@@ -135,7 +160,7 @@ module.exports = function() {
                 d: allDirData[specificDir]
             });
 
-            createOneDirData(specificDir, id, mergeData, null, additionalData);
+            createOneDirData(specificDir, _id, mergeData, null, additionalData, _framesWithHoles);
         }
     };
 
@@ -145,14 +170,21 @@ module.exports = function() {
         return dirData[dir].dynamicLightCommons;
     };
 
-    const createOneDirData = (dir, id, o, kindDynamicLight, additionalData) => {
+    const createOneDirData = (dir, _id, o, kindDynamicLight, additionalData, _framesWithHoles) => {
 
         let dynamicLightCommons = new DynamicLightCommons();
-        let pos = dynamicLightCommons.getXY(id, o.d);
         let d = o.d;
+        let realXYPos = battle ? true : false;
 
-        o.d.x = pos.x;
-        o.d.y = pos.y;
+        if (battle) {
+            dynamicLightCommons.setFramesWithHoles(_framesWithHoles);
+            o.d.middleOfCanvas = true;
+        } else {
+            let pos = dynamicLightCommons.getXY(_id, o.d);
+            o.d.x = pos.x;
+            o.d.y = pos.y;
+        }
+
 
         if (!d.cover) dynamicLightCommons.prepareDynamicPointAndDynamicPointImg(d);
         else {
@@ -180,7 +212,8 @@ module.exports = function() {
 
         //console.log("dynamicLightCommons.createLight(d)", d);
 
-        let light = dynamicLightCommons.createLight(d);
+
+        let light = dynamicLightCommons.createLight(d, realXYPos);
 
         if (light && d.cover) light.setCover(true);
 
@@ -189,7 +222,7 @@ module.exports = function() {
             light: light
         };
 
-        dynamicLightCommons.setMaster(id, o.master, kindDynamicLight, additionalData);
+        dynamicLightCommons.setMaster(_id, o.master, kindDynamicLight, additionalData);
     };
 
     //const createDynamicLightCommonsByDir = (dir) => {
@@ -213,19 +246,29 @@ module.exports = function() {
 
     const update = (dt) => {
 
-
-
         if (!master) return;
 
         //let l = isHeroWithProperDir() ? light2 : light;
         let light = getLight();
+        let realXYPos = battle ? true : false;
 
         if (!light) return;
 
 
         //light.setMasterFh(master.fh);
-        light.setX(master.rx);
-        light.setY(master.ry);
+        // light.setX(master.rx);
+        // light.setY(master.ry);
+
+        //if (realXYPos) {
+        //
+        //} else {
+        //
+        //    setX(master.rx);
+        //    setY(master.ry);
+        //}
+
+
+        light.updatePosByMaster(master);
     };
 
     //this.getDynamicHoleImg = () => {
@@ -238,27 +281,64 @@ module.exports = function() {
     //};
 
     const getLight = () => {
-        let dir = master.getNDir()
+        //let dir = master.getNDir()
+        let dir = getDir();
 
         if (dirData[dir] && dirData[dir].light) return dirData[dir].light;
 
         return dirData[BASE].light;
     }
 
+    const getAllLights = () => {
+        let a = [];
+        for (let k in dirData) {
+            if (a.push(dirData[k])) {
+                dirData[k]
+            }
+        }
+
+        return a;
+    }
+
     const getDynamicLightCommons = () => {
-        let dir = master.getNDir()
+
+        let dir = getDir();
+
+        //let dir = master.getNDir()
 
         if (dirData[dir] && dirData[dir].dynamicLightCommons) return dirData[dir].dynamicLightCommons;
 
         return dirData[BASE].dynamicLightCommons;
     }
 
+    const getDir = () => {
+        let dir = null;
+
+        if (!master) {
+            return "N"
+        }
+
+        if (isset(master.getNDir)) {
+            dir = master.getNDir()
+        } else {
+            if (isset(master.fightDir)) {
+                dir = master.fightDir
+            } else {
+                dir = "N";
+            }
+        }
+
+        return dir;
+    };
+
     const masterIsHero = () => {
         return master.canvasObjectType == CanvasObjectTypeData.HERO;
     }
 
     const draw = (mainNightCtx, actualFrame) => {
+
         let dynamicLightCommons = getDynamicLightCommons();
+        let realXYPos = battle ? true : false;
         /*
         let currentDynamicHoleImg = dynamicLightCommons.getDynamicHoleImgBuActualFrame(actualFrame);
 
@@ -285,7 +365,7 @@ module.exports = function() {
         );
         */
         if (master) {
-            dynamicLightCommons.drawDynamicHole(mainNightCtx, actualFrame, null, null, null, null);
+            dynamicLightCommons.drawDynamicHole(mainNightCtx, actualFrame, null, null, null, null, realXYPos);
         }
 
     };
@@ -299,7 +379,16 @@ module.exports = function() {
         return onlyNight;
     };
 
+    const setFramesWithHoles = (_framesWithHoles) => {
+        let dynamicLightCommons = getDynamicLightCommons();
+
+        dynamicLightCommons.setFramesWithHoles(_framesWithHoles);
+    }
+
+    const getId = () => id;
     const getMaster = () => master;
+    const getSrajData = () => srajData;
+    const getAdditionalData = () => additionalDataObject;
 
     this.init = init;
     this.draw = draw;
@@ -307,5 +396,10 @@ module.exports = function() {
     this.update = update;
     this.getOnlyNight = getOnlyNight;
     this.getLight = getLight;
+    this.getAllLights = getAllLights;
     this.getMaster = getMaster;
+    this.getId = getId;
+    this.getSrajData = getSrajData;
+    this.getAdditionalData = getAdditionalData;
+    this.setFramesWithHoles = setFramesWithHoles;
 }

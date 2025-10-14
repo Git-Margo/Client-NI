@@ -1,5 +1,5 @@
-var tpl = require('core/Templates');
-var Templates = require('core/Templates');
+var tpl = require('@core/Templates');
+var Templates = require('@core/Templates');
 
 module.exports = function(nick) {
 

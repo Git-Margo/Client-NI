@@ -14,8 +14,24 @@ module.exports = function() {
     //this.alwaysDraw = true;
     let alwaysDraw;
 
+    this.collider = null;
+
     const init = function() {
         setAlwaysDraw(true);
+    };
+
+    const updateCollider = () => {
+        let tileSize = CFG.tileSize;
+        let halfTileSize = CFG.halfTileSize;
+
+        this.collider = {
+            box: [
+                xPos * tileSize - tileSize,
+                yPos * tileSize - tileSize,
+                xPos * tileSize + tileSize,
+                yPos * tileSize + tileSize
+            ]
+        };
     };
 
     const loadImage = () => {
@@ -34,10 +50,14 @@ module.exports = function() {
     const updateData = (_objectParent, lookAt, _tip, _src) => {
         setObjectParent(_objectParent);
         setPosition(lookAt.x, lookAt.y);
-        setTip(_tip);
 
         if (_src) setSrc(_src);
         else setSrc(defaultSrc);
+
+        if (_tip) {
+            setTip(_tip);
+            updateCollider();
+        }
 
         loadImage();
         setOpacity(1);
@@ -56,7 +76,8 @@ module.exports = function() {
         ready = state;
     };
 
-    const setTip = function(val) {
+    const setTip = (val) => {
+        this.tip = val;
         tip = val;
     };
 

@@ -1,4 +1,5 @@
-var SocietyData = require('core/society/SocietyData');
+var SocietyData = require('@core/society/SocietyData');
+const Checkbox = require('@core/components/Checkbox');
 
 module.exports = function() {
     let addonKey = Engine.windowsData.name.addon_19;
@@ -171,16 +172,38 @@ module.exports = function() {
     }
 
     function addButton($h, id, name) {
-        var $e = API.Templates.get("one-checkbox").addClass("do-action-cursor");
-        $e.find(".label").html(name);
-        var $chbx = $e.find('.checkbox');
-        setStateButton($chbx, id)
-        $e.click(function() {
-            settings[id] = !settings[id];
-            setStateButton($chbx, id)
-            saveConf();
-        });
-        $h.append($e);
+        //var $e = API.Templates.get("one-checkbox").addClass("do-action-cursor");
+        //$e.find(".label").html(name);
+        //var $chbx = $e.find('.checkbox');
+        //setStateButton($chbx, id)
+        //$e.click(function () {
+        //	settings[id] = !settings[id];
+        //	setStateButton($chbx, id)
+        //	saveConf();
+        //});
+        //$h.append($e);
+        //debugger;
+
+        let checked = settings[id] ? true : false;
+
+        const checkbox = new Checkbox.default({
+                label: name,
+                i: id,
+                checked: checked,
+                highlight: false
+            },
+            (state) => {
+                settings[id] = !settings[id];
+
+                if (settings[id] != checkbox.getChecked()) {
+                    checkbox.setChecked(settings[id] ? true : false)
+                }
+
+                saveConf();
+
+            }
+        );
+        $h.append($(checkbox.getCheckbox()));
     }
 
     this.manageVisible = function() {

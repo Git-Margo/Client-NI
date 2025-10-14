@@ -1,13 +1,13 @@
 /**
  * Created by Michnik on 2015-11-05.
  */
-var Updateable = require('core/Updateable');
-var PetActions = require('core/PetActions');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-let CanvasObjectCommons = require('core/characters/CanvasObjectCommons.js');
-let ObjectDynamicLightManager = require('core/night/ObjectDynamicLightManager');
-//let ColliderData = require('core/collider/ColliderData');
+var Updateable = require('@core/Updateable');
+var PetActions = require('@core/PetActions');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+let CanvasObjectCommons = require('@core/characters/CanvasObjectCommons.js');
+let ObjectDynamicLightManager = require('@core/night/ObjectDynamicLightManager');
+//let ColliderData = require('@core/collider/ColliderData');
 
 var Pet = function() {
     var self = this;
@@ -119,10 +119,7 @@ var Pet = function() {
         if (this.rx != this.d.x || this.ry != this.d.y) {
             this.checkDiff();
             this.move(dt);
-            //this.clearAnimationAndGw();
             this.animate(dt);
-            // this.stop = false;
-            // console.log(this.frame)
         } else {
 
             this.animate(dt);
@@ -151,18 +148,13 @@ var Pet = function() {
         }
     };
 
-    // var reached = false;
-    // var frameTime = 0;
     this.move = function(dt) {
-
-        // if (drawLock.check().length || this.stop || !dt) return;
         if (drawLock.check().length || !dt) return;
         var l = speed * dt;
         this.run(l);
 
         frameTime += l;
         if (frameTime >= 0.5) {
-            // console.log('up')
             self.frame++;
             frameTime = frameTime % 0.5;
             if (self.frame == (self.anim ? 5 : 4)) {
@@ -403,8 +395,9 @@ var Pet = function() {
             if (!outUpdate) return;
 
             self.outfitSrc = val;
-            let url = CFG.r_ppath + val;
-            //console.log(url)
+            //let url         = CFG.r_ppath + val;
+            let url = getPath();
+
             Engine.imgLoader.onload(url, {
                     speed: false,
                     externalSource: cdnUrl
@@ -413,27 +406,15 @@ var Pet = function() {
                     this.beforeOnload(f, i, val);
                 },
                 (i) => {
+                    updateFilterImage();
                     this.afterOnload();
                 }
             );
 
         };
         this.actions = function(val) {
-            // var actions = val.split('|');
-            // self.frameActions = [];
-            // for (var i in actions) {getRunActionIndex
-            // 	var data = actions[i].split('#');
-            // 	self.frameActions.push({
-            // 		name: data[0],
-            // 		special: (isset(data[1]) ? parseInt(data[1]) : 3)
-            // 	});
-            // }
-            //console.log(self.frameActions)
             let nameActionArray = val.split("|");
-            // console.log(self.pos)
             actionsDataArray = petActions.createActionsDataArrayForHero(nameActionArray, self.pos);
-            // console.log(actionsDataArray)
-            // console.log(actionsDataArray)
         };
         this.action = function(val) {
             self.pos = petActions.getHalfByte(val, 0);
@@ -441,7 +422,6 @@ var Pet = function() {
             if (!Engine.allInit) return;
 
             let actionIndex = this.findActionIndex(val);
-
             if (actionIndex == null) return;
 
             this.callAction(actionIndex);
@@ -457,6 +437,15 @@ var Pet = function() {
             }
         };
     })();
+
+    const getPath = () => {
+        return CFG.r_ppath + self.outfitSrc;
+    }
+
+    const updateFilterImage = () => {
+        let path = getPath();
+        this.sprite = getEngine().canvasFilter.updateFilter(path, this.sprite, true);
+    }
 
     this.findActionIndex = (actionBin) => {
 
@@ -539,18 +528,7 @@ var Pet = function() {
         self.tip = [petTip, 't_pet'];
     };
 
-    // this.unlock = function () {
-    // 	this.stopAction(true);
-    // 	this.sx = 0;
-    // };
-
     this.stopAction = () => {
-        // console.log('stopAction')
-        // clearInterval(this.actionInterval);
-        // self.activeFrame = 0;
-        // self.actionInterval = null;
-        // self.specialAction = typeof (unlockMove) != 'undefined' && unlockMove ? false : true;
-        // self.stop = typeof (unlockMove) != 'undefined' && unlockMove ? false : true;
         this.setActiveFrame(0);
         this.setActionFrame(0);
         this.setFrame(0);
@@ -580,26 +558,23 @@ var Pet = function() {
         petActions.doAction(self);
     }
 
+    this.getPetActions = () => petActions;
+    this.getActionsDataArray = () => actionsDataArray;
     this.oncontextmenu = function(e) {
-        if (self.d.own) {
+        //if (self.d.own) {
+        if (isPetMine()) {
             let txt = _t('menu_hide', null, 'pet'); //'Schowaj'
             let m = [];
 
             if (!isset(self.d.quest) || !self.d.quest) m.push([txt, self.hideMyPet]);
             else m.push([txt, self.hideMyPet.bind(this, true)]);
 
-            // if (self.frameActions) {
-            // 	for (var i = 0; i < self.frameActions.length; i++) {
-            // 		var a = (1 + i << 4) | (self.frameActions[i].special << 8);
-            // 		m.push([self.frameActions[i].name, _g.bind(this, 'pet&a=' + (a))]);
-            // 	}he
-            // }
-
             if (actionsDataArray) {
                 for (let j = 0; j < actionsDataArray.length; j++) {
                     let name = actionsDataArray[j].name
+                    let action = !this.d.isPreview ? actionsDataArray[j].actionBin : actionsDataArray[j].actionBinWithDir
                     let reqFunc = () => {
-                        _g('pet&a=' + actionsDataArray[j].actionBin)
+                        sendActionRequest(action)
                     }
 
                     m.push([name, reqFunc]);
@@ -627,37 +602,41 @@ var Pet = function() {
                         break; //'StaÅ po lewej'
                 }
                 n = _t(n, null, 'pet');
-                m.push([n, _g.bind(this, 'pet&a=' + i)]);
+                m.push([n, () => sendActionRequest(i)]);
             }
 
             CanvasObjectCommons.addDebugOptionMenu(self, m);
 
-            Engine.interface.showPopupMenu(m, e, true);
+            Engine.interface.showPopupMenu(m, e, {
+                onMap: true
+            });
         } else {
             let m = []
             CanvasObjectCommons.addDebugOptionMenu(self, m);
 
-            if (m.length) Engine.interface.showPopupMenu(m, e, true);
+            if (m.length) Engine.interface.showPopupMenu(m, e, {
+                onMap: true
+            });
         }
 
     };
 
-    this.hideMyPet = function(ask) {
+    this.hideMyPet = (ask) => {
         if (isset(ask)) {
             mAlert(_t('are_u_sure', null, 'pet'), [{
                 txt: _t('yes'),
-                callback: function() {
-                    _g('pet&a=0');
+                callback: () => {
+                    this.hidePet();
                     return true;
                 }
             }, {
                 txt: _t('no'),
-                callback: function() {
+                callback: () => {
                     return true;
                 }
             }]); //'Czy jesteÅ pewien ?'
         } else {
-            _g('pet&a=0');
+            this.hidePet();
         }
     };
 
@@ -673,6 +652,31 @@ var Pet = function() {
         return this.d.name;
     }
 
+    this.hidePet = (callback) => {
+        sendActionRequest(0, callback);
+    }
+
+    const sendActionRequest = (action, callback) => {
+        if (this.d.isPreview) {
+            if (!action) {
+                Engine.hero.removePreviewPet();
+                if (callback) callback();
+                return;
+            }
+            const tempPetObj = Engine.hero.tempPetObj;
+            Engine.hero.updatePet({
+                ...tempPetObj,
+                ...{
+                    action
+                }
+            }, {})
+            return;
+        }
+        _g(`pet&a=${action}`, () => {
+            if (callback) callback();
+        });
+    }
+
     const getObjectDynamicLightManager = () => {
         return objectDynamicLightManager
     }
@@ -680,6 +684,14 @@ var Pet = function() {
     this.getNDir = () => {
         return this.dir;
     };
+
+    const isPetMine = () => {
+        return this.d.own
+    }
+
+    const getCanvasObjectType = () => {
+        return this.canvasObjectType
+    }
 
     const removePet = () => {
         objectDynamicLightManager.removeAllDynamicLights();
@@ -727,8 +739,11 @@ var Pet = function() {
     }
 
     this.init = init
+    this.isPetMine = isPetMine
+    this.getCanvasObjectType = getCanvasObjectType
     this.removePet = removePet
     this.getObjectDynamicLightManager = getObjectDynamicLightManager
+    this.updateFilterImage = updateFilterImage
 
 
 };

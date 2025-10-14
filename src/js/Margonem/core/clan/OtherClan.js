@@ -1,5 +1,5 @@
-// var wnd = require('core/Window');
-var tpl = require('core/Templates');
+// var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
 module.exports = function(Par) {
     var self = this;
     var content;
@@ -31,8 +31,9 @@ module.exports = function(Par) {
         var $table = content.find('.clan-other-members-table');
         $tableHeader.empty();
         $table.empty();
-        for (var i = 0; i < v.length; i += 5) {
-            var sliceD = v.slice(i, i + 5);
+
+        for (var i = 0; i < v.length; i += 6) {
+            var sliceD = v.slice(i, i + 6);
             var $tr = this.otherMember(sliceD, j);
             $table.append($tr);
             j++;
@@ -44,11 +45,26 @@ module.exports = function(Par) {
         //var str = Par.tLang('member_level');
         var $mem = tpl.get('clan-member');
         var $info = v[0];
-        var rank = v[3];
+        var rank = v[4];
         var $rank = tpl.get('member-rank').html(rank);
-        var url = CFG.a_opath + v[4];
+        var url = CFG.a_opath + v[5];
         var $levelAndProf = tpl.get('level-and-prof');
-        var $memberLvl = tpl.get('member-lvl').html(v[1] + v[2]);
+        //var $memberLvl = tpl.get('member-lvl').html(v[1]+v[2]);
+
+        let characterInfoData = {
+            nick: v[0],
+            prof: v[3],
+            level: v[1],
+            operationLevel: v[2],
+            htmlElement: true
+        };
+
+        //var $memberLvl = tpl.get('member-lvl').html(getCharacterInfo(null, {prof: v[3], level:v[1], operationLevel:v[2]}));
+
+        var $memberLvl = tpl.get('member-lvl').html(getCharacterInfo(characterInfoData));
+        $memberLvl.attr("val-to-sort", characterInfoData.level)
+        addCharacterInfoTip($memberLvl, characterInfoData);
+
         createImgStyle($mem.find('.icon-wrapper'), url);
         $mem.find('.char-stats').html($info);
         $rank.tip(rank);
@@ -62,7 +78,7 @@ module.exports = function(Par) {
 
     this.createOtherTabHeader = function() {
         var charInf = Par.getCharInf();
-        return Par.createRecords([charInf[5], charInf[0], charInf[4], charInf[2]], 'table-header');
+        return Par.createRecords([charInf[5], charInf[0], charInf[4], charInf[2]], 'table-header interface-element-table-header-1-background');
     };
 
     this.init = function() {

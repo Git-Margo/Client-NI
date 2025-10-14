@@ -1,4 +1,4 @@
-var ResolutionData = require('core/resolution/ResolutionData');
+var ResolutionData = require('@core/resolution/ResolutionData');
 
 module.exports = function() {
 

@@ -1,5 +1,5 @@
-var HeroesRespParser = require('core/map/HeroesRespParser');
-var HeroesResp = require('core/characters/HeroesResp');
+var HeroesRespParser = require('@core/map/HeroesRespParser');
+var HeroesResp = require('@core/characters/HeroesResp');
 
 module.exports = function() {
 

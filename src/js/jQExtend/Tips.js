@@ -1,9 +1,9 @@
 /**
  * Created by Michnik on 2015-11-20.
  */
-//var Templates = require('core/Templates');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let ItemData = require('core/items/data/ItemData');
+//var Templates = require('@core/Templates');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let ItemData = require('@core/items/data/ItemData');
 module.exports = new(function(options) {
     var t = this;
     this.counter = 0;
@@ -380,7 +380,7 @@ module.exports = new(function(options) {
     this.createEqTip = function(content, eqData) {
         var itemType = eqData.itemType;
         var con = this.parseTip(content);
-        //this.$eqTip = require('core/Templates').get('tip-wrapper').addClass('cmp-tip');
+        //this.$eqTip = require('@core/Templates').get('tip-wrapper').addClass('cmp-tip');
         this.$eqTip = this.getTemplateTipWrapper('cmp-tip');
         this.$eqTip.attr('data-type', 't_item');
         //if (!(Engine.hero.d.opt & 4096)) this.$eqTip.attr('data-item-type', itemType);
@@ -395,7 +395,7 @@ module.exports = new(function(options) {
     };
 
     this.addLabelEqTip = function() {
-        //var label = require('core/Templates').get('tip-wrapper');
+        //var label = require('@core/Templates').get('tip-wrapper');
         var label = this.getTemplateTipWrapper('tip-wrapper');
         this.$eqTip.append(label);
         label.find('.content').html(_t('own', null, 'item'));
@@ -448,6 +448,16 @@ module.exports = new(function(options) {
         switch (e.type) {
             case 'touchstart':
             case 'mouseenter':
+
+                //if (!canShowTipByMobile()) {
+                //	e.stopPropagation();
+                //	return;
+                //}
+
+                if (!canShopTipByTipType(e)) {
+                    return
+                }
+
                 t._in(e);
                 //if (Engine.hero.d.opt && Engine.opt(25)) break; //if no auto cmp
                 if (!isSettingsOptionsAutoCompareItemsOn()) {
@@ -498,6 +508,27 @@ module.exports = new(function(options) {
         }
     });
 
+    const canShowTipByMobile = () => {
+        if (mobileCheck() && Engine && Engine.padController && Engine.padController.isShow()) {
+            return false
+        }
+
+        return true;
+    }
+
+    const canShopTipByTipType = (e) => {
+        let $target = $(e.currentTarget);
+
+        if ($target.attr("data-tip-type") == "overflow-text-with-several-rows") {
+            let element = $target[0]
+            let bigger = element.scrollWidth > element.clientWidth || element.scrollHeight > element.clientHeight;
+            if (!bigger) {
+                return false
+            }
+        }
+
+        return true
+    }
 
     this.checkTipExist = () => {
         return this.$tip ? true : false
@@ -515,7 +546,7 @@ module.exports = new(function(options) {
         return $('<div class="tip-wrapper ' + addClass + '"><div class="content"></div></div>');
     }
 
-    //t.$tip = require('core/Templates').get('tip-wrapper').addClass('normal-tip');
+    //t.$tip = require('@core/Templates').get('tip-wrapper').addClass('normal-tip');
     t.$tip = this.getTemplateTipWrapper('normal-tip');
 
     $.event.special.destroyed = {

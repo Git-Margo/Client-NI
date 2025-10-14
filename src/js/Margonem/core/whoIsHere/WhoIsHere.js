@@ -1,14 +1,14 @@
-var Templates = require('core/Templates');
-//var MyLocalStorage = require('core/Storage');
-var EditColorPanel = require('core/whoIsHere/EditColorPanel');
-var ColorMark = require('core/ColorMark');
-//let WhoIsHereData = require('core/whoIsHere/WhoIsHereData');
-let ServerStorageData = require('core/storage/ServerStorageData');
-let StorageData = require('core/StorageData');
-let StorageFuncWindow = require('core/window/StorageFuncWindow');
-var SocietyData = require('core/society/SocietyData');
-let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
-let StorageFuncHandHeldMiniMap = require('core/map/StorageFuncHandHeldMiniMap');
+var Templates = require('@core/Templates');
+//var MyLocalStorage = require('@core/Storage');
+var EditColorPanel = require('@core/whoIsHere/EditColorPanel');
+var ColorMark = require('@core/ColorMark');
+//let WhoIsHereData = require('@core/whoIsHere/WhoIsHereData');
+let ServerStorageData = require('@core/storage/ServerStorageData');
+let StorageData = require('@core/StorageData');
+let StorageFuncWindow = require('@core/window/StorageFuncWindow');
+var SocietyData = require('@core/society/SocietyData');
+let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
+let StorageFuncHandHeldMiniMap = require('@core/map/StorageFuncHandHeldMiniMap');
 
 
 module.exports = function() {
@@ -26,7 +26,7 @@ module.exports = function() {
 
     this.init = function() {
         this.initWindow();
-        this.initEditControlPanelBtn();
+        //this.initEditControlPanelBtn();
         //this.initDefaultColors();
         this.initSearch();
         this.setStatesFromStorage();
@@ -130,22 +130,22 @@ module.exports = function() {
     //	}
     //};
 
-    this.initEditControlPanelBtn = function() {
-        var $btn = Templates.get('settings-button');
-        $btn.addClass('small green');
-        $btn.find('.label').html('...');
-        self.wnd.$.find('.open-edit-panel').append($btn);
-        $btn.click(function(e) {
-            //if (!self.editColorPanel) {
-            //	self.editColorPanel = new EditColorPanel();
-            //	self.editColorPanel.init();
-            //	e.stopPropagation();
-            //}
-            //else self.editColorPanel.close();
-
-            getEngine().miniMapController.handHeldMiniMapController.getHandHeldMiniMapWindow().createControllPanel();
-        });
-    };
+    //this.initEditControlPanelBtn = function () {
+    //	var $btn = Templates.get('settings-button');
+    //	$btn.addClass('small green');
+    //	$btn.find('.label').html('...');
+    //	self.wnd.$.find('.open-edit-panel').append($btn);
+    //	$btn.click(function (e) {
+    //		//if (!self.editColorPanel) {
+    //		//	self.editColorPanel = new EditColorPanel();
+    //		//	self.editColorPanel.init();
+    //		//	e.stopPropagation();
+    //		//}
+    //		//else self.editColorPanel.close();
+    //
+    //		getEngine().miniMapController.handHeldMiniMapController.getHandHeldMiniMapWindow().createControllPanel();
+    //	});
+    //};
 
     this.updateScroll = function() {
         if (!self.isShow()) return;
@@ -249,7 +249,7 @@ module.exports = function() {
         var $div = Templates.get('one-other');
         var o = list[id];
         var name = o.nick;
-        var lvl = o.lvl == 0 ? '' : '(' + o.lvl + o.prof + ')';
+        //var lvl = o.lvl == 0 ? '' : '(' + o.lvl + o.prof + ')';
         var stasis = o.stasis;
         var stasisIncoming = o.stasisIncoming;
         var color = this.getPersonColor(o.relation);
@@ -259,23 +259,38 @@ module.exports = function() {
         var $stasis = $div.find('.stasis');
         var $stasisIncoming = $div.find('.stasis-incoming');
         const $tipContainer = $div.find('.tip-container');
-        const $tipWrapper = $('<div />');
-        const avatar = $('<div class="avatar-icon" />');
-        createImgStyle(avatar, CFG.a_opath + otherObj.d.icon);
-        $tipWrapper.append(otherObj.createStrTip()).append(avatar);
+        //const $tipWrapper = $('<div />');
+        //const avatar = $('<div class="avatar-icon" />');
+        //createImgStyle(avatar, CFG.a_opath + otherObj.d.icon);
+        //$tipWrapper.append(otherObj.createStrTip()).append(avatar);
         self.updateGlow(data, visible, otherObj, mapVisible, color);
 
         //$playerList.append($div);
         var $name = $div.find('.name .inner');
         $name.html(name);
-        $tipContainer.tip($tipWrapper, 't_other');
+        //$tipContainer.tip($tipWrapper, 't_other');
+        createTipWrapper($tipContainer, otherObj);
         $div.attr('data-id', id);
         visible ? $div.removeClass('hidden') : $div.addClass('hidden');
 
         list[id].show = visible;
 
         $div.find('.center').css('color', color);
-        $div.find('.lvl').html(lvl);
+        //$div.find('.lvl').html(lvl);
+
+        //let charData = {
+        //	nick 			: otherObj.getNick(),
+        //	level 			: otherObj.getLevel(),
+        //	prof 			: otherObj.getProf(),
+        //	operationLevel 	: otherObj.getOperationLevel(),
+        //	onlyText 		: true
+        //};
+        //
+        //
+        //$div.find('.lvl').html(getCharacterInfo(null, charData));
+
+        updateLevel($div, otherObj);
+
         stasis ? $stasis.addClass('active') : $stasis.removeClass('active');
         stasisIncoming > 0 ? $stasisIncoming.addClass('active') : $stasisIncoming.removeClass('active');
         $div.data('sort', o.lvl);
@@ -291,6 +306,26 @@ module.exports = function() {
         $wWrapper.find('.skull').tip(_t('my_char_wanted', null, 'map'));
         $name.after($wWrapper);
     };
+
+    const updateLevel = ($div, otherObj) => {
+        let charData = {
+            nick: otherObj.getNick(),
+            level: otherObj.getLevel(),
+            prof: otherObj.getProf(),
+            operationLevel: otherObj.getOperationLevel()
+        };
+
+        $div.find('.lvl').html(getCharacterInfo(charData));
+    }
+
+    const createTipWrapper = ($tipContainer, otherObj) => {
+        const $tipWrapper = $('<div>');
+        const avatar = $('<div>').addClass('avatar-icon');
+
+        createImgStyle(avatar, CFG.a_opath + otherObj.getImg());
+        $tipWrapper.append(otherObj.createStrTip()).append(avatar);
+        $tipContainer.tip($tipWrapper, 't_other');
+    }
 
     this.updateGlow = function(data, visible, otherObj, mapVisible, color) {
         if (otherObj) {
@@ -314,13 +349,15 @@ module.exports = function() {
     };
 
     this.createMenuAction = function($div, id) {
-        $div.on('click', function(e) {
-            var other = Engine.others.getById(id);
-            //Engine.chat.replyTo(other.d.nick);
-            //Engine.interface.focusChat();
-            Engine.chatController.getChatInputWrapper().setPrivateMessageProcedure(other.d.nick);
-        });
-        $div.on('contextmenu', function(e) {
+
+        if (!mobileCheck()) {
+            $div.on('click', function(e) {
+                var other = Engine.others.getById(id);
+                Engine.chatController.getChatInputWrapper().setPrivateMessageProcedure(other.d.nick);
+            });
+        }
+
+        $div.on('contextmenu longpress', function(e) {
             var other = Engine.others.getById(id);
             if (!other) return;
             if (!self.canShowActionMenu()) {
@@ -336,23 +373,25 @@ module.exports = function() {
             self.wnd.correctPositionMenuToRightEdgeOfWnd();
 
         });
-        $div.on('mouseenter', function() {
-            var other = Engine.others.getById(id);
-            if (!other) return;
-            if (!other.colorMark && $('.popup-menu').length == 0) {
-                other.colorMark = new ColorMark(id, 'green');
-                other.colorMark.init();
-                Engine.targets.addArrow(false, other.nick, other, 'Other', 'navigate');
-            }
-        });
-        $div.on('mouseleave', function() {
-            var other = Engine.others.getById(id);
-            if (!other) return;
-            if (other.colorMark && other.colorMark.color == 'green' && $('.popup-menu').length == 0) {
-                delete(other.colorMark);
-                Engine.targets.deleteArrow('Other-' + other.d.id);
-            }
-        });
+        if (!mobileCheck()) {
+            $div.on('mouseenter', function() {
+                var other = Engine.others.getById(id);
+                if (!other) return;
+                if (!other.colorMark && $('.popup-menu').length == 0) {
+                    other.colorMark = new ColorMark(id, 'green');
+                    other.colorMark.init();
+                    Engine.targets.addArrow(false, other.nick, other, 'Other', 'navigate');
+                }
+            });
+            $div.on('mouseleave', function() {
+                var other = Engine.others.getById(id);
+                if (!other) return;
+                if (other.colorMark && other.colorMark.color == 'green' && $('.popup-menu').length == 0) {
+                    delete(other.colorMark);
+                    Engine.targets.deleteArrow('Other-' + other.d.id);
+                }
+            });
+        }
     };
 
     //this.correctPosition = function (e) {
@@ -470,27 +509,43 @@ module.exports = function() {
         }
     };
 
+    this.getWhoIsHereOther = (id) => {
+        return list[id];
+    }
+
     this.rebuildOnePerson = function(id) {
         var r = list[id].relation;
         var color = self.getPersonColor(r);
         var visible = self.getPersonVisible(r);
         var mapVisible = self.getMapPersonVisible(r);
-
         var others = Engine.others.check();
         var other = others[id];
+        let whoIsHereOther = list[id];
+        let $whoIsHereOther = whoIsHereOther.$;
+
         if (visible && mapVisible) {
             other.whoIsHere = color;
             other.d.whoIsHere = color;
+
             if (isset(other.whoIsHereGlow)) other.whoIsHereGlow.updateColor();
             else other.updateWhoIsHereGlow();
+
         } else {
             self.removeWhoIsHere(id);
         }
+
         other.tipUpdate();
         Engine.miniMapController.updateWindowMiniMapOthersPos(others, true);
-        visible ? list[id].$.removeClass('hidden') : list[id].$.addClass('hidden');
-        list[id].$.find('.center').css('color', color);
-        list[id].show = visible;
+        //visible ? $whoIsHereOther.removeClass('hidden') : $whoIsHereOther.addClass('hidden');
+
+        if (visible) $whoIsHereOther.removeClass('hidden');
+        else $whoIsHereOther.addClass('hidden');
+
+        $whoIsHereOther.find('.center').css('color', color);
+        whoIsHereOther.show = visible;
+
+        updateLevel($whoIsHereOther, other);
+        createTipWrapper($whoIsHereOther.find('.tip-container'), other);
     };
 
     this.getPersonColor = function(relation) {
@@ -708,12 +763,23 @@ module.exports = function() {
             objParent: this,
             nameRefInParent: 'wnd',
             type: Engine.windowsData.type.TRANSPARENT,
+            //mobileMenu			: [['SEARCH', function () {message('SHOW_OR_HIDE_SEARCH')}]],
             manageOpacity: 3,
+            manageConfiguration: {
+                fn: function(e) {
+                    getEngine().miniMapController.handHeldMiniMapController.getHandHeldMiniMapWindow().createControllPanel(e);
+                }
+            },
             //lightModeCss      : ".who-is-here .search-wrapper {display:none}",
             manageShow: false,
             managePosition: {
                 x: '251',
                 y: '60'
+            },
+            search: {
+                keyUpCallback: function(e, val) {
+                    self.searchItems(val);
+                }
             },
             onclose: () => {
                 self.managePanelVisible();
@@ -734,5 +800,7 @@ module.exports = function() {
     this.onResize = function() {
         this.wnd.updatePos();
     };
+
+    this.createTipWrapper = createTipWrapper;
 
 };

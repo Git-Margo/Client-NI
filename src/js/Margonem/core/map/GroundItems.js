@@ -2,12 +2,12 @@
  * Created by Michnik on 2015-11-24.
  */
 
-var Other = require('core/characters/Other');
-//var FollowGlow = require('core/glow/FollowGlow');
-let FollowController = require('core/FollowController');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let ItemState = require('core/items/ItemState');
-//let ColliderData = require('core/collider/ColliderData');
+var Other = require('@core/characters/Other');
+//var FollowGlow = require('@core/glow/FollowGlow');
+let FollowController = require('@core/FollowController');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let ItemState = require('@core/items/ItemState');
+//let ColliderData = require('@core/collider/ColliderData');
 module.exports = function() {
     var items = [];
     var self = this;
@@ -24,6 +24,22 @@ module.exports = function() {
         self.initDrop();
     };
 
+    const checkCollisionWithHotBottomItems = (position) => {
+        let bottomPanelOfBottomPositioner = Engine.interface.getBottomPositioner().find('.bottom-panel-of-bottom-positioner');
+        let mousPos = {
+            x: position.left,
+            y: position.top
+        };
+        let usableSlotArray = [
+            [bottomPanelOfBottomPositioner.find('.slots.right'), 20],
+            [bottomPanelOfBottomPositioner.find('.slots.left'), 20]
+        ];
+
+        let collision = checkPosIsCollisionWithLayers(mousPos, usableSlotArray);
+
+        return collision
+    };
+
     this.initDrop = function() {
         Engine.map.$worldPane.droppable({
             accept: '.item:not(.shop-item)',
@@ -32,7 +48,17 @@ module.exports = function() {
 
                 //block drop on the map when trade or depo
                 if (Engine.trade || Engine.depo || Engine.shop || Engine.auctions || Engine.mails || Engine.bonusReselectWindow ||
-                    (Engine.crafting && (Engine.crafting.salvage || Engine.crafting.enhancement || Engine.crafting.extraction))) {
+                    (Engine.crafting && (Engine.crafting.salvage || Engine.crafting.enhancement || Engine.crafting.extraction || Engine.crafting.socket_enchantment))) {
+                    return;
+                }
+
+
+                if (getEngine().interface.getInterfaceLightMode() && checkCollisionWithHotBottomItems(ui.offset)) {
+                    return
+                }
+
+                if (ui.draggable.hasClass('bottomItem')) {
+                    Engine.interfaceItems.deleteExistItem(item.id, item);
                     return;
                 }
 
@@ -42,25 +68,35 @@ module.exports = function() {
                     return;
                 }
 
-                //drop bottom items
-                if (ui.draggable.hasClass('bottomItem')) {
-                    Engine.interfaceItems.deleteExistItem(item.id, item);
-                    return;
-                }
+                ////drop bottom items
+                //if (ui.draggable.hasClass('bottomItem')) {
+                //	Engine.interfaceItems.deleteExistItem(item.id, item);
+                //	return;
+                //}
 
                 if (ui.draggable.hasClass('shop-item')) return;
 
                 //drop on other
-                var s = Engine.items.parseItemStat(item.stat);
-                var emo = item.name == 'ÅnieÅ¼ka' ? 'snowball' : s.emo;
-                var o = Engine.getCollisionAtEvent(e)[0];
-                if (o && o instanceof Other && typeof(emo) != 'undefined') {
-                    var oId = o.d.id;
+                // var s = Engine.items.parseItemStat(item.stat);
+                let itemName = item.getName();
+                let emoExist = item.issetEmoStat();
+                let snowball = itemName == 'ÅnieÅ¼ka';
+                let o = Engine.getCollisionAtEvent(e)[0];
+                let dropEmo = o && o instanceof Other && (emoExist || snowball)
+
+                if (dropEmo) {
+
+                    let oId = o.d.id;
+                    let emo = snowball ? 'snowball' : item.getEmoStat();
+
                     _g('emo&a=' + emo + '&id=' + oId + '&iid=' + item.id);
                     return true;
                 }
 
-                var text = _t('item_drop_question', null, 'static') + '<br>';
+                var text = `
+					<b>${item.name}</b><br>
+					${_t('item_drop_question', null, 'static')}<br>
+				`;
                 var callbacks = [];
 
                 if (isPl()) {
@@ -174,6 +210,10 @@ module.exports = function() {
         this.init = () => {
             initFollowController();
         };
+
+        const getCanvasObjectType = () => {
+            return this.canvasObjectType
+        }
 
         const initFollowController = () => {
             followController = new FollowController();
@@ -344,7 +384,8 @@ module.exports = function() {
 
         this.updateExpireItems = function(show) {
             var $GC = Engine.interface.get$GAME_CANVAS();
-            if (i.stat.match(/expires=([0-9]+)/)) {
+            // if (i.stat.match(/expires=([0-9]+)/)) {
+            if (i.issetExpiresStat()) {
                 if (show) {
                     this.tip = i.getTipData();
                     i.interval = setInterval(function() {
@@ -380,7 +421,10 @@ module.exports = function() {
                 });
             }]);
 
-            Engine.interface.showPopupMenu(menu, e, true);
+            Engine.interface.showPopupMenu(menu, e, {
+                onMap: true,
+                header: parseItemBB(_self.i.name)
+            });
             return true;
         };
 
@@ -422,6 +466,11 @@ module.exports = function() {
             return 0.1 + this.tutorialOrder;
         };
 
+        const updateFilterImage = () => {
+            let path = getPath();
+            this.sprite = getEngine().canvasFilter.updateFilter(path, this.sprite, true);
+        }
+
         this.afterOnloadItem = (f, image) => {
 
             _self.fw = 32;
@@ -429,6 +478,8 @@ module.exports = function() {
             _self.frames = f.frames;
             _self.activeFrame = 0;
             _self.sprite = image;
+
+            updateFilterImage();
 
             _self.collider = {
                 box: [
@@ -444,8 +495,12 @@ module.exports = function() {
             Engine.tutorialManager.tutorialStart(CFG.LANG.PL, 20);
         };
 
+        const getPath = () => {
+            return CFG.r_ipath + i.icon;
+        }
+
         this.gifFetch = function() {
-            let path = CFG.r_ipath + i.icon;
+            let path = getPath();
 
             Engine.imgLoader.onload(path, {
                     speed: false,
@@ -469,6 +524,9 @@ module.exports = function() {
         this.tip = i.getTipData();
         //this.setStaticAnimation(Engine.opt(8));
         this.setStaticAnimation(!isSettingsOptionsInterfaceAnimationOn());
+
+        this.getCanvasObjectType = getCanvasObjectType;
+        this.updateFilterImage = updateFilterImage;
     };
 
     this.update = function(dt) {
@@ -476,6 +534,12 @@ module.exports = function() {
             items[i].update(dt);
         }
     };
+
+    const refreshFilter = () => {
+        for (let id in items) {
+            items[id].updateFilterImage();
+        }
+    }
 
     /**
      * Returns list of items in current position. Empty list if there is no items
@@ -556,4 +620,6 @@ module.exports = function() {
             }
         );
     }
+
+    this.refreshFilter = refreshFilter;
 };

@@ -1,5 +1,5 @@
-const RajCharacterImageChangerData = require('core/raj/rajCharacterImageChanger/RajCharacterImageChangerData');
-let KindOrderObject = require('core/raj/kindOrderObject/KindOrderObject');
+const RajCharacterImageChangerData = require('@core/raj/rajCharacterImageChanger/RajCharacterImageChangerData');
+let KindOrderObject = require('@core/raj/kindOrderObject/KindOrderObject');
 
 module.exports = function() {
 

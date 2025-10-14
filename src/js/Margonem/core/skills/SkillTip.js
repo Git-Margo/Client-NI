@@ -1,5 +1,5 @@
-// var Parser = require('core/skills/SkillsParser');
-var Tpl = require('core/Templates');
+// var Parser = require('@core/skills/SkillsParser');
+var Tpl = require('@core/Templates');
 const {
     replaceNumber
 } = require('../HelpersTS');
@@ -9,7 +9,7 @@ module.exports = {
     setSkillTip: function($skill, skill) {
         let skillId = skill['id'];
         let name = skill['name'];
-        let sections = require('core/skills/SkillsParser').getSections(skillId, skill)
+        let sections = require('@core/skills/SkillsParser').getSections(skillId, skill)
         let text = this.getSkillTextBySectionsData(sections);
         let $oneBattleSkillTip = Tpl.get('one-battle-skill-tip');
 
@@ -23,7 +23,7 @@ module.exports = {
         if (sections.lvl != '') $oneBattleSkillTip.find('.skill-level').html(_t('level', null, 'pklist') + sections.lvl);
 
         $oneBattleSkillTip.find('.icon').addClass('icon-' + skillId + ' ' + _l());
-        if (CFG.debug) $oneBattleSkillTip.append(this.getDebugContent(skill))
+        if (getDebug()) $oneBattleSkillTip.append(this.getDebugContent(skill))
 
         $skill.tip($oneBattleSkillTip.prop('outerHTML'), 't_skill');
     },

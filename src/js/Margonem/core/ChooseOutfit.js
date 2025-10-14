@@ -1,6 +1,6 @@
-// let wnd = require('core/Window');
-let Templates = require('core/Templates');
-let CharacterData = require('core/characters/CharactersData');
+// let wnd = require('@core/Window');
+let Templates = require('@core/Templates');
+let CharacterData = require('@core/characters/CharactersData');
 
 module.exports = function() {
 

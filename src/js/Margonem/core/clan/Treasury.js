@@ -1,6 +1,6 @@
-//var wnd = require('core/Window');
-var tpl = require('core/Templates');
-const InputMaskData = require('core/InputMaskData');
+//var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
+const InputMaskData = require('@core/InputMaskData');
 module.exports = function(Par) {
     var content;
     var goldLabel;
@@ -59,7 +59,7 @@ module.exports = function(Par) {
     this.createHistoryHeader = function() {
         var str = Par.tLang('treasury-history');
         var strDate = Par.tLang('date_time');
-        return Par.createRecords([str, strDate], 'table-header');
+        return Par.createRecords([str, strDate], 'table-header interface-element-table-header-1-background');
     };
 
     this.createHistory = function() {
@@ -169,7 +169,7 @@ module.exports = function(Par) {
 
     this.createOutfitHeader = function() {
         var str = Par.tLang('clan_outfits');
-        var header = content.find('.outfit-header');
+        var header = content.find('.outfit-header').find('.header-text');
         header.html(str);
     };
 

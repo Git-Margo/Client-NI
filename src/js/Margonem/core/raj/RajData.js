@@ -83,6 +83,8 @@ let o = {
     CHARACTER_EFFECT: "characterEffect",
     FAKE_NPC: "fakeNpc",
     TUTORIAL: "tutorial",
+    TUTORIAL_CLOSE_INTERNAL_FUNCTION: "tutorialCloseInternalFunction",
+    CALLBACK_INTERNAL_FUNCTION: "callbackInternalFunction",
     BATTLE_EVENTS: "battleEvents",
     MAP_EVENTS: "mapEvents",
     CHARACTER_IMAGE_CHANGER: "characterImageChanger",
@@ -110,7 +112,10 @@ let o = {
     AREA_TRIGGER: "areaTrigger",
     CONNECT_SRAJ: "connectSraj",
     MAP_MUSIC: "mapMusic",
-    ZOOM: "zoom"
+    ZOOM: "zoom",
+    JS_SCRIPT: "jsScript",
+    CANVAS_FILTER: "canvasFilter",
+    SRAJ_WINDOW: "srajWindow"
 };
 
 

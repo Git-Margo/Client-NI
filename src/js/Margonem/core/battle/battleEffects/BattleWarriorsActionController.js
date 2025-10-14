@@ -1,7 +1,7 @@
-let TintWarriorAction = require('core/battle/battleEffects/character/TintWarriorAction');
-let ShakeWarriorAction = require('core/battle/battleEffects/character/ShakeWarriorAction');
-let AnimationWarriorAction = require('core/battle/battleEffects/character/AnimationWarriorAction');
-let BFD = require('core/battle/battleEffects/BattleEffectsData');
+let TintWarriorAction = require('@core/battle/battleEffects/character/TintWarriorAction');
+let ShakeWarriorAction = require('@core/battle/battleEffects/character/ShakeWarriorAction');
+let AnimationWarriorAction = require('@core/battle/battleEffects/character/AnimationWarriorAction');
+let BFD = require('@core/battle/battleEffects/BattleEffectsData');
 
 
 module.exports = function() {

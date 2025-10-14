@@ -1,4 +1,4 @@
-// var Window = require('core/Window');
+// var Window = require('@core/Window');
 module.exports = function(loaderInstance) {
     this.initData = null;
     this.name = 'mastermind';
@@ -134,11 +134,19 @@ module.exports = function(loaderInstance) {
     this.run = function() {
         this.init();
     };
-    this.endGame = function() {
+
+    const onClear = () => {
         clearInterval(self.remainintTimeInterval);
         this.wnd.fadeAndRemove();
-        this.l.game = null;
         Engine.lock.remove('minigames');
+    }
+    this.endGame = function() {
+        // clearInterval(self.remainintTimeInterval);
+        // this.wnd.fadeAndRemove();
+        // this.l.game = null;
+        // Engine.lock.remove('minigames');
+        onClear();
+        this.l.game = null;
         this.l.endGame();
     };
     this.lock = function() {
@@ -147,4 +155,6 @@ module.exports = function(loaderInstance) {
     this.unlock = function() {
         this.isLocked = false;
     }
+
+    this.onClear = onClear;
 };

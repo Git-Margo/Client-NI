@@ -76,10 +76,17 @@ module.exports = function(loaderInstance) {
         }
     };
 
-    this.endGame = function() {
+    const onClear = () => {
         clearInterval(self.timeInterval);
         self.wnd.fadeAndRemove();
         Engine.lock.remove('minigames');
+    }
+
+    this.endGame = function() {
+        // clearInterval(self.timeInterval);
+        // self.wnd.fadeAndRemove();
+        // Engine.lock.remove('minigames');
+        onClear();
         loaderInstance.endGame();
     };
 
@@ -486,6 +493,8 @@ module.exports = function(loaderInstance) {
         self.waitingInv = null;
         self.$waitingScreen.fadeOut('fast');
     };
+
+    this.onClear = onClear;
 
     return this;
 };

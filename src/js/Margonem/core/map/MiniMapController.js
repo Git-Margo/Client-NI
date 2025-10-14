@@ -1,11 +1,14 @@
-var tpl = require('core/Templates');
-//var QT = require('core/quest/QuestTracking');
-//var MMW  = require('core/map/MiniMapWindow');
-var HandHeldMiniMapController = require('core/map/handheldMiniMap/HandHeldMiniMapController');
-var StorageFuncMiniMapController = require('core/map/StorageFuncMiniMapController');
-const DragZoom = require('js/jQExtend/DragZoom/DragZoom');
-let NpcData = require('core/characters/NpcData');
-const EmotionsData = require('core/emotions/EmotionsData');
+var tpl = require('@core/Templates');
+//var QT = require('@core/quest/QuestTracking');
+//var MMW  = require('@core/map/MiniMapWindow');
+var HandHeldMiniMapController = require('@core/map/handheldMiniMap/HandHeldMiniMapController');
+var StorageFuncMiniMapController = require('@core/map/StorageFuncMiniMapController');
+const DragZoom = require('@jQExtend/DragZoom/DragZoom');
+let NpcData = require('@core/characters/NpcData');
+const EmotionsData = require('@core/emotions/EmotionsData');
+const {
+    getIconClose
+} = require('@core/HelpersTS');
 
 module.exports = function() {
 
@@ -94,8 +97,11 @@ module.exports = function() {
             self.showLocalAndHideGlobalMap(false);
             self.setDisable($(this));
         });
-        this.createButton('close-mini-map-btn', $wrapper, 'close', this.toggleMiniMap);
-        this.$.find('.close-mini-map-btn').tip(_t('hotkey_close'));
+        this.createButton('close-mini-map-btn', $wrapper, '', this.toggleMiniMap);
+        const $closeIcon = getIconClose(false);
+        const $closeBtn = this.$.find('.close-mini-map-btn')
+        $closeBtn.append($closeIcon);
+        $closeBtn.tip(_t('hotkey_close'));
     };
 
     this.setDisable = function($b) {
@@ -161,9 +167,16 @@ module.exports = function() {
         if (globalMapLoaded) self.showMyLoc();
 
         Engine.widgetManager.manageClassOfWidget(Engine.widgetsData.name.MAP, true);
+
+        const $interfaceLayer = Engine.interface.get$interfaceLayer();
+        $interfaceLayer.addClass('show-mini-map')
+
     };
 
     this.closeMiniMap = function() {
+        const $interfaceLayer = Engine.interface.get$interfaceLayer();
+        $interfaceLayer.removeClass('show-mini-map');
+
         Engine.lock.remove('miniMapBlock');
         this.$.css('display', 'none');
         miniMapShow = false;

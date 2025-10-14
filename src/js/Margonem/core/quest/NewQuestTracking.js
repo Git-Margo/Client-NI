@@ -1,7 +1,7 @@
-let QuestTrackingStorage = require('core/quest/QuestTrackingStorage');
-let QuestTrackingParser = require('core/quest/QuestTrackingParser');
-let PointerTargetObject = require('core/quest/PointerTargetObject');
-let QuestData = require('core/quest/QuestData');
+//let QuestTrackingStorage = require('@core/quest/QuestTrackingStorage');
+let QuestTrackingParser = require('@core/quest/QuestTrackingParser');
+let PointerTargetObject = require('@core/quest/PointerTargetObject');
+let QuestData = require('@core/quest/QuestData');
 
 
 
@@ -10,23 +10,25 @@ module.exports = function() {
     let questTrackingData;
 
     let questTrackingParser;
-    let questTrackingStorage;
+    //let questTrackingStorage;
 
     let trackingNpcs;
     let trackingNpcsCandidate;
 
     let activeTrackingQuest;
+    let activeServerTrackingQuest;
 
     let activeTrackingData;
     let allPointerTargetObjects;
 
     const init = () => {
         questTrackingParser = new QuestTrackingParser();
-        questTrackingStorage = new QuestTrackingStorage();
+        //questTrackingStorage = new QuestTrackingStorage();
 
-        questTrackingStorage.init();
+        //questTrackingStorage.init();
 
         setActiveTrackingQuest(null);
+        setActiveServerTrackingQuest(null);
     };
 
     const getQuestTrackingDataWithoutSpecifTrack = (questIdObject) => {
@@ -98,11 +100,20 @@ module.exports = function() {
         activeTrackingQuest = _activeTrackingQuest
     };
 
+    const setActiveServerTrackingQuest = (_activeServerTrackingQuest) => {
+        activeServerTrackingQuest = _activeServerTrackingQuest
+    };
+
+    const getActiveServerTrackingQuest = () => {
+        return activeServerTrackingQuest;
+    }
+
     const startTrackingIfActiveTrackingQuestExist = () => {
         //if (!checkActiveTrackingQuestExist()) return;
-        let questId = getActiveQuestTrackingInStorage();
-
-        startTracking(questId);
+        //let questId = getActiveQuestTrackingInStorage();
+        //
+        //startTracking(questId);
+        startTracking(activeServerTrackingQuest);
     };
 
     const startTracking = (questId) => {
@@ -326,17 +337,18 @@ module.exports = function() {
     //};
 
     const afterInterfaceStart = () => {
-        if (questTrackingStorage.checkQuestTrackingId() === null) return;
+        //if (questTrackingStorage.checkQuestTrackingId() === null) return;
+        if (activeServerTrackingQuest === null) return;
 
-        let questId = questTrackingStorage.getQuestTrackingId();
-        let trackingExistInTrackingData = checkTrackingExistFromTrackingData(questId);
+        //let questId = questTrackingStorage.getQuestTrackingId();
+        let trackingExistInTrackingData = checkTrackingExistFromTrackingData(activeServerTrackingQuest);
 
         if (!trackingExistInTrackingData) {
             getEngine().quests.refreshTrackQuestButtons();
             return;
         }
 
-        startTracking(questId);
+        startTracking(activeServerTrackingQuest);
 
         getEngine().quests.refreshTrackQuestButtons();
     };
@@ -350,25 +362,32 @@ module.exports = function() {
     }
 
     const clearHighlightTrackInItems = () => {
-        //let all$highlights = getEngine().heroEquipment.getAmountItemAll$highlights();
-        //for (let k in all$highlights) {
-        //    if (all$highlights[k].hasClass("track")) all$highlights[k].removeClass('track');
-        //}
-        if (getEngine().quests) getEngine().quests.clearHighlightQuestInItems();
-        getEngine().heroEquipment.clearHighlightInItems(QuestData.HIGHLIGHT_CLASS.TRACK);
+
+        let engine = getEngine();
+        let quests = engine.quests;
+        let shop = engine.shop;
+
+        if (quests) quests.clearHighlightQuestInItems();
+
+        engine.heroEquipment.clearHighlightInItems(QuestData.HIGHLIGHT_CLASS.TRACK);
+        if (shop) shop.removeClassInHighlighst(QuestData.HIGHLIGHT_CLASS.TRACK);
     };
 
-    const saveActiveQuestTrackingInStorage = (questId) => {
-        questTrackingStorage.setQuestTrackingId(questId);
-    };
+    //const saveActiveQuestTrackingInStorage = (questId) => {
+    //    setActiveServerTrackingQuest(questId);
+    //    questTrackingStorage.setQuestTrackingId(questId);
+    //};
 
-    const getActiveQuestTrackingInStorage = () => {
-        return questTrackingStorage.getQuestTrackingId();
-    };
+    //const getActiveQuestTrackingInStorage = () => {
+    //    //return activeServerTrackingQuest;
+    //
+    //    return questTrackingStorage.getQuestTrackingId();
+    //};
 
     const setActiveQuestTrackingProcedure = (questId) => {
 
-        saveActiveQuestTrackingInStorage(questId);
+        //saveActiveQuestTrackingInStorage(questId);
+        setActiveServerTrackingQuest(questId)
 
         if (questId == null) {
             stopTracking();
@@ -416,8 +435,10 @@ module.exports = function() {
     this.startTrackingIfActiveTrackingQuestExist = startTrackingIfActiveTrackingQuestExist;
     this.afterInterfaceStart = afterInterfaceStart;
     this.setActiveQuestTrackingProcedure = setActiveQuestTrackingProcedure;
-    this.getActiveQuestTrackingInStorage = getActiveQuestTrackingInStorage;
-    this.saveActiveQuestTrackingInStorage = saveActiveQuestTrackingInStorage;
+    //this.getActiveQuestTrackingInStorage            = getActiveQuestTrackingInStorage;
+    //this.saveActiveQuestTrackingInStorage           = saveActiveQuestTrackingInStorage;
+    this.getActiveServerTrackingQuest = getActiveServerTrackingQuest;
+    this.setActiveServerTrackingQuest = setActiveServerTrackingQuest;
     this.deleteFromQuestTrackingDataIfExist = deleteFromQuestTrackingDataIfExist;
     this.onClear = onClear
     this.clearQuestTrackingDataAfterDie = clearQuestTrackingDataAfterDie

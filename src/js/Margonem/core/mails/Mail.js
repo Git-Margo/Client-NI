@@ -1,5 +1,5 @@
-var Templates = require('core/Templates');
-let MailsData = require('core/mails/MailsData').default;
+var Templates = require('@core/Templates');
+let MailsData = require('@core/mails/MailsData').default;
 
 module.exports = function() {
     var self = this;

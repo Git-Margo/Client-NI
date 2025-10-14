@@ -1,7 +1,7 @@
-var GroupFinder = require('core/searchPath/finder/GroupFinder');
-var PathFinder = require('core/searchPath/finder/PathFinder');
-var ContextMapNode = require('core/searchPath/nodes/ContextMapNode');
-var ContextMap = require('core/searchPath/maps/ContextMap');
+var GroupFinder = require('@core/searchPath/finder/GroupFinder');
+var PathFinder = require('@core/searchPath/finder/PathFinder');
+var ContextMapNode = require('@core/searchPath/nodes/ContextMapNode');
+var ContextMap = require('@core/searchPath/maps/ContextMap');
 
 var SearchContext = function(map, destinationPosition) {
     this.map = map;

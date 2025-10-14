@@ -10,8 +10,11 @@ import ConfirmationQueue from '../../utils/ConfirmationQueue';
 import {
     Item
 } from '../../items/Item';
-const ItemData = require('core/items/data/ItemData');
-const ServerStorageData = require('core/storage/ServerStorageData');
+import {
+    specialFilters
+} from "../../autofiller/AutofillerData";
+const ItemData = require('@core/items/data/ItemData');
+const ServerStorageData = require('@core/storage/ServerStorageData');
 
 declare const removeFromArray: Function;
 declare const createButton: Function;
@@ -34,7 +37,7 @@ export default class Enchant {
 
     private reagentsGridEl!: HTMLElement;
     private autofillerEl!: HTMLElement;
-    private autofiller!: Autofiller;
+    public autofiller!: Autofiller;
     private usageCounterEl!: HTMLElement;
     private reagentsGridSize: {
         x: number,
@@ -145,6 +148,12 @@ export default class Enchant {
                         checked: true,
                         groupId: 1
                     },
+                    {
+                        key: specialFilters.PER_TYPE,
+                        checked: false,
+                        groupId: 1,
+                        label: _t('per-type', null, 'autofiller')
+                    }
                 ],
                 // rarity: Object.keys(itemRarity).map(rarity => ({ key: rarity, checked: true, groupId: 2 })),
             },
@@ -174,7 +183,7 @@ export default class Enchant {
                     ],
                 },
                 deny: {
-                    stats: ['artisan_worthless'],
+                    stats: ['artisan_worthless', 'soulbound', 'permbound'],
                 }
             }
         }

@@ -25,7 +25,7 @@ module.exports = function() {
 
             if (!$el.length) {
                 console.warn('[HtmlMultiGlow.js, addMultiGlowTarget] Not exist element: ', selectorArray[i]);
-                return
+                continue
             }
             //let newIndex = this.getNewTargetId();
             //this.addTarget($el);

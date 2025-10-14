@@ -1,4 +1,4 @@
-const tpl = require('core/Templates');
+const tpl = require('@core/Templates');
 const Button = require('./components/Button');
 module.exports = function() {
     var self = this;

@@ -1,4 +1,4 @@
-let WeatherData = require('core/weather/WeatherData');
+let WeatherData = require('@core/weather/WeatherData');
 
 module.exports = function(Par, kind, type, data) {
     var self = this;
@@ -113,7 +113,9 @@ module.exports = function(Par, kind, type, data) {
             return;
         }
 
+        ctx.lineWidth = 1;
         ctx.strokeStyle = "white";
+
         ctx.moveTo(l, top);
         ctx.lineTo(l + self.fw, t + self.fh);
         ctx.stroke();
@@ -226,6 +228,8 @@ module.exports = function(Par, kind, type, data) {
     const drawMask = (size) => {
         let canvas = document.createElement('canvas');
         let ctx = canvas.getContext("2d");
+
+        getEngine().canvasFilter.updateFilterWithoutPath(ctx);
 
         let widthScale = 1;
         let heightScale = 1;
@@ -481,16 +485,25 @@ module.exports = function(Par, kind, type, data) {
         return getEngine().renderer.getWeatherOrderWithoutSort();
     };
 
+    const getPath = () => {
+        return CFG.r_fpath + 'fish/' + data.icon;
+    }
+
     this.setIcon = function() {
         if (!isset(data.icon)) return;
-        var url = CFG.r_fpath + 'fish/' + data.icon;
+        //var url = CFG.r_fpath + 'fish/' + data.icon;
 
-        Engine.imgLoader.onload(url, {
-            speed: false,
-            externalSource: cdnUrl
-        }, (i, f) => {
-            self.beforeOnload(f, i);
-        });
+        Engine.imgLoader.onload(getPath(), {
+                speed: false,
+                externalSource: cdnUrl
+            },
+            (i, f) => {
+                self.beforeOnload(f, i);
+            },
+            (i) => {
+                updateFilterImage();
+            }
+        );
     };
 
     this.beforeOnload = (f, i) => {
@@ -511,6 +524,17 @@ module.exports = function(Par, kind, type, data) {
         self.setIcon();
     };
 
+    const updateFilterImage = () => {
+        if (this.sprite) {
+            this.sprite = getEngine().canvasFilter.updateFilter(getPath(), this.sprite, true);
+        }
+        if (bubbleMask) {
+            bubbleMask = null
+        }
+
+    }
+
+    this.updateFilterImage = updateFilterImage
     //this.createObject();
 
 };

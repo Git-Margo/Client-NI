@@ -1,10 +1,10 @@
-let CharacterEffectData = require('core/characterEffects/CharacterEffectsData');
-let CharacterEffect = require('core/characterEffects/CharacterEffect');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-let CharacterEffectsData = require('core/characterEffects/CharacterEffectsData');
-let RajObjectInterface = require('core/raj/RajObjectInterface');
-let RajData = require('core/raj/RajData');
+let CharacterEffectData = require('@core/characterEffects/CharacterEffectsData');
+let CharacterEffect = require('@core/characterEffects/CharacterEffect');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+let CharacterEffectsData = require('@core/characterEffects/CharacterEffectsData');
+let RajObjectInterface = require('@core/raj/RajObjectInterface');
+let RajData = require('@core/raj/RajData');
 
 let TintEffect = function() {
 
@@ -101,27 +101,11 @@ let TintEffect = function() {
         let data = this.getData();
         let master = this.getMaster();
         let c = data.params.color;
-        var dir = isset(master.dir) ? master.dir : 'S';
         var bgX = master.frame * master.fw;
-        let bgY = null;
+        let bgY = master.getBgY();
 
-
-        switch (dir) {
-            case HeroDirectionData.S:
-                bgY = 0;
-                break;
-            case HeroDirectionData.W:
-                bgY = master.fh;
-                break;
-            case HeroDirectionData.E:
-                bgY = master.fh * 2;
-                break;
-            case HeroDirectionData.N:
-                bgY = master.fh * 3;
-                break;
-        }
-
-        bgY += master.activeFrame * master.fh;
+        if (master.isPlayer || master.fake) bgY += master.activeFrame * master.fh * 4;
+        else bgY += master.activeFrame * master.fh;
 
         ctxTint.globalCompositeOperation = "source-over";
         ctxTint.fillStyle = `rgb(${c.r},${c.g},${c.b})`;
@@ -149,7 +133,7 @@ let TintEffect = function() {
         let fw = this.getFw();
         let fh = this.getFh();
 
-        ctx.save();
+        //ctx.save();
         ctx.globalAlpha = tintAlpha;
 
         let pos = this.getPos();
@@ -170,7 +154,8 @@ let TintEffect = function() {
             fw, fh
         );
 
-        ctx.restore();
+        ctx.globalAlpha = 1;
+        //ctx.restore();
     };
 
     const update = (dt) => {

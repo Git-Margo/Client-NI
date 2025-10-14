@@ -4,20 +4,20 @@
  * and open the template in the editor.
  */
 
-var Updateable = require('core/Updateable');
-var Collisions = require('core/Collisions');
-var Input = require('core/InputParser');
-var Rips = require('core/map/Rips');
-var Gateways = require('core/map/Gateways');
-var GroundItems = require('core/map/GroundItems');
-var QuestProgressBar = require('core/map/QuestProgressBar');
-var SearchPath = require('core/searchPath/SearchPath');
-var I = require('core/InputParser');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-var ThemeData = require('core/themeController/ThemeData');
-var TutorialData = require('core/tutorial/TutorialData');
-var RajData = require('core/raj/RajData');
-const MapConfig = require('core/map/MapConfig');
+var Updateable = require('@core/Updateable');
+var Collisions = require('@core/Collisions');
+var Input = require('@core/InputParser');
+var Rips = require('@core/map/Rips');
+var Gateways = require('@core/map/Gateways');
+var GroundItems = require('@core/map/GroundItems');
+var QuestProgressBar = require('@core/map/QuestProgressBar');
+var SearchPath = require('@core/searchPath/SearchPath');
+var I = require('@core/InputParser');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+var ThemeData = require('@core/themeController/ThemeData');
+var TutorialData = require('@core/tutorial/TutorialData');
+var RajData = require('@core/raj/RajData');
+const MapConfig = require('@core/map/MapConfig');
 var Map = function() {
     var self = this;
     var animated = false;
@@ -71,7 +71,8 @@ var Map = function() {
     this.col = new Collisions();
     var img = null;
 
-    let externalProperties = null;
+    //let externalProperties = null;
+    let sraj = null;
 
     let forceRender = false;
     //var gtwImg = new Image();
@@ -115,26 +116,6 @@ var Map = function() {
             //Engine.lowHealthCanvas.create();
             getEngine().map.setForceRender(true);
             self.update(0);
-            //self.serveRayControllerData(['weather', 'night', 'mapFilter', 'earthQuake', 'tutorial']);
-            self.serveRayControllerData([
-                RajData.PROGRAMMER,
-                RajData.WEATHER,
-                RajData.CONNECT_SRAJ,
-                //RajData.RANDOM_CALLER,
-                RajData.SCREEN_EFFECTS,
-                RajData.SEQUENCE,
-                RajData.FLOAT_OBJECT,
-                RajData.FLOAT_FOREGROUND,
-                RajData.NIGHT,
-                RajData.MAP_FILTER,
-                RajData.EARTHQUAKE,
-                RajData.TUTORIAL,
-                RajData.SOUND,
-                RajData.AREA_TRIGGER,
-                RajData.MAP_MUSIC,
-                RajData.ZOOM,
-                RajData.TRACKING,
-            ]);
         });
 
         this.gateways = new Gateways(self);
@@ -149,24 +130,57 @@ var Map = function() {
         //});
     };
 
-    this.setExternalProperties = (data) => {
-        externalProperties = data;
+    const callMapSraj = (callOnlyNightAndFilter) => {
+        let exceptions = [];
+        let NIGHT_KEY = RajData.NIGHT;
+        let CANVAS_FILTER = RajData.CANVAS_FILTER;
+
+        if (callOnlyNightAndFilter) {
+
+            for (let k in RajData) {
+                let name = RajData[k];
+
+                if (name == NIGHT_KEY || name == CANVAS_FILTER) {} else {
+                    exceptions.push(name);
+                }
+            }
+
+        } else {
+            exceptions.push(NIGHT_KEY);
+            exceptions.push(CANVAS_FILTER);
+        }
+
+        serveRayControllerData(exceptions);
+
+        if (!callOnlyNightAndFilter && !self.getMapMusicFromSraj()) {
+            Engine.soundManager.setMusic();
+        }
+    };
+
+    this.setSraj = (data) => {
+        //externalProperties = data;
+        sraj = data;
     }
 
-    this.getExternalProperties = () => {
-        return externalProperties;
+    this.getSraj = () => {
+        //return externalProperties;
+        return sraj;
     }
 
-    this.getSpecificKeyFromExternalProperties = (specificKey) => {
-        return externalProperties[specificKey];
+    this.getSpecificKeyFromSraj = (specificKey) => {
+        //return externalProperties[specificKey];
+        return sraj[specificKey];
     }
 
     this.getMapMusicFromSraj = () => {
-        if (!externalProperties) return null;
+        //if (!externalProperties) return null;
+        if (!sraj) return null;
 
-        if (!externalProperties[RajData.MAP_MUSIC]) return null;
+        //if (!externalProperties[RajData.MAP_MUSIC]) return null;
+        if (!sraj[RajData.MAP_MUSIC]) return null;
 
-        return externalProperties[RajData.MAP_MUSIC];
+        //return externalProperties[RajData.MAP_MUSIC];
+        return sraj[RajData.MAP_MUSIC];
     };
 
     this.blockMove = function() {
@@ -232,7 +246,7 @@ var Map = function() {
     //};
 
     this.beforeUpdate = function(data) {
-        self.setExternalProperties(null);
+        self.setSraj(null);
         if (data.params) {
             self.config.setDefaults();
             self.config.update(data.params);
@@ -275,13 +289,32 @@ var Map = function() {
     }
 
     const manageQuestFog = () => {
+        let questFog = this.config.getQuestFog();
 
-        if (!this.config.getIsQuestFogEnabled()) return;
+        if (!questFog) {
+            return;
+        }
 
-        getEngine().questMapBorderManager.prepareBorderCanvas({
-            r: backgroundColor.r,
-            g: backgroundColor.g,
-            b: backgroundColor.b
+        if (questFog.color) {
+            let color = hexToRgb(questFog.color);
+            this.setBackgroundColor([color.r, color.g, color.b]);
+        }
+
+        let size = getEngine().map.size;
+
+        getEngine().mapBorderManager.updateData({
+            id: "QUEST_MAP",
+            action: "CREATE",
+            kind: "QUEST_MAP",
+            startX: 0,
+            startY: 0,
+            endX: size.x,
+            endY: size.y,
+            color: {
+                r: backgroundColor.r,
+                g: backgroundColor.g,
+                b: backgroundColor.b
+            }
         });
     };
 
@@ -313,7 +346,7 @@ var Map = function() {
     };
 
     this.refreshRayControllerData = (keysToRefresh) => {
-        if (!this.getExternalProperties()) {
+        if (!this.getSraj()) {
             errorReport("Map.js", "this.refreshRayControllerData", "external_properties not exist in this map!");
             return;
         }
@@ -324,39 +357,46 @@ var Map = function() {
         }
 
         for (let k in keysToRefresh) {
-            this.refreshOneKeyInMapExternalProperties(keysToRefresh[k]);
+            this.refreshOneKeyInMapSraj(keysToRefresh[k]);
         }
     };
 
-    this.refreshOneKeyInMapExternalProperties = (key) => {
+    this.refreshOneKeyInMapSraj = (key) => {
         if (!Engine.rajController.checkRajKeyExist(key)) {
             errorReport("Map.js", "refreshRayControllerData", 'Key: ' + key + " not exist in RajData!");
             return;
         }
 
-        if (!this.keyExistInExternalProperties(key)) {
+        if (!this.keyExistInSraj(key)) {
             errorReport("Map.js", "refreshRayControllerData", 'Key: ' + key + "not exist in map external_properties!");
             return;
         }
 
-        let specificKeyData = this.getSpecificKeyFromExternalProperties(key);
+        let specificKeyData = this.getSpecificKeyFromSraj(key);
 
         Engine.rajController.parseObject({
             [key]: specificKeyData
         });
     };
 
-    this.keyExistInExternalProperties = (key) => {
-        return externalProperties[key] ? true : false;
+    this.keyExistInSraj = (key) => {
+        //return externalProperties[key] ? true : false;
+        return sraj[key] ? true : false;
     };
 
-    this.serveRayControllerData = (exceptionKeys) => {
-        if (!externalProperties) return;
-        // console.log('serveRayControllerData')
+    const serveRayControllerData = (exceptionKeys) => {
+        //if (!externalProperties) return;
+        if (!sraj) return;
 
-        Engine.rajController.parseObject(externalProperties, exceptionKeys, {
-            mapId: self.d.id
+        //Engine.rajController.parseObject(externalProperties, exceptionKeys, {mapId:self.d.id});
+        Engine.rajController.parseObject(sraj, exceptionKeys, {
+            mapId: self.d.id,
+            srajId: getSrajId()
         });
+    }
+
+    const getSrajId = () => {
+        return this.d.srajId
     }
 
     this.afterOnload = () => {
@@ -364,14 +404,12 @@ var Map = function() {
         Engine.loader.load('map');
         self.width = img.width;
         self.height = img.height;
-        self.size = {
-            x: self.width / CFG.tileSize,
-            y: self.height / CFG.tileSize
-        };
+        //self.size       = {x: self.width / CFG.tileSize, y: self.height / CFG.tileSize};
 
         I.setKeyboardSystem(self.d.id);
         Engine.map.centerOn(Engine.hero.rx, Engine.hero.ry);
-        drawable = true;
+        //drawable = true;
+        self.setDrawable(true);
 
         //console.log(Engine.allInit);
         if (Engine.allInit) Engine.startGameThread();
@@ -396,9 +434,9 @@ var Map = function() {
         let ctx = canvas.getContext("2d");
         let tileSize = CFG.tileSize;
 
-        if (!xSize || !ySize || !backgroundOffsetX || !backgroundOffsetY) {
-            return;
-        }
+        //if (!xSize || !ySize || !backgroundOffsetX || !backgroundOffsetY) {
+        //	return;
+        //}
 
         canvas.width = xSize * tileSize;
         canvas.height = ySize * tileSize;
@@ -413,6 +451,10 @@ var Map = function() {
         return canvas
     };
 
+    this.updateFilterImage = () => {
+        img = getEngine().canvasFilter.updateFilter(self.src, img);
+    }
+
     this.onUpdate = new(function() {
         this.file = function(new_v, old_v, allData) {
             self.src = CFG.a_mpath + new_v;;
@@ -420,27 +462,47 @@ var Map = function() {
             Engine.lock.add('mapLoadedAndAllInit');
 
 
-            Engine.imgLoader.onload(self.src, false,
-                (i) => {
-                    fixCorsForTaintedCanvas(i);
-                    moveBlock = false;
-                    self.imgLoaded = false;
-                    img = i;
-                },
-                (i) => {
-
-                    if (isBackgroundOffsetExist()) {
-                        img = getRedrawImageWithBackgroundOffset(img, allData.x, allData.y, allData.backgroundOffset.x, allData.backgroundOffset.y);
-                    }
-
-                    self.afterOnload();
-                }
-            );
+            //Engine.imgLoader.onload(self.src, false,
+            //	(i)=> {
+            //		fixCorsForTaintedCanvas(i);
+            //		moveBlock       = false;
+            //		self.imgLoaded  = false;
+            //		img = i;
+            //	},
+            //	(i) => {
+            //
+            //			//let filter = Engine.getFilter();
+            //           //
+            //			//if (filter) {
+            //			//	let newImg = Engine.imgLoader.getImgWithFilter(self.src, filter);
+            //           //
+            //			//	if (!newImg) {
+            //			//		return
+            //			//	}
+            //           //
+            //			//	img = newImg;
+            //			//}
+            //
+            //		//img = getEngine().canvasFilter.updateFilter(self.src, img);
+            //		self.updateFilterImage();
+            //
+            //
+            //		if (isBackgroundOffsetExist()) {
+            //			img = getRedrawImageWithBackgroundOffset(img, allData.x, allData.y, allData.backgroundOffset.x, allData.backgroundOffset.y);
+            //		}
+            //
+            //		self.afterOnload();
+            //	}
+            //);
 
 
         };
-        this.external_properties = function(val) {
-            self.setExternalProperties(val)
+        //this.external_properties = function (val) {
+        //	self.setExternalProperties(val)
+        //};
+        this.srajId = function(val) {
+            let srajData = Engine.srajStore.getSrajTemplate(val, "APPEAR");
+            self.setSraj(JSON.parse(srajData));
         };
         this.backgroundOffset = function(val, old) {
             setBackgroundOffset(val.x, val.y);
@@ -455,9 +517,14 @@ var Map = function() {
         };
         this.name = function(val, old) {
             const
-                $l = Engine.interface.get$interfaceLayer().find('.location'),
+                $location = Engine.interface.get$location(),
+                $locationLightMode = Engine.interface.get$locationLightMode(),
+                $locationId = Engine.interface.get$locationId(),
                 label = _t('location_name');
-            $l.html(escapeHTML(val)).tip(label + parseBasicBB(val));
+
+            $locationId.html(self.d.id);
+            $location.html(escapeHTML(val)).tip(label + parseBasicBB(val));
+            $locationLightMode.html(escapeHTML(val)).tip(label + parseBasicBB(val));
         };
         this.pvp = function(v) {
             var colors = {
@@ -474,10 +541,23 @@ var Map = function() {
 
             var tipSuffix = Engine.worldConfig.getPvp() ? conquer_stats_tip : show_wanted;
 
-            Engine.interface.get$interfaceLayer()
-                .find('.map_ball')
-                .removeClass('yellow green red orange')
-                .addClass(colors[v]).tip(mode + ' ' + _t('pvp_' + colors[v]) + '<br/>' + partyTxt + '<br/><br/>' + tipSuffix);
+            //let $interfaceLayer = Engine.interface.get$interfaceLayer();
+
+            let tip = mode + ' ' + _t('pvp_' + colors[v]) + '<br/>' + partyTxt + '<br/><br/>' + tipSuffix;
+
+            //let $mapBall 			= $interfaceLayer.find('.map_ball');
+            //let $mapBallLightMode 	= $interfaceLayer.find('.map-ball');
+
+            let $mapBall = Engine.interface.get$mapBall();
+            let $mapBallLightMode = Engine.interface.get$mapBallLightMode();
+
+            $mapBall.removeClass('yellow green red orange').addClass(colors[v]).tip(tip);
+            $mapBallLightMode.removeClass('yellow green red orange').addClass(colors[v]).tip(tip);
+
+            //Engine.interface.get$interfaceLayer()
+            //	.find('.map_ball')
+            //	.removeClass('yellow green red orange')
+            //	.addClass(colors[v]).tip(mode + ' ' + _t('pvp_' + colors[v]) + '<br/>' + partyTxt + '<br/><br/>' + tipSuffix);
             //if (v == 1 || v == 2 || v == 4) tutorialStart(15);
         };
         this.mode = function(v) {
@@ -486,12 +566,14 @@ var Map = function() {
         this.conquer = function(v) {
             if (v) return;
 
-            var $ball = Engine.interface.get$interfaceLayer().find('.map_ball'),
-                //ballTip = $ball.attr('data-tip'),
+            //var $ball = Engine.interface.get$interfaceLayer().find('.map_ball'),
+            var $ball = Engine.interface.get$mapBall(),
+                $mapBallLightMode = Engine.interface.get$mapBallLightMode(),
                 ballTip = $ball.getTipData(),
                 can_conquer = '<br /><br />' + _t('location_conquer_possible');
 
             $ball.tip(ballTip + can_conquer);
+            $mapBallLightMode.tip(ballTip + can_conquer);
         };
         this.visibility = function(v) {
             Engine.warShadow.setWarRange(v);
@@ -516,33 +598,35 @@ var Map = function() {
 
     })();
 
+
+    const loadMapImage = () => {
+
+        let map = this;
+
+        Engine.imgLoader.onload(self.src, false,
+            (i) => {
+                fixCorsForTaintedCanvas(i);
+                moveBlock = false;
+                self.imgLoaded = false;
+                img = i;
+            },
+            (i) => {
+                self.updateFilterImage();
+
+                if (isBackgroundOffsetExist()) {
+                    img = getRedrawImageWithBackgroundOffset(img, map.size.x, map.size.y, backgroundOffset.x, backgroundOffset.y);
+                }
+
+                self.afterOnload();
+            }
+        );
+    }
+
     this.afterUpdate = function(data) {
-        // if(data.interface_skin) Engine.themeController.updateData(data.interface_skin, 2);
-
+        loadMapImage();
         self.updateCanvasSizeMinMaxWHClipOffset(0);
+        callMapSraj(true);
 
-        //if(data.interface_skin) Engine.themeController.updateData(data.interface_skin, ThemeData.THEME_KIND.CITY);
-        //else           			Engine.themeController.removeCityThemeIfExist();
-
-        //if (externalProperties) self.serveRayControllerData(['characterEffect', 'fakeNpc']);
-        if (externalProperties) {
-            self.serveRayControllerData([
-                RajData.CHARACTER_EFFECT,
-                RajData.YELLOW_MESSAGE,
-                RajData.FAKE_NPC,
-                RajData.EMO_DEFINITIONS,
-                RajData.EMO_ACTIONS,
-                RajData.DYNAMIC_LIGHT,
-                RajData.DYNAMIC_DIR_CHARACTER_LIGHT,
-                RajData.BEHAVIOR_DYNAMIC_LIGHT,
-                RajData.MAP_EVENTS,
-                RajData.CHARACTER_IMAGE_CHANGER,
-                RajData.RANDOM_CALLER,
-            ]);
-        }
-
-        //Engine.soundManager.setMusic();
-        if (!self.getMapMusicFromSraj()) Engine.soundManager.setMusic();
         if (Engine.worldWindow && Engine.worldWindow.locationParameters) Engine.worldWindow.locationParameters.updateParameters();
     }
 
@@ -1333,6 +1417,7 @@ var Map = function() {
     this.getOffset = getOffset;
     this.isBackgroundOffsetExist = isBackgroundOffsetExist;
     this.getRedrawImageWithBackgroundOffset = getRedrawImageWithBackgroundOffset;
+    this.callMapSraj = callMapSraj;
 };
 Map.prototype = Object.create(Updateable.prototype);
 

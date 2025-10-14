@@ -1,7 +1,7 @@
-var MapChunk = require("core/searchPath/chunk/MapChunk");
-var MapChunkZone = require("core/searchPath/chunk/MapChunkZone");
-var RefUsedSet = require("core/searchPath/RefUsedSet");
-var MapNode = require("core/searchPath/nodes/MapNode");
+var MapChunk = require('@core/searchPath/chunk/MapChunk');
+var MapChunkZone = require('@core/searchPath/chunk/MapChunkZone');
+var RefUsedSet = require('@core/searchPath/RefUsedSet');
+var MapNode = require('@core/searchPath/nodes/MapNode');
 
 var BaseMap = function(width, height, chunkSize) {
     this.width = width;

@@ -1,6 +1,6 @@
-// const wnd = require('core/Window');
-const tpl = require('core/Templates');
-const PreCaptcha = require('core/captcha/PreCaptcha.js');
+// const wnd = require('@core/Window');
+const tpl = require('@core/Templates');
+const PreCaptcha = require('@core/captcha/PreCaptcha.js');
 
 module.exports = function() {
     let content;
@@ -115,7 +115,8 @@ module.exports = function() {
         setInterval(() => {
             time--;
             if (time < 0) time = 0;
-            if (time < 1) location.reload();
+            //if (time < 1) location.reload();
+            if (time < 1) pageReload();
             this.updateCaptchaBlockadeTimer(time);
         }, 1000);
         this.updateCaptchaBlockadeTimer(time);

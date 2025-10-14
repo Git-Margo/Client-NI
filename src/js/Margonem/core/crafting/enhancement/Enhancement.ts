@@ -5,8 +5,9 @@ import {
 
 export {}
 
-const Tpl = require('core/Templates');
-const ItemState = require('core/items/ItemState');
+const Tpl = require('@core/Templates');
+const ItemState = require('@core/items/ItemState');
+const ItemClass = require('@core/items/ItemClass');
 import Progressbar from './Progressbar';
 import Enchant from './Enchant';
 import Upgrade from './Upgrade';
@@ -44,10 +45,7 @@ export default class Enhancement {
 
     constructor(private wndEl: HTMLElement) {
         this.createContent();
-        this.initScroll();
-        //this.getEngine().items.fetch('u', this.newReceivedItem.bind(this));
         this.getEngine().items.fetch(this.getEngine().itemsFetchData.NEW_ENHANCEMENT_RECEIVED_ITEM, this.newReceivedItem.bind(this));
-        // this.getEngine().disableItemsManager.startSpecificItemKindDisable('enhance');
         this.dimStartDefault();
         this.getEngine().interfaceItems.setDisableSlots('enhance');
     }
@@ -74,18 +72,11 @@ export default class Enhancement {
         this.upgrade = new Upgrade(upgradeEl);
     }
 
-    initScroll() {
-        $(this.contentEl).find('.scroll-wrapper').addScrollBar({
-            track: true
-        });
-    };
-
     updateScroll() {
-        $('.scroll-wrapper', $(this.contentEl)).trigger('update');
+        this.getEngine().crafting.itemCraft.updateScroll();
     };
 
     newReceivedItem(item: any) {
-        // const iconEl = this.getEngine().items.createViewIcon(item.id, 'enhance-require-item', 'u')[0][0];
         const iconEl = this.getEngine().items.createViewIcon(item.id, this.getEngine().itemsViewData.ENHANCE_REQUIRE_ITEM_VIEW, 'u')[0][0];
         this.enhanceItemSlotReceive.appendChild(iconEl);
         item.on('afterUpdate', () => this.receivedItemAfterUpdate(item, iconEl));
@@ -156,11 +147,17 @@ export default class Enhancement {
         this.requestBlock = false;
         if (isset(enhancement) && (isset(enhancement.upgradable || enhancement.progressing || enhancement.completed))) {
             this.addItemToEnchant();
+            if (enhancement.completed) this.onCompleted();
         }
     }
 
     addItemToEnchant() {
+        this.enchant.setReagentsDisableState(false);
         let item = this.getEngine().items.getItemById(this.selectedEnhanceItem);
+        this.enchant.autofiller.updateOptions({
+            clByType: item.cl
+        })
+
         let iconEl = this.getEngine().items.createViewIcon(item.id, this.getEngine().itemsViewData.ENHANCE_ITEM_VIEW)[0][0];
 
         iconEl.addEventListener('click', () => {
@@ -256,14 +253,20 @@ export default class Enhancement {
 
     update(v: any) {
         this.requestBlock = false;
-        this.enchant.setReagentsDisableState(false);
+        // this.enchant.setReagentsDisableState(false);
         this.enchant.setEnchantConfirmButton();
+
+        if (isset(v.completed)) {
+            this.upgradeLvl = this.maxUpgradeLvl;
+            this.onCompleted();
+        }
 
         if (this.getEngine().crafting.tempEnhanceItemId && (isset(v.upgradable) || isset(v.progressing) || isset(v.completed))) {
             if (!this.selectedEnhanceItem) {
                 this.selectedEnhanceItem = this.getEngine().crafting.tempEnhanceItemId;
                 this.addItemToEnchant();
                 this.getEngine().crafting.tempEnhanceItemId = null;
+                if (isset(v.completed)) this.onCompleted();
             }
         }
 
@@ -303,10 +306,6 @@ export default class Enhancement {
             // }
             this.unmarkReagents();
         }
-        if (isset(v.completed)) {
-            this.upgradeLvl = this.maxUpgradeLvl;
-            this.onCompleted();
-        }
         if (isset(v.usages_preview)) {
             this.getEngine().enhanceUsages = v.usages_preview;
             this.enchant.updateUsages(this.getEngine().enhanceUsages);
@@ -317,7 +316,7 @@ export default class Enhancement {
 
     public getReagentBonus(item: any) {
         const enhancedItem = this.getEngine().items.getItemById(this.selectedEnhanceItem);
-        if (!isset(item) || !this.canMarkItems() || isset(item._cachedStats['target_rarity'])) return false;
+        if (!isset(item) || !this.canMarkItems() || ItemClass.isUpgradeCl(item.cl)) return false;
         // if (item.st > 0) return false;
         if (ItemState.isEquippedSt(item.st)) return false;
         if (item.tpl === enhancedItem.tpl) return 4;

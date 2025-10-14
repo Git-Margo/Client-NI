@@ -1,16 +1,17 @@
-var tpl = require('core/Templates');
-//var RajEventsData = require('core/raj/RajEventsData');
-var RajData = require('core/raj/RajData');
-var RajBattleEventsData = require('core/raj/rajBattleEvents/RajBattleEventsData');
-let ProfData = require('core/characters/ProfData');
-var SkillTip = require('core/skills/SkillTip');
-let ColliderData = require('core/collider/ColliderData');
+var tpl = require('@core/Templates');
+//var RajEventsData = require('@core/raj/RajEventsData');
+var RajData = require('@core/raj/RajData');
+var RajBattleEventsData = require('@core/raj/rajBattleEvents/RajBattleEventsData');
+let ProfData = require('@core/characters/ProfData');
+var SkillTip = require('@core/skills/SkillTip');
+let ColliderData = require('@core/collider/ColliderData');
 module.exports = function() {
 
     var self = this;
     var timePassed = 0;
     let $superCast = null;
     let originalId = null;
+    let focus = null;
 
     this.sequenceIndex = 0;
     this.frame = 0;
@@ -24,11 +25,37 @@ module.exports = function() {
     this.fightDir = null;
     this.loaded = false;
 
+    let notDrawSkillsAnimation = false;
+    let lastSkillsAnimation = false;
+
     let onStartFightWithNpcCall = false;
 
     this.fightAction = null;
 
     let properWarriorImageLoaded = false;
+
+    this.updateDrawOrNoSkillsAnimation = () => {
+        if (notDrawSkillsAnimation) {
+            return
+        }
+
+        if (lastSkillsAnimation) {
+            setLastSkillsAnimation(false);
+            setNotDrawSkillsAnimation(true);
+        }
+    };
+
+    const setLastSkillsAnimation = (_lastSkillsAnimation) => {
+        lastSkillsAnimation = _lastSkillsAnimation
+    }
+
+    const setNotDrawSkillsAnimation = (_notDrawSkillsAnimation) => {
+        notDrawSkillsAnimation = _notDrawSkillsAnimation
+    }
+
+    const getNotDrawSkillsAnimation = () => {
+        return notDrawSkillsAnimation;
+    }
 
     this.setActions = function(patch) {
 
@@ -179,12 +206,12 @@ module.exports = function() {
         onStartFightWithNpcCall = true;
 
         let _originalId = this.getOriginalId();
-        let externalProperties = Engine.npcs.getExternalProperties(_originalId);
+        let sraj = Engine.npcs.getSraj(_originalId);
 
         //Engine.rajController.parseObject(externalProperties, ['interface_skin', 'weather', 'night', 'mapFilter', 'earthQuake', 'characterEffect', 'fakeNpc', 'tutorial'], {npcId:_originalId});
 
 
-        Engine.rajController.parseObject(externalProperties, [
+        Engine.rajController.parseObject(sraj, [
             RajData.INTERFACE_SKIN,
             RajData.WEATHER,
             RajData.FLOAT_OBJECT,
@@ -216,7 +243,15 @@ module.exports = function() {
             npcId: _originalId
         });
 
-        Engine.rajBattleEvents.callAllActionsBySpecificEventAndWarrior(RajBattleEventsData.ON_START_FIGHT_WITH_NPC, _originalId);
+        Engine.rajController.parseObject({
+            [RajData.CALLBACK_INTERNAL_FUNCTION]: true
+        }, false, false, function() {
+            Engine.rajBattleEvents.callAllActionsBySpecificEventAndWarrior(RajBattleEventsData.ON_START_FIGHT_WITH_NPC, _originalId);
+        })
+
+        //Engine.rajController.addToCallbackQueue(function () {
+        //    Engine.rajBattleEvents.callAllActionsBySpecificEventAndWarrior(RajBattleEventsData.ON_START_FIGHT_WITH_NPC, _originalId);
+        //})
     }
 
     this.appendCanvasIcon = () => {
@@ -234,7 +269,7 @@ module.exports = function() {
     this.updateIcon = () => {
 
         let src;
-        const icon = this.id === Engine.hero.d.id && Engine.hero.previewOutfit ? Engine.hero.previewOutfit : this.icon;
+        const icon = this.isHero() && Engine.hero.previewOutfit ? Engine.hero.previewOutfit : this.icon;
 
         if (!this.npc) src = CFG.r_opath + fixSrc(icon);
         else src = CFG.r_npath + fixSrc(icon);
@@ -304,7 +339,7 @@ module.exports = function() {
             this.$.addClass('one-warrior--npc');
         }
         this.setCursor(w.team);
-        this.$.on('click contextmenu', function(e) {
+        this.$.on('click contextmenu longpress', function(e) {
             return Engine.battle.clickCharacter(w.id, e);
         });
         this.xPos = -1;
@@ -441,7 +476,7 @@ module.exports = function() {
         }
     };
 
-    this.updateWarrior = (w) => {
+    this.updateWarrior = (w, clientTriggeredUpdate = false) => {
         let lines = Engine.battle.warriors.getLines();
 
         for (var i in w) {
@@ -537,7 +572,20 @@ module.exports = function() {
                     this.$.css('zIndex', 5 - this.y);
                     break;
                 case 'hpp':
-                    if (isset(old)) this.showDamage(old);
+                    if (isset(old)) {
+
+                        if (!notDrawSkillsAnimation > 0 && this.hpp == 0) {
+                            setLastSkillsAnimation(true);
+                        }
+
+                        this.showDamage(old);
+                    } else {
+
+                        if (this.hpp == 0) {
+                            setNotDrawSkillsAnimation(true);
+                        }
+
+                    }
                     break;
                 case 'buffs':
                     //if (old) {
@@ -660,19 +708,17 @@ module.exports = function() {
             }
         }
 
-        if (this.id !== Engine.hero.d.id) {
-            if (this.super_cast && !isset(w.super_cast)) {
-                this.super_cast = null;
-                $superCast.addClass('finish');
-                $superCast.removeClass('completed')
-                setTimeout(() => {
-                    $superCast.removeClass('finish')
-                    $superCast.removeClass('active')
-                }, 500)
-            }
+        updateFocus(w);
+
+        if (!this.isHero() && this.super_cast && !isset(w.super_cast) && !clientTriggeredUpdate) {
+            this.super_cast = null;
+            $superCast.addClass('finish').removeClass('completed')
+            setTimeout(() => {
+                $superCast.removeClass('finish active')
+            }, 500)
         }
 
-        if (this.id == Engine.hero.d.id) {
+        if (this.isHero()) {
             var e = this.energy;
             var eMax = this.energy0;
             var m = this.mana;
@@ -685,6 +731,7 @@ module.exports = function() {
 
         this.updateHpp();
         this.createWarriorTip();
+        this.setFocusGlow();
 
         if (this.hpp == 0) {
             $('.buff', this.$).remove();
@@ -705,11 +752,32 @@ module.exports = function() {
             Engine.battle.warriors.setDieMob(this.id);
 
             let isPossible = Engine.rajBattleEvents.isPossibleCallBattleEventsFromExternalProperties(this);
-            if (isPossible) Engine.rajBattleEvents.callAllActionsBySpecificEventAndWarrior(RajBattleEventsData.ON_DIE_NPC, this.getOriginalId());
+            if (isPossible) {
+                //Engine.rajBattleEvents.callAllActionsBySpecificEventAndWarrior(RajBattleEventsData.ON_DIE_NPC, this.getOriginalId());
+
+                Engine.rajController.parseObject({
+                    [RajData.CALLBACK_INTERNAL_FUNCTION]: true
+                }, false, false, function() {
+                    Engine.rajBattleEvents.callAllActionsBySpecificEventAndWarrior(RajBattleEventsData.ON_DIE_NPC, self.getOriginalId());
+                });
+
+            }
         }
 
         Engine.battle.warriors.updatePositions();
     };
+
+    this.isHero = () => {
+        return this.id === Engine.hero.d.id;
+    }
+
+    const updateFocus = (data) => {
+        focus = isset(data.focusedBy) && data.focusedBy !== null ? data.focusedBy : null;
+    }
+
+    this.getFocusedBy = () => {
+        return focus;
+    }
 
     this.turnTranslation = (amount) => {
         let translation;
@@ -813,7 +881,18 @@ module.exports = function() {
 
     this.createWarriorTip = () => {
         const $tip = tpl.get('one-warrior-tip').addClass('info-wrapper');
-        $tip.find('.nick').html(`${parseContentBB(this.name)} (${this.lvl + this.prof})`);
+
+        let characterInfo = getCharacterInfo({
+            showNick: true,
+            nick: parseContentBB(this.name),
+            level: this.lvl,
+            operationLevel: this.oplvl,
+            prof: this.prof,
+            htmlElement: true
+        });
+
+        //$tip.find('.nick').html(`${parseContentBB(this.name)} (${this.lvl + this.prof})`);
+        $tip.find('.nick').html(characterInfo);
         $tip.find('.hp').text(_t('life_percent %val%', {
             '%val%': self.hpp
         }, 'battle'));
@@ -823,6 +902,11 @@ module.exports = function() {
 
         this.$.find('.canvas-warrior-icon, .grave-warrior-other, .grave-warrior-npc').tip($tip.prop('outerHTML'));
     };
+
+    this.setFocusGlow = () => {
+        if (focus) this.$.addClass('focus-active');
+        else this.$.removeClass('focus-active');
+    }
 
     this.createGrave = () => {
         //w.id > 0 ? '1' : '2'
@@ -941,5 +1025,7 @@ module.exports = function() {
     this.isSequenceWarrior = () => {
         return this.npc && this.sequence.length;
     }
+
+    this.getNotDrawSkillsAnimation = getNotDrawSkillsAnimation;
 
 };

@@ -1,6 +1,6 @@
-var Storage = require('core/Storage');
-// var Window = require('core/Window');
-var Templates = require('core/Templates');
+var Storage = require('@core/Storage');
+// var Window = require('@core/Window');
+var Templates = require('@core/Templates');
 module.exports = new(function() {
 
     var eventHandlers = {};

@@ -1,4 +1,4 @@
-let KindOrderData = require('core/raj/kindOrderObject/KindOrderData');
+let KindOrderData = require('@core/raj/kindOrderObject/KindOrderData');
 
 module.exports = function() {
 

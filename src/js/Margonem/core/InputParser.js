@@ -1,8 +1,8 @@
 /**
  * Created by lukasz on 11.09.14.
  */
-let HotKeysData = require('core/hotKeys/HotKeysData');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
+let HotKeysData = require('@core/hotKeys/HotKeysData');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
 /*
 let normal = {
 	"W": 'N',

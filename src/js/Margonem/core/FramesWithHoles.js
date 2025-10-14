@@ -1,4 +1,4 @@
-//let RajData      = require('core/raj/RajData');
+//let RajData      = require('@core/raj/RajData');
 
 module.exports = function() {
 
@@ -109,8 +109,12 @@ module.exports = function() {
                 x = ctxMask.canvas.width / 2;
                 y = ctxMask.canvas.height / 2;
             } else {
-                x = oneLightPoint.x;
-                y = oneLightPoint.y;
+                let zoomFactor = Engine.zoomFactor == null ? 1 : Engine.zoomFactor;
+                let battle = getEngine().battle;
+                let positionLeft = battle.getBattleLeft() / zoomFactor;
+                let positionTop = battle.getBattleTop() / zoomFactor;
+                x = positionLeft + oneLightPoint.x;
+                y = positionTop + oneLightPoint.y;
             }
 
         } else {

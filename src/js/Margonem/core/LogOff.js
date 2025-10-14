@@ -1,5 +1,5 @@
-var tpl = require('core/Templates');
-var Input = require('core/InputParser');
+var tpl = require('@core/Templates');
+var Input = require('@core/InputParser');
 const {
     getAllProfName
 } = require('./HelpersTS');

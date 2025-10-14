@@ -1,9 +1,9 @@
-let FramesWithHoles = require('core/FramesWithHoles');
-let DynamicLight = require('core/night/DynamicLight');
-//let RajData                 = require('core/raj/RajData');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let FramesWithHoles = require('@core/FramesWithHoles');
+let DynamicLight = require('@core/night/DynamicLight');
+//let RajData                 = require('@core/raj/RajData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 module.exports = function() {
 
@@ -202,6 +202,15 @@ module.exports = function() {
         dynamicLightList = {};
     };
 
+    const refreshFilter = () => {
+        for (let id in dynamicLightList) {
+            let light = dynamicLightList[id].getLight();
+            if (light) {
+                light.updateFilterImage();
+            }
+        }
+    }
+
 
     this.init = init;
     this.update = update;
@@ -210,5 +219,6 @@ module.exports = function() {
     this.onClear = onClear;
     this.getframesWithHoles = getFramesWithHoles;
     this.rajRemoveActionBeyondManager = rajRemoveActionBeyondManager;
+    this.refreshFilter = refreshFilter;
 
 }

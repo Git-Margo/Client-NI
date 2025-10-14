@@ -1,8 +1,8 @@
-/* 
+/*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-// var Window = require('core/Window');
+// var Window = require('@core/Window');
 module.exports = function(loaderInstance) {
     this.initData = null;
     this.name = 'pipes';
@@ -161,13 +161,21 @@ module.exports = function(loaderInstance) {
         this.init();
     };
 
-    this.endGame = function() {
+    const onClear = () => {
         clearInterval(self.remainintTimeInterval);
         clearInterval(self.ballAnimationInterval);
         this.wnd.fadeAndRemove();
-        //this.l.game = null;
-        this.l.endGame();
         Engine.lock.remove('minigames');
+    }
+
+    this.endGame = function() {
+        // clearInterval(self.remainintTimeInterval);
+        // clearInterval(self.ballAnimationInterval);
+        // this.wnd.fadeAndRemove();
+        //this.l.game = null;
+        onClear();
+        this.l.endGame();
+        // Engine.lock.remove('minigames');
     };
     this.parseMessage = function(msg) {
         switch (msg.t) {
@@ -306,4 +314,6 @@ module.exports = function(loaderInstance) {
     this.unlock = function() {
         this.isLocked = false;
     }
+
+    this.onClear = onClear;
 };

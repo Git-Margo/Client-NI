@@ -1,4 +1,4 @@
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 import Radio from './Radio';
 
@@ -14,7 +14,7 @@ type RadioListData = {
     onSelected ? : Function | null;
 };
 type RadioData = {
-    id: string | number;
+    id ? : string | number;
     name: string;
     value: string | number;
     label ? : string | HTMLLabelElement;

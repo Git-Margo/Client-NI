@@ -1,7 +1,10 @@
 /**
  * Created by Michnik on 2015-08-12.
  */
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
+const {
+    isMobileApp
+} = require("@core/HelpersTS");
 module.exports = function() {
 
     this.initWindow = function() {
@@ -34,7 +37,12 @@ module.exports = function() {
             return;
         }
         this.initWindow();
-        this.wnd.$.find('iframe').attr('src', "https://www.margonem.pl/profile/payments")
+        if (isMobileApp()) {
+            this.wnd.$.find('iframe').remove();
+            this.wnd.$.find('.draconite-shop-content').addClass('not-available').text(_t('temporarily-unavailable'));
+        } else {
+            this.wnd.$.find('iframe').attr('src', "https://www.margonem.pl/profile/payments")
+        }
         this.wnd.addToAlertLayer();
         this.wnd.setWndOnPeak();
         this.wnd.center();

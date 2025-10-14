@@ -1,5 +1,5 @@
-var Tpl = require('core/Templates');
-var ChatData = require('core/chat/ChatData');
+var Tpl = require('@core/Templates');
+var ChatData = require('@core/chat/ChatData');
 
 module.exports = function() {
 

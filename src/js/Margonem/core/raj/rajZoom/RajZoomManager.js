@@ -1,6 +1,6 @@
-var RajZoomData = require('core/raj/rajZoom/RajZoomData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+var RajZoomData = require('@core/raj/rajZoom/RajZoomData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 

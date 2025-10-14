@@ -1,18 +1,22 @@
-let AuctionData = require('core/auction/AuctionData');
-let AuctionRequest = require('core/auction/AuctionRequest');
-let AuctionTime = require('core/auction/AuctionTime');
-let AuctionSort = require('core/auction/AuctionSort');
-let AuctionPages = require('core/auction/AuctionPages');
-let AuctionWindow = require('core/auction/AuctionWindow');
-let AuctionSearchItems = require('core/auction/AuctionSearchItems');
-let OneOffer = require('core/auction/OneOffer.js');
-let AuctionItemCategory = require('core/auction/AuctionItemCategory');
-let AuctionCards = require('core/auction/AuctionCards');
-let AuctionBidAndBuyNowActions = require('core/auction/AuctionBidAndBuyNowActions');
-let AuctionOffItemPanel = require('core/auction/AuctionOffItemPanel');
-let AuctionItems = require('core/auction/AuctionItems');
+let AuctionData = require('@core/auction/AuctionData');
+let AuctionRequest = require('@core/auction/AuctionRequest');
+let AuctionTime = require('@core/auction/AuctionTime');
+let AuctionSort = require('@core/auction/AuctionSort');
+let AuctionPages = require('@core/auction/AuctionPages');
+let AuctionWindow = require('@core/auction/AuctionWindow');
+let AuctionSearchItems = require('@core/auction/AuctionSearchItems');
+let OneOffer = require('@core/auction/OneOffer.js');
+let AuctionItemCategory = require('@core/auction/AuctionItemCategory');
+let AuctionCards = require('@core/auction/AuctionCards');
+let AuctionBidAndBuyNowActions = require('@core/auction/AuctionBidAndBuyNowActions');
+let AuctionOffItemPanel = require('@core/auction/AuctionOffItemPanel');
+let AuctionItems = require('@core/auction/AuctionItems');
 
 module.exports = function() {
+
+    const moduleData = {
+        fileName: "AuctionManager.js"
+    }
 
     let featuredCount = null;
     let totalOffers = null;
@@ -109,10 +113,12 @@ module.exports = function() {
         }
 
         if (data.show) {
-            let kind = data.show.tab;
+            // let kind    = data.show.tab;
             let offers = data.show.offers;
 
-            if (kind != actualKindOfAuction) return;
+            if (convertTabToKind(data.show.tab) != actualKindOfAuction) {
+                return;
+            }
 
             if (isset(data.show.totalOffers)) updateTotalOffers(data.show.totalOffers);
 
@@ -145,6 +151,44 @@ module.exports = function() {
         }
 
     };
+
+    const convertTabToKind = (tab) => {
+        switch (tab) {
+            case 0:
+                return 0;
+            case 1:
+                return AuctionData.KIND_MY_AUCTION.MY_AUCTION_OFF;
+            case 2:
+                return AuctionData.KIND_MY_AUCTION.MY_BID;
+            case 3:
+                return AuctionData.KIND_MY_AUCTION.MY_WATCH;
+            case 4:
+                return AuctionData.KIND_OTHERS_AUCTION.ALL_AUCTION
+            default: {
+                errorReport(moduleData.fileName, "convertTabToKind", `undefined tab ${tab}`)
+                return AuctionData.KIND_OTHERS_AUCTION.ALL_AUCTION
+            }
+        }
+    }
+
+    const convertKindToTab = (kind) => {
+        switch (kind) {
+            case 0:
+                return 0;
+            case AuctionData.KIND_MY_AUCTION.MY_AUCTION_OFF:
+                return 1;
+            case AuctionData.KIND_MY_AUCTION.MY_BID:
+                return 2;
+            case AuctionData.KIND_MY_AUCTION.MY_WATCH:
+                return 3;
+            case AuctionData.KIND_OTHERS_AUCTION.ALL_AUCTION:
+                return 4;
+            default: {
+                errorReport(moduleData.fileName, "convertKindToTab", `undefined kind ${kind}`)
+                return 0
+            }
+        }
+    }
 
     const updateTotalOffers = (_totalOffers) => {
         setTotalOffers(_totalOffers);
@@ -371,6 +415,7 @@ module.exports = function() {
     this.tLang = tLang;
     this.updateData = updateData;
     this.updateTimeOfAuction = updateTimeOfAuction;
+    this.convertKindToTab = convertKindToTab;
 
     this.getAuctionBidAndBuyNowActions = getAuctionBidAndBuyNowActions;
     this.getAuctionWindow = getAuctionWindow;

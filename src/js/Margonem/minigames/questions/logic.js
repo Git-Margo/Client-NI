@@ -68,10 +68,17 @@ module.exports = function(loaderInstance) {
         this.init();
     };
 
-    this.endGame = function() {
+    const onClear = () => {
         clearInterval(self.remainingTimeInterval);
         if (wnd !== null) wnd.fadeAndRemove();
         Engine.lock.remove('minigames');
+    }
+
+    this.endGame = function() {
+        // clearInterval(self.remainingTimeInterval);
+        // if (wnd !== null) wnd.fadeAndRemove();
+        // Engine.lock.remove('minigames');
+        onClear();
         this.l.endGame();
     };
     this.parseMessage = function(msg) {
@@ -93,4 +100,6 @@ module.exports = function(loaderInstance) {
     this.unlock = function() {
         this.isLocked = false;
     }
+
+    this.onClear = onClear;
 };

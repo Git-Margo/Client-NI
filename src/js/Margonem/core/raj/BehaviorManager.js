@@ -102,6 +102,11 @@ module.exports = function() {
         oneBehaviorFinishCallback();
         manageSwitchBehaviourProcedure();
         manageBehaviorIndex();
+
+        if (allBehaviorFinished) {
+            return
+        }
+
         startBehavior();
     };
 

@@ -1,5 +1,5 @@
 // @ts-ignore
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 import BonusSelector from "./BonusSelector";
 
 interface Data {
@@ -19,6 +19,7 @@ declare const formNumberToNumbersGroup: Function;
 declare const _g: Function;
 declare const _t: Function;
 declare const Engine: any;
+declare const getE: Function;
 
 export default class Upgrade {
 
@@ -60,8 +61,18 @@ export default class Upgrade {
         // if (!isset(this.receivedItems[i.id])) return;
 
         const iconEl = this.getEngine().tpls.createViewIcon(i.id, this.getEngine().itemsViewData.ENHANCE_REQUIRE_ITEM_VIEW, 'u')[0][0];
+
+        this.addContextMenu(i, iconEl);
         this.updateAmount(i, iconEl);
         this.requireItemSlotEl.appendChild(iconEl);
+    }
+
+    addContextMenu(item: any, iconEl: HTMLElement) {
+        $(iconEl).contextmenu(function(e: any, mE: any) {
+            item.createOptionMenu(getE(e, mE), false, {
+                itemId: true
+            });
+        })
     }
 
     updateAmount(item: any, iconEl: HTMLElement) {

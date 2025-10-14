@@ -1,8 +1,8 @@
-var tpl = require('core/Templates');
-let ServerStorageData = require('core/storage/ServerStorageData');
-let WhoIsHereData = require('core/whoIsHere/WhoIsHereData');
-const ColorPicker = require("core/components/ColorPicker");
-const Checkbox = require('core/components/Checkbox');
+var tpl = require('@core/Templates');
+let ServerStorageData = require('@core/storage/ServerStorageData');
+let WhoIsHereData = require('@core/whoIsHere/WhoIsHereData');
+const ColorPicker = require('@core/components/ColorPicker');
+const Checkbox = require('@core/components/Checkbox');
 module.exports = function() {
     let moduleData = {
         fileName: "EditColorPanel.js"

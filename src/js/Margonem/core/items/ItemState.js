@@ -1,4 +1,4 @@
-var ItemData = require('core/items/data/ItemData');
+var ItemData = require('@core/items/data/ItemData');
 
 module.exports = new(function() {
 

@@ -1,9 +1,61 @@
+let SettingsData = require('@core/settings/SettingsData.js');
+
+
 let TEMPLATES = {};
 
 const getLang = () => {
     if (typeof RUNNING_UNIT_TEST !== 'undefined') return;
     return _l();
 }
+
+const {
+    RECEIVE_PRIVATE_CHAT_MESSAGE,
+    INVITATION_TO_CLAN_AND_DIPLOMACY,
+    TRADE_WITH_OTHERS,
+    TURN_BASED_COMBAT_AFTER_MONSTER_ATTACK,
+    INVITATION_TO_FRIENDS,
+    MAIL_FROM_UNKNOWN,
+    MOUSE_HERO_WALK,
+    INTERFACE_ANIMATION,
+    CLAN_MEMBER_ENTRY_CHAT_MESSAGE,
+    CYCLE_DAY_AND_NIGHT,
+    AUTO_GO_THROUGH_GATEWAY,
+    SHOW_ITEMS_RANK,
+    INVITATION_TO_PARTY_BEYOND_FRIENDS_AND_CLANS_AND_CLANS_ALLY,
+    FRIEND_ENTRY_CHAT_MESSAGE,
+    WEATHER_AND_EVENT_EFFECTS,
+    BANNERS,
+    ADD_OR_REMOVE_PARTY_MEMBER_CHAT_MESSAGE,
+    MAP_ANIMATION,
+    INFORM_ABOUT_FREE_PLACE_IN_BAG,
+    LOADER_SPLASH,
+    WAR_SHADOW,
+    AUTO_COMPARE_ITEMS,
+    BATTLE_EFFECTS,
+    AUTO_CLOSE_BATTLE,
+    RECEIVE_FROM_ENEMY_CHAT_MESSAGE,
+    ANNOUNCE_CLAN_ABOUT_LEGEND_DROP_CHAT_MESSAGE,
+    EXCHANGE_SAFE_MODE,
+    LOOT_FILTER,
+    KIND_OF_SHOW_LEVEL_AND_OPERATION_LEVEL,
+    BERSERK,
+    BERSERK_GROUP,
+} = SettingsData.KEY;
+const BERSERK_VARS = SettingsData.VARS.BERSERK_VARS
+const BERSERK_LVL_MIN_LVL_MAX = connectStrings(BERSERK, BERSERK_VARS.LVL_MIN, BERSERK_VARS.LVL_MAX);
+const BERSERK_V = connectStrings(BERSERK, BERSERK_VARS.V);
+const BERSERK_COMMON = connectStrings(BERSERK, BERSERK_VARS.COMMON);
+const BERSERK_ELITE = connectStrings(BERSERK, BERSERK_VARS.ELITE);
+const BERSERK_ELITE2 = connectStrings(BERSERK, BERSERK_VARS.ELITE2);
+
+const BERSERK_GROUP_LVL_MIN_LVL_MAX = connectStrings(BERSERK_GROUP, BERSERK_VARS.LVL_MIN, BERSERK_VARS.LVL_MAX);
+const BERSERK_GROUP_V = connectStrings(BERSERK_GROUP, BERSERK_VARS.V);
+const BERSERK_GROUP_COMMON = connectStrings(BERSERK_GROUP, BERSERK_VARS.COMMON);
+const BERSERK_GROUP_ELITE = connectStrings(BERSERK_GROUP, BERSERK_VARS.ELITE);
+const BERSERK_GROUP_ELITE2 = connectStrings(BERSERK_GROUP, BERSERK_VARS.ELITE2);
+
+const SOLO_BY_PRICE = SettingsData.VARS.LOOT_FILTER.SOLO_BY_PRICE
+const SOLO_AUTO_ACCEPT = SettingsData.VARS.LOOT_FILTER.SOLO_AUTO_ACCEPT
 
 //    <!-- standard game window !-->
 TEMPLATES['border-window'] = `<div class="border-window">
@@ -16,11 +68,11 @@ TEMPLATES['border-window'] = `<div class="border-window">
             </div>
         </div>
         <div class="content">
-            <div class="decoration-label">
-                <div class="decoration"></div>
-                <div class="label">
-                </div>
-            </div>
+            <!--<div class="decoration-label">-->
+                <!--<div class="decoration"></div>-->
+                <!--<div class="label">-->
+                <!--</div>-->
+            <!--</div>-->
             <div class="inner-content"></div>
             <div class="window-controlls">
             </div>
@@ -73,6 +125,14 @@ TEMPLATES['battle-bars-wrapper'] = `<div class="battle-bars-wrapper">
             <div class="overlay"></div>
             <div class="values">9999/9999</div>
         </div>
+        <!--<div class="battle-bar-light-mode energy-battle-bar-light-mode" data-trans="data-tip#stat-energy">-->
+            <!--<div class="inner" bar-horizontal="true" bar-percent="100"></div>-->
+            <!--<div class="value"></div>-->
+        <!--</div>-->
+        <!--<div class="battle-bar-light-mode mana-battle-bar-light-mode" data-trans="data-tip#stat-mana">-->
+            <!--<div class="inner" bar-horizontal="true" bar-percent="100"></div>-->
+            <!--<div class="value"></div>-->
+        <!--</div>-->
     </div>`;
 
 TEMPLATES['popup-menu-layer'] = `<div class="popup-menu-layer layer"> </div>`;
@@ -89,6 +149,7 @@ TEMPLATES['console-layer'] = `<div class="console-layer layer">
 
 TEMPLATES['mAlert-layer'] = `<div class="mAlert-layer layer">
         <div class="big-messages"></div>
+        <div class="big-messages-light-mode"></div>
     </div>`;
 
 TEMPLATES['mAlert-mobile-layer'] = `<div class="mAlert-mobile-layer layer"></div>`;
@@ -161,7 +222,10 @@ TEMPLATES['interface-layer'] = `<div class="interface-layer layer">
         </div>
         <div class="right-column main-column">
             <div class="inner-wrapper">
-                <div class="bottom-wrapper"></div>
+                <div class="right-main-column-wrapper">
+                    <div class="bottom-wrapper"></div>
+                </div>
+                <!--<div class="bottom-wrapper"></div>-->
             </div>
             <div class="border"></div>
             <div class="extended-stats scroll-wrapper">
@@ -173,6 +237,25 @@ TEMPLATES['interface-layer'] = `<div class="interface-layer layer">
             <div class="wanted-mini"></div>
             <div class="content">
                 <div class="omg-tutorial-handler"></div>
+                <div class="character-bars-light-mode">
+                    <div class="hero-hp-top-progress-bar-light-mode interface-element-progress-bar-0">
+                        <div class="inner" bar-horizontal="true" bar-percent="100"></div>
+                        <div class="value"></div>
+                    </div>
+                    <div class="hero-exp-top-progress-bar-light-mode interface-element-progress-bar-0 yellow">
+                        <div class="inner" bar-horizontal="true" bar-percent="100"></div>
+                        <div class="value"></div>
+                    </div>
+                </div>
+                <div class="gained-exp-indicator-light-mode"></div>
+                <div data-trans="data-tip#iconchat" class="top-left-column-visibility-toggle column-visibility-toggle">
+                    <div class="icon"></div>
+                    <div class="amount interface-element-amount"></div>
+                </div>
+                <div data-trans="data-tip#eqcolumnshow" class="top-right-column-visibility-toggle column-visibility-toggle">
+                    <div class="icon"></div>
+                    <div class="amount interface-element-amount"></div>
+                </div>
                 <div class="top-left main-buttons-container"></div>
                 <div class="hud-container"></div>
                 <div class="matchmaking-timer"></div>
@@ -203,7 +286,12 @@ TEMPLATES['hud-container'] = `<div class="hud-container">
         <div class="hero-data">
             <span class="heroname"></span>
         </div>
-        <div class="map-data"><span class="map-timer"></span><span class="location"></span><span class="coords"></span></div>
+        <div class="map-data">
+            <span class="map-timer"></span>
+            <span class="location-id"></span>
+            <span class="location"></span>
+            <span class="coords"></span>
+        </div>
         <div class="world-name"></div>
         <div class="gold-tip" data-trans="data-tip#gold"></div>
         <div class="credits-tip" data-trans="data-tip#stat-credits"></div>
@@ -221,53 +309,71 @@ TEMPLATES['herogold-tip'] = `<div class="herogold-tip">
     </div>`
 
 TEMPLATES['bottom-panel-of-bottom-positioner'] = `<div class="bottom-panel-of-bottom-positioner bottom-panel">
-        <div class="helpers-numbers">
-            <span class="h-n-1">1</span>
-            <span class="h-n-2">2</span>
-            <span class="h-n-3">3</span>
-            <span class="h-n-4">4</span>
-            <span class="h-n-5">5</span>
-            <span class="h-n-6">6</span>
-            <span class="h-n-7">7</span>
-            <span class="h-n-8">8</span>
-        </div>
+        <div class="bottom-panel-graphic"></div>
+        <!--<div class="helpers-numbers">-->
+            <!--<span class="h-n-1">1</span>-->
+            <!--<span class="h-n-2">2</span>-->
+            <!--<span class="h-n-3">3</span>-->
+            <!--<span class="h-n-4">4</span>-->
+            <!--<span class="h-n-5">5</span>-->
+            <!--<span class="h-n-6">6</span>-->
+            <!--<span class="h-n-7">7</span>-->
+            <!--<span class="h-n-8">8</span>-->
+        <!--</div>-->
 
         <div class="battle-bars-wrapper-template"></div>
-        <div class="exp-bar-wrapper-template"></div>
+        <!--<div class="exp-bar-wrapper-template"></div>-->
         <div class="hp-indicator-wrapper-template"></div>
 
         <div class="lagmeter">
             <div class="lag"></div>
         </div>
+        <!--
         <div class="slots right" data-trans="data-tip#hot_items_info">
-            <div class="usable-slot"></div>
-            <div class="usable-slot"></div>
-            <div class="usable-slot"></div>
-            <div class="usable-slot"></div>
+            <div class="usable-slot usable-slot-8 interface-element-one-item-slot-2"><div class="help-number">8</div></div>
+            <div class="usable-slot usable-slot-7 interface-element-one-item-slot-2"><div class="help-number">7</div></div>
+            <div class="usable-slot usable-slot-6 interface-element-one-item-slot-2"><div class="help-number">6</div></div>
+            <div class="usable-slot usable-slot-5 interface-element-one-item-slot-2"><div class="help-number">5</div></div>
         </div>
         <div class="slots left" data-trans="data-tip#hot_items_info">
-            <div class="usable-slot"></div>
-            <div class="usable-slot"></div>
-            <div class="usable-slot"></div>
-            <div class="usable-slot"></div>
+            <div class="usable-slot usable-slot-1 interface-element-one-item-slot-2"><div class="help-number">1</div></div>
+            <div class="usable-slot usable-slot-2 interface-element-one-item-slot-2"><div class="help-number">2</div></div>
+            <div class="usable-slot usable-slot-3 interface-element-one-item-slot-2"><div class="help-number">3</div></div>
+            <div class="usable-slot usable-slot-4 interface-element-one-item-slot-2"><div class="help-number">4</div></div>
         </div>
-        <div class="skill-usable-slots left">
-            <div class="skill-usable-slot" slot="0"></div>
-            <div class="skill-usable-slot" slot="1"></div>
-            <div class="skill-usable-slot" slot="2"></div>
-            <div class="skill-usable-slot" slot="3"></div>
+        -->
+        <div class="slots right" data-trans="data-tip#hot_items_info">
+            <div class="usable-slot usable-slot-8 interface-element-one-item-slot-2"></div>
+            <div class="usable-slot usable-slot-7 interface-element-one-item-slot-2"></div>
+            <div class="usable-slot usable-slot-6 interface-element-one-item-slot-2"></div>
+            <div class="usable-slot usable-slot-5 interface-element-one-item-slot-2"></div>
         </div>
-        <div class="skill-usable-slots right">
-            <div class="skill-usable-slot" slot="7"></div>
-            <div class="skill-usable-slot" slot="6"></div>
-            <div class="skill-usable-slot" slot="5"></div>
-            <div class="skill-usable-slot" slot="4"></div>
+        <div class="slots left" data-trans="data-tip#hot_items_info">
+            <div class="usable-slot usable-slot-1 interface-element-one-item-slot-2"></div>
+            <div class="usable-slot usable-slot-2 interface-element-one-item-slot-2"></div>
+            <div class="usable-slot usable-slot-3 interface-element-one-item-slot-2"></div>
+            <div class="usable-slot usable-slot-4 interface-element-one-item-slot-2"></div>
         </div>
+        <div class="exp-bar-wrapper-template"></div>
         <div class="exp-bar"></div>
         <div class="gained-exp-indicator"></div>
         <div class="bottom-panel-pointer-bg">
+            <div class="pointer-exp-graphic"></div>
+            <div class="pointer-ttl-graphic"></div>
             <div class="pointer-exp" data-trans="data-tip#exp#exp-ttl-pointer"></div>
             <div class="pointer-ttl" data-trans="data-tip#ttl#exp-ttl-pointer"></div>
+        </div>
+        <div class="skill-usable-slots left">
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="0"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="1"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="2"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="3"></div>
+        </div>
+        <div class="skill-usable-slots right">
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="7"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="6"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="5"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="4"></div>
         </div>
     </div>`
 
@@ -278,7 +384,7 @@ TEMPLATES['mini-map-controller'] = `<div class="mini-map-controller mini-map">
         <!--<div class="mini-map-label"></div>-->
         <!--</div>-->
         <div class="mini-map-map">
-            <div class="graphic"></div>
+            <div class="graphic interface-element-middle-1-background"></div>
             <div class="mini-local-map"></div>
             <div class="mini-global-map-overflow">
                 <div class="mini-global-map"></div>
@@ -286,6 +392,7 @@ TEMPLATES['mini-map-controller'] = `<div class="mini-map-controller mini-map">
             <div class="mini-map-mouse-move"></div>
         </div>
         <div class="mini-map-panel">
+            <div class="interface-element-active-card-background-stretch"></div>
             <div class="mini-map-buttons"></div>
         </div>
         <div class="mini-map-content"></div>
@@ -538,24 +645,119 @@ TEMPLATES['extended-stats-tpl'] = `<div class="extended-stats-tpl scroll-pane">
 
 
 
+TEMPLATES['interface-element-equipment-with-additional-bag'] = `<div class="interface-element-equipment-with-additional-bag">
+        <div class="equipment-wrapper-outline">
+            <div class="equipment-outline-1 equipment-outline"></div>
+            <div class="equipment-outline-2 equipment-outline"></div>
+            <div class="equipment-outline-3 equipment-outline"></div>
+            <div class="equipment-outline-4 equipment-outline"></div>
+        </div>
+        <div class="eq-slot" data-st="10"></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="1"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="2"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="3"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="4"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="5"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="6"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="7"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="8"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="9"><div class="eq-cl"></div></div>
+    </div>`;
+
+
+TEMPLATES['interface-element-equipment'] = `<div class="interface-element-equipment">
+        <div class="equipment-wrapper-outline">
+            <div class="equipment-outline-1 equipment-outline"></div>
+            <div class="equipment-outline-2 equipment-outline"></div>
+            <div class="equipment-outline-3 equipment-outline"></div>
+            <div class="equipment-outline-4 equipment-outline"></div>
+        </div>
+        <div class="eq-slot" data-st="10"></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="1"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="2"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="3"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="4"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="5"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="6"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="7"><div class="eq-cl"></div></div>
+        <div class="eq-slot interface-element-one-item-slot-background-to-repeat" data-st="8"><div class="eq-cl"></div></div>
+    </div>`;
+
 TEMPLATES['character_wrapper'] = `<div class="character_wrapper">
-        <div class="equipment-wrapper">
-            <div class="eq-slot" data-st="10"></div>
-            <div class="eq-slot" data-st="1"></div>
-            <div class="eq-slot" data-st="2"></div>
-            <div class="eq-slot" data-st="3"></div>
-            <div class="eq-slot" data-st="4"></div>
-            <div class="eq-slot" data-st="5"></div>
-            <div class="eq-slot" data-st="6"></div>
-            <div class="eq-slot" data-st="7"></div>
-            <div class="eq-slot" data-st="8"></div>
-            <div class="eq-slot" data-st="9"></div>
-            <div class="builds-interface">
-                <div class="choose-build build-index"></div>
+        <div class="hero-name-light-mode">
+            <div class="hero-name"></div>
+        </div>
+        <div class="location-wrapper-light-mode interface-element-grid-border">
+            <div class="location-wrapper-border interface-element-background-color-3 interface-element-box-shadow-2">
+                <div class="map-ball"></div>
+                <div class="location-name"></div>
+                <div class="location-cords"></div>
             </div>
         </div>
-        <div class="stats-wrapper">
-            <div class="header-title" data-trans="#stats-head-title#stats"></div>
+        <div class="world-wrapper-light-mode interface-element-grid-border">
+            <div class="world-wrapper-border interface-element-background-color-3 interface-element-box-shadow-2">
+                <div class="world-name"></div>
+            </div>
+        </div>
+        <div class="progress-bars-light-mode">
+            <div class="hero-hp-progress-bar hero-progress-bar-light-mode interface-element-progress-bar-1">
+                <div class="inner" bar-horizontal="true" bar-percent="100"></div>
+                <div class="value"></div>
+            </div>
+            <div class="hero-exp-progress-bar hero-progress-bar-light-mode interface-element-progress-bar-1 yellow">
+                <div class="inner" bar-horizontal="true" bar-percent="100"></div>
+                <div class="value"></div>
+            </div>
+        </div>
+
+        <div class="currency-light-mode interface-element-grid-border">
+            <div class="currency-border interface-element-background-color-3 interface-element-box-shadow-2">
+                <div class="gold-currency"></div>
+                <div class="sl-currency"></div>
+            </div>
+        </div>
+        <div class="stats-light-mode interface-element-grid-border">
+            <div class="stats-border interface-element-background-color-3 interface-element-box-shadow-2">
+                <div class="stats-button"></div>
+                <ul class="stats-list">
+                    <li class="attack" data-trans="data-tip#attack#stats"><span class="icon"></span><span class="value"></span></li>
+                    <li class="attack-speed" data-trans="data-tip#attack-speed#stats"><span class="icon"></span><span class="value"></span></li>
+                    <li class="defence" data-trans="data-tip#defence#stats"><span class="icon"></span><span class="value"></span></li>
+                    <li class="resists" data-trans="data-tip#resists#stats">
+                        <span class="icon"></span>
+                        <span class="value">
+                            <span class="resist-stats">
+                                <span class="stat red js-res-fire"></span> /
+                                <span class="stat yellow js-res-light"></span> /
+                                <span class="stat blue js-res-frost"></span> /
+                                <span class="stat green js-res-poison"></span> %
+                            </span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="equipment-wrapper">
+        </div>
+        <div class="builds-interface">
+            <div class="choose-build build-index"></div>
+        </div>
+        <div class="lagmeter-light-mode">
+            <div class="lag-val">0</div>
+            <div class="lag">
+                <div class="one-lag lag-5"></div>
+                <div class="one-lag lag-4"></div>
+                <div class="one-lag lag-3"></div>
+                <div class="one-lag lag-2"></div>
+                <div class="one-lag lag-1"></div>
+                <div class="one-lag lag-0"></div>
+            </div>
+        </div>
+        <div class="stats-wrapper interface-element-background-color-3 interface-element-box-shadow-2 interface-element-grid-border">
+            <div class="header-title-wrapper">
+                <div class="interface-element-active-card-background-stretch"></div>
+                <div class="header-title" data-trans="#stats-head-title#stats"></div>
+            </div>
             <div class="stats-button"></div>
             <ul class="stats-list">
                 <li class="attack" data-trans="data-tip#attack#stats"><span class="icon"></span><span class="value"></span></li>
@@ -565,9 +767,9 @@ TEMPLATES['character_wrapper'] = `<div class="character_wrapper">
                     <span class="icon"></span>
                     <span class="value">
                         <span class="resist-stats">
-                            <span class="stat red js-res-fire"></span> / 
-                            <span class="stat yellow js-res-light"></span> / 
-                            <span class="stat blue js-res-frost"></span> / 
+                            <span class="stat red js-res-fire"></span> /
+                            <span class="stat yellow js-res-light"></span> /
+                            <span class="stat blue js-res-frost"></span> /
                             <span class="stat green js-res-poison"></span> %
                         </span>
                     </span>
@@ -575,6 +777,7 @@ TEMPLATES['character_wrapper'] = `<div class="character_wrapper">
             </ul>
         </div>
         <div class="pvp-btn" data-trans="data-tip#pvp_tip#buttons" data-tip-type="t_static"></div>
+        <div class="bm-register-light-mode"></div>
     </div>`
 
 TEMPLATES['stat'] = `<span class="stat"></span>`
@@ -600,10 +803,20 @@ TEMPLATES['battle-set-wrapper'] = `<div class="battle-set-wrapper">
 //<!--</div>-->
 
 TEMPLATES['inventory_wrapper'] = `<div class="inventory_wrapper">
-        <div class="bags-navigation">
-            <div class="tutorial-bag"></div>
+        <div class="bags-navigation-bg interface-element-grid-border">
+            <div class="interface-element-one-black-tile bag-1"><div class="interface-element-bag-eq-icon-background"></div></div>
+            <div class="interface-element-one-black-tile bag-2"><div class="interface-element-bag-eq-icon-background"></div></div>
+            <div class="interface-element-one-black-tile bag-3"><div class="interface-element-bag-eq-icon-background"></div></div>
+            <div class="interface-element-one-black-tile bag-4"><div class="interface-element-bag-eq-icon-background"></div></div>
+            <div class="bags-navigation">
+                <div class="tutorial-bag"></div>
+                <div class="bag-2-slot" data-trans="data-tip#bag_space"></div>
+                <div class="bag-3-slot" data-trans="data-tip#bag_space"></div>
+                <div class="bag-4-slot" data-trans="data-tip#keys_bag_space"></div>
+            </div>
         </div>
-        <div class="inventory-grid-bg">
+        <div class="inventory-grid-bg interface-element-grid-border">
+            <div class="interface-element-item-slot-grid-stretch"></div>
             <div class="inventory-grid">
                 <div class="inner-grid">
                     <div class="scroll-pane"></div>
@@ -627,21 +840,21 @@ TEMPLATES['captcha-pre-info'] = `<div class="captcha-pre-info">
         </div>
     </div>`
 
-TEMPLATES['chat-tpl'] = `<div class="chat-tpl section">
-        <div class="chat-pannel"></div>
-        <div class="tabs-pannel"></div>
-        <div class="right-tabs-wrapper connectedSortable"></div>
-        <div class="tabs-wrapper connectedSortable"></div>
-        <div class="messages-wrapper scroll-wrapper">
-            <div class="under-tab-decor"></div>
-            <div class="scroll-pane"></div>
-        </div>
-        <div class="input-wrapper">
-            <input data-trans="placeholder#enter_to_chat#chat" autocomplete="off" />
-        </div>
-        <div class="send-btn right"></div>
-        <div class="chat-plug"></div>
-    </div>`
+//TEMPLATES['chat-tpl'] = `<div class="chat-tpl section">
+//    <div class="chat-pannel"></div>
+//    <div class="tabs-pannel"></div>
+//    <div class="right-tabs-wrapper connectedSortable"></div>
+//    <div class="tabs-wrapper connectedSortable"></div>
+//    <div class="messages-wrapper scroll-wrapper">
+//        <div class="under-tab-decor"></div>
+//        <div class="scroll-pane"></div>
+//    </div>
+//    <div class="input-wrapper">
+//        <input data-trans="placeholder#enter_to_chat#chat" autocomplete="off" />
+//    </div>
+//    <div class="send-btn right"></div>
+//    <div class="chat-plug"></div>
+//</div>`
 
 TEMPLATES['hp-indicator-wrapper'] = `<div class="hp-indicator-wrapper">
         <div class="hp-indicator">
@@ -659,6 +872,8 @@ TEMPLATES['exp-bar-wrapper'] = `<div class="exp-bar-wrapper">
             </div>
             <div class="overlay"></div>
             <div class="ribbon"></div>
+            <div class="ribbon-up"></div>
+            <div class="ribbon-down"></div>
         </div>
         <div class="exp-progress right">
             <div class="progress">
@@ -666,6 +881,8 @@ TEMPLATES['exp-bar-wrapper'] = `<div class="exp-bar-wrapper">
             </div>
             <div class="overlay"></div>
             <div class="ribbon"></div>
+            <div class="ribbon-up"></div>
+            <div class="ribbon-down"></div>
         </div>
     </div>`;
 
@@ -721,6 +938,7 @@ TEMPLATES['right-column-notif'] = `<div class="right-column-notif">
     </div>`;
 
 TEMPLATES['popup-menu'] = `<div class="popup-menu"></div>`;
+TEMPLATES['popup-menu-header'] = `<div class="popup-menu__header"></div>`;
 
 TEMPLATES['menu-item'] = `<div class="menu-item"></div>`;
 
@@ -747,6 +965,7 @@ TEMPLATES['bubbledialog-answer'] = `<li class="bubbledialog-answer answer"></li>
 
 //<!-- console !-->
 TEMPLATES['console-window'] = `<div class="console-window">
+        <div class="console-background interface-element-middle-2-background"></div>
         <div class="size-button toggle-size-button"></div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
@@ -758,8 +977,8 @@ TEMPLATES['console-window'] = `<div class="console-window">
             <input class="console-input" id="console_input" placeholder="Console input" autocomplete="off"/>
         </div>
         <div class="console-bottom-panel-wrapper">
-            <div class="console-bottom-panel">
-            </div>
+            <!--<div class="console-bottom-panel"></div>-->
+            <div class="interface-element-bottom-bar-background-stretch"></div>
         </div>
     </div>`;
 
@@ -804,14 +1023,15 @@ TEMPLATES['mails-window'] = `
         <div class="mails-window__tabs"></div>
         <div class="mails-window__contents"></div>
         <div class="bottom-mail-panel">
-            <div class="bottom-panel-graphics"></div>
+            <!--<div class="bottom-panel-graphics"></div>-->
+            <div class="interface-element-bottom-bar-background-stretch"></div>
         </div>
     </div>`;
 
 //<!-- mail column !-->
 TEMPLATES['mail-column'] = `<div class="mail-column">
-        <div class="middle-graphic"></div>
-        <div class="content-header"></div>
+        <div class="middle-graphic interface-element-middle-1-background"></div>
+        <div class="content-header interface-element-bottom-bar-background-stretch"></div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane"></div>
         </div>
@@ -820,9 +1040,10 @@ TEMPLATES['mail-column'] = `<div class="mail-column">
 
 //<!-- new mail -->
 TEMPLATES['new-message'] = `<div class="new-message">
-        <div class="middle-graphic"></div>
+        <div class="middle-graphic interface-element-middle-1-background"></div>
         <div class="new-message-wrapper">
             <div class="content-header">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
                 <div class="to">
                     <!--<div class="to-label to-item"></div>-->
                     <div class="wrapper-mail-to to-item">
@@ -839,7 +1060,7 @@ TEMPLATES['new-message'] = `<div class="new-message">
             <div class="atachments">
                 <div class="item-label foot-item"></div>
                 <div class="foot-item">
-                    <div class="send-item"></div>
+                    <div class="send-item interface-element-one-item-slot"></div>
                 </div>
                 <div class="money-label foot-item"></div>
                 <div class="wrapper-money-imput foot-item">
@@ -891,33 +1112,37 @@ TEMPLATES['recovery-item'] = `<div class="recovery-item">
         <!--<div class="edit-header-label" data-trans="#item_recover_header"></div>-->
         <!--</div>-->
         <!--<div class="info-1"> </div>-->
-        <div class="info-2"></div>
-        <div class="info-3">
+        <div class="middle-graphics interface-element-middle-1-background-stretch"></div>
+        <!--<div class="info-2-wood interface-element-wood-box-background"></div>-->
+        <!--<div class="info-box info-2"></div>-->
+        <div class="info-box info-3">
             <div class="table-wrapper">
                 <div class="text-1"></div>
-                <div class="img-wrapper">
-                    <div class="sl-graphics"></div>
-                </div>
+                <!--<div class="img-wrapper">-->
+                    <!--<div class="val">75</div>-->
+                    <!--<div class="sl-graphics"></div>-->
+                <!--</div>-->
             </div>
         </div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
-                <div class="middle-graphics"></div>
-                <div class="paper-graphics"></div>
+
+                <!--<div class="paper-graphics"></div>-->
 <!--                <table class="recovery-items-table"></table>-->
             </div>
-            <table class="static-bar-table"></table>
+            <table class="static-bar-table interface-element-table-3"></table>
         </div>
         <div class="recover-bottom-panel">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="chest-wrapper">
-                <div class="chest"></div>
+                <div class="interface-element-chest-sl"></div>
             </div>
             <div class="info-label"></div>
             <div class="buy-sl"></div>
         </div>
     </div>`
 
-TEMPLATES['item-slot'] = `<div class="item-slot"></div>`
+TEMPLATES['item-slot'] = `<div class="item-slot interface-element-one-item-slot"></div>`
 
 TEMPLATES['tutorial'] = `<div class="tutorial">
         <!--<div class="paper-graphics"></div>-->
@@ -934,13 +1159,19 @@ TEMPLATES['tutorial'] = `<div class="tutorial">
         </div>
     </div>`
 
+
+//<!-- loading-element-component -->
+TEMPLATES['loading-element-component'] = `<div class="loading-element-component">
+        <div class="loading-element-text"></div>
+    </div>`;
+
 //<!-- depo -->
 TEMPLATES['depo'] = `<div class="depo">
         <!--<div class="depo-header">-->
         <!--<div class="header-graphic"></div>-->
         <!--<div class="depo-header-label"></div>-->
         <!--</div>-->
-        <div class="depo-graphic-background"></div>
+        <div class="depo-graphic-background interface-element-middle-1-background"></div>
         <div class="find-and-manage-money-section">
             <div class="left-part">
                 <div class="search-wrapper default">
@@ -948,10 +1179,11 @@ TEMPLATES['depo'] = `<div class="depo">
                     <div class="search-x" data-trans="data-tip#delete"></div>
                 </div>
                 <div class="manage-money-wrapper">
-                    <div class="manage-money-wrapper-graphic"></div>
+                    <!--<div class="manage-money-wrapper-graphic"></div>-->
+                    <div class="interface-element-header-1-background-stretch"></div>
                     <div class="payments-bar-wrapper">
                         <div class="price-wrapper">
-                            <input class="price default2" data-trans="placeholder#fill-gold-value#depo"/>
+                            <input class="price default" data-trans="placeholder#fill-gold-value#depo"/>
                             <div class="info-icon" data-tip-type="t-left" data-trans="data-tip#unit_tip#depo"></div>
                         </div>
                         <div class="give"></div>
@@ -961,7 +1193,7 @@ TEMPLATES['depo'] = `<div class="depo">
             </div>
 
             <div class="right-part">
-                <div class="money-info"></div>
+                <div class="money-info interface-element-wood-box-background"></div>
                 <div class="gold-amound" data-trans="#gold-in-depo#depo"></div>
                 <div class="gold-value"></div>
                 <div class="date-available" data-trans="#date-available#depo"></div>
@@ -976,7 +1208,8 @@ TEMPLATES['depo'] = `<div class="depo">
             </div>
         </div>
         <div class="item-section grid-wrapper">
-            <div class="slots-background"></div>
+            <!--<div class="slots-background"></div>-->
+            <div class="interface-element-item-slot-grid-stretch"></div>
             <!--<div class="grid"></div>-->
             <div class="depo-expired depo-expired--hidden">
                 <div class="depo-expired__text"></div>
@@ -987,14 +1220,13 @@ TEMPLATES['depo'] = `<div class="depo">
             <div class="cards-menu">
                 <div class="cards-background"></div>
                 <div class="midle-cards-overflow">
-                    <div class="cards-content"></div>
+                    <div class="cards-content tabs-nav"></div>
                 </div>
             </div>
         </div>
         <div class="bottom-bar">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="filter-label" data-trans="#filter-level"></div>
-            <div class="start-lvl-wrapper"></div>
-            <div class="stop-lvl-wrapper"></div>
             <div class="available-slots" data-trans="data-tip#available-slots#depo">
                 <span class="available-slots-current"></span>/<span class="available-slots-all"></span>
             </div>
@@ -1003,9 +1235,11 @@ TEMPLATES['depo'] = `<div class="depo">
                 <div class="depo-buy but"></div>
                 <div class="depo-payment but"></div>
                 <div class="upgrade but"></div>
-                <div class="delete-deposit but"></div>
             </div>
+            <div class="start-lvl-wrapper"></div>
+            <div class="stop-lvl-wrapper"></div>
         </div>
+        <div class="depo-load-items-overlay"></div>
     </div>`
 
 
@@ -1077,7 +1311,10 @@ TEMPLATES['depo-filter'] = `<div class="depo-filter">
 
 TEMPLATES['mini-map-local-content'] = `<div class="mini-map-local-content">
         <div class="scroll-wrapper">
-            <div class="scroll-pane"></div>
+            <div class="scroll-pane">
+
+                <div class="graphic interface-element-middle-1-background-stretch"></div>
+            </div>
         </div>
     </div>`
 
@@ -1093,13 +1330,21 @@ TEMPLATES['icon-wrapper-map'] = `<div class="icon-wrapper-map icon-wrapper">
 
 TEMPLATES['one-location-on-map'] = `<div class="one-location-on-map"></div>`
 
+TEMPLATES['search-wrapper'] = `<div class="search-wrapper">
+            <input class="search"/>
+            <div class="search-x" data-trans="data-tip#delete"></div>
+        </div>`;
+
 TEMPLATES['mini-map-global-content'] = `<div class="mini-map-global-content">
+        <!--<div class="border-window-middle-1-background-stretch"></div>-->
         <div class="search-wrapper default">
             <input class="search"/>
             <div class="search-x" data-trans="data-tip#delete"></div>
         </div>
         <div class="scroll-wrapper">
-            <div class="scroll-pane"></div>
+            <div class="scroll-pane">
+                <div class="graphic interface-element-middle-1-background-stretch"></div>
+            </div>
         </div>
     </div>`;
 
@@ -1113,7 +1358,7 @@ TEMPLATES['local-map-element'] = `<div class="local-map-element">
                 <div class="emo-npc-icon"></div>
             </div>
         </div>
-        <div class="line"></div>
+        <div class="line interface-element-line-1-background"></div>
     </div>`;
 
 TEMPLATES['mini-map-window'] = `<div class="mini-map-window">
@@ -1128,10 +1373,10 @@ TEMPLATES['mini-map-window'] = `<div class="mini-map-window">
 
 TEMPLATES['handheld-mini-map'] = `<div class="handheld-mini-map">
            <canvas class="handheld-mini-map-canvas" ></canvas>
-           <div class="search-wrapper search-item-wrapper">
-               <input class="search"/>
-               <div class="search-x" data-trans="data-tip#delete"></div>
-           </div>
+           <!--<div class="search-wrapper search-item-wrapper">-->
+               <!--<input class="search"/>-->
+               <!--<div class="search-x" data-trans="data-tip#delete"></div>-->
+           <!--</div>-->
        </div>`;
 
 TEMPLATES['dynamic-bck'] = `<div class="dynamic-bck bck"></div>`;
@@ -1193,11 +1438,12 @@ TEMPLATES['event-calendar-cell'] = `<div class="event-calendar-cell">
 
 //<!-- chests-window -->
 TEMPLATES['chests-window'] = `<div class="chests-window">
-        <div class="brown-background"></div>
+        <div class="brown-background interface-element-middle-1-background"></div>
         <div class="chests-choice-wrapper"></div>
         <div class="chests-bottom-panel">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="chest-wrapper">
-                <div class="chest"></div>
+                <div class="chest interface-element-chest-sl"></div>
             </div>
             <div class="info-wrapper">
                 <div class="info-label"></div>
@@ -1207,7 +1453,7 @@ TEMPLATES['chests-window'] = `<div class="chests-window">
     </div>`;
 
 TEMPLATES['promo-window'] = `<div class="promo-window">
-        <div class="background-graphic"></div>
+        <div class="background-graphic interface-element-middle-1-background"></div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
                 <div class="header-wrapper">
@@ -1218,8 +1464,9 @@ TEMPLATES['promo-window'] = `<div class="promo-window">
             </div>
         </div>
         <div class="promo-bottom-panel">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="chest-wrapper">
-                <div class="chest"></div>
+                <div class="chest interface-element-chest-sl"></div>
             </div>
             <div class="info-wrapper">
                 <div class="buy-sl"></div>
@@ -1249,7 +1496,7 @@ TEMPLATES['shop-promo-item-wrapper'] = `<div class="shop-promo-item-wrapper">
     </div>`;
 
 TEMPLATES['shop-promo-item'] = `<div class="shop-promo-item img-wraper">
-        <div class="item-wrapper">
+        <div class="item-wrapper interface-element-green-box-background">
           <div class="item-slot-container"></div>
           <div class="item-price"></div>
           <div class="item-price-new"></div>
@@ -1324,7 +1571,7 @@ TEMPLATES['code-manager-input'] = `<div class="code-manager-input">
 
 //<!-- Promo items-->
 TEMPLATES['code-manager'] = `<div class="code-manager">
-        <div class="wnd-dark-bg"></div>
+        <div class="wnd-dark-bg interface-element-middle-1-background"></div>
         <div class="wrapper">
             <div class="info-box"></div>
             <div class="info mt-3">
@@ -1436,24 +1683,46 @@ TEMPLATES['dialogue-window-reward-el'] = `<div class="dialogue-window-reward-el 
 
 //<!--  standard game dialogue reward item !-->
 TEMPLATES['dialogue-window-reward-item'] = `<div class="dialogue-window-reward-item container">
+        <div class="interface-element-one-item-slot"></div>
         <div class="rew-item-slot"></div>
     </div>`;
 
 //<!-- shop!-->
 TEMPLATES['shop-wrapper'] = `<div class="shop-wrapper">
+        <div class="shop-background">
+            <div class="interface-element-middle-1-background-stretch"></div>
+            <div class="interface-element-vertical-wood"></div>
+
+
+            <div class="canopy"></div>
+            <div class="paper-1"></div>
+            <div class="paper-2"></div>
+            <div class="outfit-pet-scene"></div>
+            <div class="interface-element-line-1-background"></div>
+            <div class="filter-wrapper-background">
+                <div class="interface-element-wood-box-background"></div>
+            </div>
+            <div class="button-wrapper-background">
+                <div class="interface-element-header-1-background-stretch"></div>
+            </div>
+
+        </div>
         <div class="shop-content">
             <!--<div class="header" data-trans="#shop_head#shop"></div>-->
             <!--<div class="close-button"></div>-->
-            <div class="for-you-plug"></div>
-            <div class="shop-items items-grid scroll-wrapper classic-bar">
+            <!--<div class="for-you-plug"></div>-->
+            <div class="shop-items interface-element-grid-border items-grid scroll-wrapper classic-bar">
+                <div class="interface-element-item-slot-grid-stretch"></div>
                 <div class="scroll-pane"></div>
             </div>
-            <div class="buy-items items-grid ">
-                <span class="label" data-trans="#buying_items#shop"></span>
+            <div class="buy-items interface-element-grid-border items-grid ">
+                <div class="interface-element-item-slot-grid-stretch"></div>
+                <span class="label interface-element-grid-border" data-trans="#buying_items#shop"></span>
             </div>
-            <div class="sell-items items-grid">
+            <div class="sell-items interface-element-grid-border items-grid">
                 <!--<span class="label" data-trans="#selling_items#shop"></span>-->
-                <span class="label"></span>
+                <div class="interface-element-item-slot-grid-stretch"></div>
+                <span class="label interface-element-grid-border"></span>
 
                 <canvas class="SHOP_CANVAS"></canvas>
             </div>
@@ -1491,6 +1760,7 @@ TEMPLATES['shop-wrapper'] = `<div class="shop-wrapper">
                 </div>
             </div>
             <div class="shop-bottom-panel">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
                 <div class="chest-wrapper">
                     <div class="chest"></div>
                 </div>
@@ -1522,6 +1792,7 @@ TEMPLATES['scrollbar-wrapper'] = `<div class="scrollbar-wrapper">
 
 TEMPLATES['mc-addon'] = `<div class="mc-addon">
         <div class="nick-header"></div>
+        <div class="had-warn" data-trans="#had-warn#mc-addon"></div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
                 <div class="mc-addon-content">
@@ -1558,15 +1829,23 @@ TEMPLATES['mc-text'] = ` <div class="mc-text">
 
 TEMPLATES['battle-controller'] = `<div class="battle-controller">
         <div class="graphics">
-            <div class="header-graphic"></div>
-            <div class="middle-graphic"></div>
-            <div class="bottom-graphic"></div>
+            <div class="battle-border"></div>
+            <!--<div class="header-graphic"></div>-->
+            <div class="column-separator"></div>
+            <div class="middle-graphic  interface-element-middle-4-background"></div>
+            <div class="divide-wood interface-element-vertical-wood"></div>
+            <div class="bottom-graphic">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
+            </div>
         </div>
         <div class="battle-content">
             <div class="time-wrapper">
-                <div class="seconds"></div>
-                <div class="time-progress-bar">
+                <div class="pool-timer-wrapper">
+                    <div class="pool-timer" data-trans="data-tip#pool-timer-tip#battle"></div>
+                </div>
+                <div class="time-progress-bar" data-trans="data-tip#turn-timer-tip#battle">
                     <div class="time-inner" bar-horizontal="true"></div>
+                    <div class="seconds interface-element-amount"></div>
                 </div>
             </div>
             <div class="nick"></div>
@@ -1594,26 +1873,47 @@ TEMPLATES['battle-controller'] = `<div class="battle-controller">
                 </div>
                 <div class="battle-end-layer" data-trans="#battle_ended#battle"></div>
             </div>
+
+            <div class="battle-bar-light-mode interface-element-progress-bar-2 energy-battle-bar-light-mode" data-trans="data-tip#stat-energy">
+                <div class="inner" bar-horizontal="true" bar-percent="100"></div>
+                <div class="value"></div>
+            </div>
+            <div class="battle-bar-light-mode interface-element-progress-bar-2 mana-battle-bar-light-mode" data-trans="data-tip#stat-mana">
+                <div class="inner" bar-horizontal="true" bar-percent="100"></div>
+                <div class="value"></div>
+            </div>
+        </div>
+        <div class="skill-usable-slots-light-mode left">
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="0"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="1"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="2"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="3"></div>
+        </div>
+        <div class="skill-usable-slots-light-mode right">
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="7"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="6"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="5"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="4"></div>
         </div>
         <div class="skill-usable-add-slots left">
-            <div class="skill-usable-slot" slot="8"></div>
-            <div class="skill-usable-slot" slot="9"></div>
-            <div class="skill-usable-slot" slot="10"></div>
-            <div class="skill-usable-slot" slot="11"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="8"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="9"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="10"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="11"></div>
         </div>
         <div class="skill-usable-add-slots right">
-            <div class="skill-usable-slot" slot="15"></div>
-            <div class="skill-usable-slot" slot="14"></div>
-            <div class="skill-usable-slot" slot="13"></div>
-            <div class="skill-usable-slot" slot="12"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="15"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="14"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="13"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="12"></div>
         </div>
-        <div class="skill-hider"></div>
+        <!--<div class="skill-hider"></div>-->
         <div class="battle-watch right"></div>
     </div>`;
 
 TEMPLATES['battle-log-help-window'] = `
     <div class="battle-log-help-window">
-        <div class="toggle-size-button"></div>
+        <!--<div class="toggle-size-button"></div>-->
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
                 <div class="middle-graphics"></div>
@@ -1665,7 +1965,7 @@ TEMPLATES['progress-bar-wrapper'] = `<div class="progress-bar-wrapper">
 
 //<!-- battle skill !-->
 TEMPLATES['battle-skill'] = `<div class="battle-skill">
-        <div class="background"></div>
+        <div class="background interface-element-box-shadow-1"></div>
         <div class="icon"></div>
         <div class="name"></div>
         <div class="type"></div>
@@ -1812,7 +2112,7 @@ TEMPLATES['one-warrior-tip'] = `<div class="one-warrior-tip">
         <div class="one-warrior-tip-content">
             <div class="hp"></div>
             <div class="ac-content">
-                <div class="line"></div>
+                <div class="line interface-element-line-1-background"></div>
                 <span data-trans="#def-ac"></span>:
                 <span class="ac"></span>
                 <span class="ac-destroyed" data-trans="#def-ac-destroyed"></span>
@@ -1827,14 +2127,14 @@ TEMPLATES['one-warrior-tip'] = `<div class="one-warrior-tip">
                 </div>
             </div>
             <div class="mana-energy-content">
-                <div class="line"></div>
+                <div class="line interface-element-line-1-background"></div>
                 <div class="mana-energy">
                     <div class="energy"></div>
                     <div class="mana"></div>
                 </div>
             </div>
             <div class="sc-content">
-                <div class="line"></div>
+                <div class="line interface-element-line-1-background"></div>
                 <div data-trans="#super-cast"></div>
                 <div>
                   <span class="sc-content__name"></span>:
@@ -1879,14 +2179,19 @@ TEMPLATES['quest-log'] = `<div class="quest-log">
         </div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
-                <div class="middle-graphics"></div>
+                <div class="middle-graphics interface-element-middle-1-background"></div>
             </div>
         </div>
     </div>`;
 
 TEMPLATES['quest-box'] = `<div class="quest-box">
         <div class="info-wrapper">
-            <div class="quest-title"></div>
+            <!--<div class="border-window-bottom-bar-background-stretch"></div>-->
+            <div class="interface-element-header-1-background-stretch"></div>
+            <span class="quest-debug-id"></span>
+            <div class="quest-title-wrapper">
+                <div class="quest-title"></div>
+            </div>
             <div class="quest-buttons">
                 <div class="quest-buttons-wrapper"></div>
             </div>
@@ -1919,11 +2224,12 @@ TEMPLATES['quest'] = `<div class="quest">
 
 //<!-- loot window !-->
 TEMPLATES['loot-window'] = `<div class="loot-window">
-        <div class="middle-graphics"></div>
+        <div class="middle-graphics interface-element-middle-1-background"></div>
         <div class="items-wrapper"></div>
         <div class="col button-wrapper"></div>
         <div class="bottom-wrapper">
-            <div class="bottom-graphic"></div>
+            <!--<div class="bottom-graphic"></div>-->
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="table-wrapper">
                 <div class="time-left"></div>
                 <div class="accept-button"></div>
@@ -1935,9 +2241,9 @@ TEMPLATES['loot-window'] = `<div class="loot-window">
 TEMPLATES['loot-icon'] = `<div class="loot-icon icon"></div>`;
 
 //<!-- loot item !-->
-TEMPLATES['loot-item-wrapper'] = `<div class="loot-item-wrapper" data-state="want">
-        <div class="slot"></div>
-        <div class="text-info"></div>
+TEMPLATES['loot-item-wrapper'] = `<div class="loot-item-wrapper interface-element-background-color-1" data-state="want">
+        <div class="slot interface-element-one-item-slot"></div>
+        <div class="text-info interface-element-table-header-1-background"></div>
         <div class="button-holder"></div>
     </div>`;
 
@@ -2158,27 +2464,30 @@ TEMPLATES['help-icon'] = `<div class="help-icon">
     </div>`;
 
 TEMPLATES['bonus-reselect-wnd'] = `<div class="bonus-reselect-wnd">
-        <div class="bonus-reselect-wnd__bg"></div>
+        <div class="bonus-reselect-wnd__bg interface-element-middle-1-background"></div>
         <div class="bonus-reselect-wnd__content">
             <div class="enhance__info enhance__info--1">
+                <div class="info-box enhance__info--top" data-trans="#bonus-reselect-info#enhancement"></div>
                 <div class="info-icon" data-tip-type="t-left" data-trans="data-tip#info_tip2#enhancement"></div>
-                <div class="enhance__info--top" data-trans="#bonus-reselect-info#enhancement"></div>
             </div>
-            <div class="bonus-reselect-wnd__item"></div>
+            <div class="bonus-reselect-wnd__item interface-element-one-item-slot-decor"></div>
             <div class="bonus-reselect-wnd__finalize">
-                <div class="enhance__info" data-trans="#bonus-reselect-info2#enhancement"></div>
-                <div class="bonus-reselect-wnd__require"></div>
+                <div class="info-box enhance__info" data-trans="#bonus-reselect-info2#enhancement"></div>
+                <!--<div class="interface-element-one-item-slot"></div>-->
+                <div class="bonus-reselect-wnd__require">
+                <div class="interface-element-one-item-slot"></div>
+                </div>
                 <div class="bonus-reselect-wnd__buttons"></div>
             </div>
         </div>
     </div>`;
 
 TEMPLATES['bonus-selector-wnd'] = `<div class="bonus-selector-wnd">
-        <div class="bonus-selector-wnd__bg"></div>
+        <div class="bonus-selector-wnd__bg  interface-element-middle-1-background"></div>
         <div class="bonus-selector-wnd__content">
             <div class="enhance__info enhance__info--1">
+                <div class="info-box enhance__info--top" data-trans="#info4#enhancement"></div>
                 <div class="info-icon" data-tip-type="t-left" data-trans="data-tip#info_tip2#enhancement"></div>
-                <div class="enhance__info--top" data-trans="#info4#enhancement"></div>
             </div>
             <div class="enhance__bonus"></div>
         </div>
@@ -2194,12 +2503,14 @@ TEMPLATES['friend-enemy-list'] = `<div class="friend-enemy-list">
         <!--<div class="friend-enemy-header">-->
         <!--<div class="header-title"></div>-->
         <!--</div>-->
-        <div class="header-background-graphic"></div>
+<!--        <div class="header-background-graphic"></div>-->
         <div class="friend-enemy-cards cards-header"></div>
         <div class="amound-wrapper">
+            <div class="interface-element-header-1-background-stretch"></div>
             <span class="amound-value"></span>
         </div>
         <div class="bottom-friend-panel">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="input-wrapper">
                 <input class="add-person default"/>
             </div>
@@ -2213,7 +2524,7 @@ TEMPLATES['friend-enemy-list'] = `<div class="friend-enemy-list">
 TEMPLATES['column'] = `<div class="column">
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
-                <div class="middle-graphics"></div>
+                <div class="middle-graphics interface-element-middle-1-background"></div>
                 <div class="list"></div>
             </div>
         </div>
@@ -2240,34 +2551,35 @@ TEMPLATES['one-person'] = `<div class="one-person">
         </div>
         <div class="buttons sort-buttons btns-spacing">
         </div>
-        <div class="line"></div>
+        <div class="line interface-element-line-1-background"></div>
     </div>`;
 
 //<!-- clan -->
 TEMPLATES['clan'] = `<div class="clan">
         <div class="left-column">
-            <div class="clan-info">
+            <div class="wood-background-1 interface-element-middle-1-background-stretch"></div>
+            <div class="clan-info interface-element-green-box-background">
                 <div class="clan-name">
                     <span class="name"></span>
                 </div>
                 <div class="clan-level"></div>
                 <!--<div class="clan-emblem"></div>-->
-                <div class="stats">
+                <!--<div class="stats">-->
                     <div class="clan-member-amount"></div>
                     <div class="clan-recruit-state"></div>
-                </div>
+                <!--</div>-->
                 <!--<div class="clan-look-for-clan-btn"></div>-->
                 <div class="clan-showcase-but"></div>
                 <!--<div class="edit-logo-but"></div>-->
             </div>
-            <div class="clan-list-repeat"></div>
-            <div class="clan-list-bottom"></div>
+            <!--<div class="clan-list-repeat"></div>-->
+            <!--<div class="clan-list-bottom"></div>-->
             <div class="scroll-wrapper classic-bar">
-                <div class="scroll-pane"></div>
+                <div class="scroll-pane tabs-nav"></div>
             </div>
         </div>
         <div class="right-column">
-            <!--<div class="header"></div>-->
+            <div class="interface-element-middle-2-background-stretch"></div>
             <div class="card-content"></div>
         </div>
     </div>`;
@@ -2280,7 +2592,7 @@ TEMPLATES['clan-list-content'] = `<div class="clan-list-content">
             <div class="search-x" data-trans="data-tip#delete"></div>
         </div>
         <div class="table-header-wrapper">
-            <table class="table-header clan-list-table-header"></table>
+            <table class="table-header clan-list-table-header interface-element-table-header-1-background"></table>
         </div>
         <div class="first-scroll-wrapper scroll-wrapper classic-bar">
             <div class="scroll-pane">
@@ -2303,19 +2615,22 @@ TEMPLATES['clan-info-content'] = `<div class="clan-info-content">
                 <div class="heading" data-trans="#clan_info_ribbon#clan"></div>
                 <div class="second-text" data-trans="#clan_info_second-text#clan"></div>
                 <div class="ribbon"></div>
+
+                <!--<div class="green-box-test"></div>-->
             </div>
         </div>
     </div>`;
 
 TEMPLATES['clan-list-find-panel'] = `<div class="clan-list-find-panel">
+        <div class="interface-element-middle-1-background-stretch"></div>
         <div class="scroll-wrapper classic-bar clan-list-find-content">
             <div class="scroll-pane">
                 <div class="background-wrapper">
-                    <div class="clan-find-header-0"></div>
+                    <div class="clan-find-header-0 interface-element-table-header-1-background"></div>
                     <div class="clan-part-0"></div>
-                    <div class="clan-find-header-1"></div>
+                    <div class="clan-find-header-1 interface-element-table-header-1-background"></div>
                     <div class="clan-part-1"></div>
-                    <div class="clan-find-header-2"></div>
+                    <div class="clan-find-header-2 interface-element-table-header-1-background"></div>
                     <div class="clan-part-2"></div>
                 </div>
             </div>
@@ -2341,16 +2656,19 @@ TEMPLATES['one-clan-atribute'] = `<div class="one-clan-atribute">
 
 TEMPLATES['clan-recruit-content'] = `<div class="clan-recruit-content">
         <div class="clan-recruit-menu">
-            <div class="cards-header-wrapper">
-                <div class="header-background-graphic"></div>
-                <div class="cards-header"></div>
-            </div>
+<!--            <div class="cards-header-wrapper">-->
+<!--                <div class="header-background-graphic"></div>-->
+<!--                <div class="cards-header"></div>-->
+<!--            </div>-->
         </div>
         <div class="recruit-section section-recruit-main">
             <div class="scroll-wrapper classic-bar">
                 <div class="scroll-pane">
-                    <div class="header-bar padd clan-recruit-header-option js-rank-hide"></div>
-                    <div class="green-box js-rank-hide">
+                    <div class="header-bar padd clan-recruit-header-option js-rank-hide">
+                        <div class="interface-element-header-1-background-stretch"></div>
+                        <span class="header-text"></span>
+                    </div>
+                    <div class="green-box interface-element-green-box-background js-rank-hide">
                         <div class="invite-to-clan">
                             <div class="v-align">
                                 <div class="label-info v-item"></div>
@@ -2363,8 +2681,11 @@ TEMPLATES['clan-recruit-content'] = `<div class="clan-recruit-content">
                     </div>
 
                     <!--<div class="clan-recruit-header-0"></div>-->
-                    <div class="header-bar padd clan-recruit-header-atribute"></div>
-                    <div class="green-box">
+                    <div class="header-bar padd clan-recruit-header-atribute">
+                        <div class="interface-element-header-1-background-stretch"></div>
+                        <span class="header-text"></span>
+                    </div>
+                    <div class="green-box interface-element-green-box-background">
                         <div class="clan-part-0"></div>
                         <!--<div class="clan-recruit-header-1"></div>-->
                         <div class="clan-part-1"></div>
@@ -2372,6 +2693,7 @@ TEMPLATES['clan-recruit-content'] = `<div class="clan-recruit-content">
                         <div class="clan-part-2"></div>
                     </div>
                     <div class="clan-list-butts-wrapper">
+                        <div class="interface-element-header-1-background-stretch"></div>
                         <div class="save-atributes"></div>
                     </div>
                 </div>
@@ -2379,7 +2701,7 @@ TEMPLATES['clan-recruit-content'] = `<div class="clan-recruit-content">
         </div>
         <div class="recruit-section section-recruit-candidate">
             <div class="table-header-wrapper">
-                <table class="table-header recruit-candidate-table-header"></table>
+                <table class="table-header recruit-candidate-table-header interface-element-table-header-1-background"></table>
             </div>
             <div class="scroll-wrapper classic-bar">
                 <div class="scroll-pane">
@@ -2389,7 +2711,7 @@ TEMPLATES['clan-recruit-content'] = `<div class="clan-recruit-content">
             </div>
         </div>
         <div class="recruit-section section-recruit-invite">
-            <div class="table-header-wrapper">
+            <div class="table-header-wrapper interface-element-table-header-1-background">
                 <table class="table-header recruit-invite-table-header"></table>
             </div>
             <div class="scroll-wrapper classic-bar">
@@ -2406,11 +2728,20 @@ TEMPLATES['clan-other-recruit-content'] = `<div class="clan-other-recruit-conten
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
                 <div class="background-wrapper">
-                    <div class="clan-recruit-header-0"></div>
+                    <div class="clan-recruit-header-0 header-bar">
+                        <div class="interface-element-header-1-background-stretch"></div>
+                        <span class="header-text"></span>
+                    </div>
                     <div class="clan-part-0"></div>
-                    <div class="clan-recruit-header-1"></div>
+                    <div class="clan-recruit-header-1 header-bar">
+                        <div class="interface-element-header-1-background-stretch"></div>
+                        <span class="header-text"></span>
+                    </div>
                     <div class="clan-part-1"></div>
-                    <div class="clan-recruit-header-2"></div>
+                    <div class="clan-recruit-header-2 header-bar">
+                        <div class="interface-element-header-1-background-stretch"></div>
+                        <span class="header-text"></span>
+                    </div>
                     <div class="clan-part-2"></div>
                     <div class="save-atributes"></div>
                 </div>
@@ -2422,7 +2753,7 @@ TEMPLATES['clan-other-recruit-content'] = `<div class="clan-other-recruit-conten
 //<!-- clan members list -->
 TEMPLATES['clan-members-content'] = `<div class="clan-members-content">
         <div class="table-header-wrapper">
-            <table class="table-header clan-members-table-header"></table>
+            <table class="table-header clan-members-table-header interface-element-table-header-1-background"></table>
         </div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
@@ -2446,6 +2777,7 @@ TEMPLATES['clan-other-members-content'] = `<div class="clan-other-members-conten
 //<!-- clan quests list -->
 TEMPLATES['clan-quests-content'] = `<div class="clan-quests-content">
         <div class="header-bar padd">
+            <div class="interface-element-header-1-background-stretch"></div>
             <div class="complete-quest-amount"></div>
             <div class="toggle-show"></div>
         </div>
@@ -2494,7 +2826,7 @@ TEMPLATES['increase-decrease-stamina'] = `<div class="increase-decrease-stamina"
     </div>`;
 
 TEMPLATES['quest-bring-item'] = `<div class="quest-bring-item v-align" >
-        <div class="item-wrapper v-item"></div>
+        <div class="item-wrapper v-item interface-element-one-item-slot"></div>
         <div class="input-wrapper v-item">
             <input class="default">
         </div>
@@ -2504,6 +2836,7 @@ TEMPLATES['quest-bring-item'] = `<div class="quest-bring-item v-align" >
 //<!-- clan skill list -->
 TEMPLATES['clan-skills-content'] = `<div class="clan-skills-content">
         <div class="header-bar padd">
+            <div class="interface-element-header-1-background-stretch"></div>
             <div class="clan-skill-header"></div>
         </div>
         <div class="clan-skill-heading-text"></div>
@@ -2518,6 +2851,7 @@ TEMPLATES['clan-skills-content'] = `<div class="clan-skills-content">
 //<!-- clan bless list -->
 TEMPLATES['clan-bless-content'] = `<div class="clan-bless-content">
         <div class="header-bar padd">
+            <div class="interface-element-header-1-background-stretch"></div>
             <div class="back-to-skill-btn"></div>
         </div>
         <div class="bless-header"></div>
@@ -2582,7 +2916,7 @@ TEMPLATES['clan-member'] = `<div class="clan-member">
 //<!-- clan player edit -->
 TEMPLATES['clan-edit-content'] = `<div class="clan-edit-content">
         <div class="table-header-wrapper no-scroll">
-            <table class="table-header js-table-header"></table>
+            <table class="table-header js-table-header interface-element-table-header-1-background"></table>
         </div>
         <table class="player-edit-table table-content"></table>
         <div class="player-edit-pane">
@@ -2618,7 +2952,7 @@ TEMPLATES['clan-treasury-content'] = `<div class="clan-treasury-content">
                 <div class="left-part">
                     <div class="gold-part">
                         <div class="gold-info"></div>
-                        <div class="green-box">
+                        <div class="green-box interface-element-green-box-background">
                             <div class="send-gold">
                                 <div class="label-info"></div>
                                 <div class="v-align">
@@ -2639,7 +2973,7 @@ TEMPLATES['clan-treasury-content'] = `<div class="clan-treasury-content">
                             </div>
                         </div>
                         <div class="sl-info"></div>
-                        <div class="green-box">
+                        <div class="green-box interface-element-green-box-background">
                             <div class="send-sl">
                                 <div class="label-info"></div>
                                 <div class="v-align">
@@ -2657,7 +2991,10 @@ TEMPLATES['clan-treasury-content'] = `<div class="clan-treasury-content">
                     </div>
                 </div>
                 <div class="right-part">
-                    <div class="header-bar padd outfit-header"></div>
+                    <div class="header-bar padd outfit-header">
+                        <div class="interface-element-header-1-background-stretch"></div>
+                        <span class="header-text"></span>
+                    </div>
                     <div class="outfit-content">
                         <div class="to-dress-available"></div>
                         <div class="to-dress-but"></div>
@@ -2672,8 +3009,11 @@ TEMPLATES['clan-treasury-content'] = `<div class="clan-treasury-content">
 
 //<!-- clan manage -->
 TEMPLATES['clan-manage-content'] = `<div class="clan-manage-content">
-        <div class="header-bar text-center padd" data-trans="#header-option#clan"></div>
-        <div class="green-box">
+        <div class="header-bar text-center padd">
+            <div class="interface-element-header-1-background-stretch"></div>
+            <span class="header-text" data-trans="#header-option#clan"></span>
+        </div>
+        <div class="green-box interface-element-green-box-background">
             <div class="change-clan-name">
                 <div class="label-info"></div>
                 <div class="v-align">
@@ -2750,10 +3090,11 @@ TEMPLATES['clan-manage-content'] = `<div class="clan-manage-content">
             <!--</div>-->
         </div>
         <div class="header-bar text-center padd">
+            <div class="interface-element-header-1-background-stretch"></div>
             <div class="rank-edit-header"></div>
         </div>
         <div class="table-header-wrapper">
-            <table class="table-header rank-edit-table-header"></table>
+            <table class="table-header rank-edit-table-header interface-element-table-header-1-background"></table>
         </div>
         <div class="scroll-wrapper classic-bar right-content">
             <div class="scroll-pane">
@@ -2768,8 +3109,11 @@ TEMPLATES['clan-icon'] = `<div class="clan-icon"></div>`;
 TEMPLATES['clan-diplomacy-content'] = `<div class="clan-diplomacy-content">
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
-                <div class="header-bar js-rank-hide" data-trans="#header-option#clan"></div>
-                <div class="green-box js-rank-hide">
+                <div class="header-bar js-rank-hide">
+                    <div class="interface-element-header-1-background-stretch"></div>
+                    <span class="header-text" data-trans="#header-option#clan"></span>
+                </div>
+                <div class="green-box interface-element-green-box-background js-rank-hide">
                     <div class="friend">
                         <div class="v-align">
                             <div class="label-info v-item"></div>
@@ -2803,8 +3147,11 @@ TEMPLATES['clan-diplomacy-content'] = `<div class="clan-diplomacy-content">
 
 //<!-- clan history -->
 TEMPLATES['clan-history-content'] = `<div class="clan-history-content">
-        <div class="header-bar" data-trans="#filters#clan"></div>
-        <div class="chose-show">
+        <div class="header-bar">
+            <div class="interface-element-header-1-background-stretch"></div>
+            <span class="header-text" data-trans="#filters#clan"></span>
+        </div>
+        <div class="chose-show interface-element-green-box-background">
             <div class="v-align">
                 <div class="witch-depo v-item"></div>
                 <div class="without-depo v-item"></div>
@@ -2824,6 +3171,7 @@ TEMPLATES['clan-history-content'] = `<div class="clan-history-content">
 TEMPLATES['clan-page-content'] = `<div class="clan-page-content">
         <div class="clan-page-header"></div>
         <div class="header-bar">
+            <div class="interface-element-header-1-background-stretch"></div>
             <div class="d-inline-block">
                 <div class="edit-page-but"></div>
             </div>
@@ -2841,6 +3189,7 @@ TEMPLATES['clan-page-content'] = `<div class="clan-page-content">
 //<!-- clan edit page -->
 TEMPLATES['clan-edit-page-content'] = `<div class="clan-edit-page-content">
         <div class="header-bar">
+            <div class="interface-element-header-1-background-stretch"></div>
             <div class="action-buttons">
                 <div class="save-change-but"></div>
                 <div class="cancel-change-but"></div>
@@ -2907,13 +3256,15 @@ TEMPLATES['clan-banner-name'] = `<div class="clan-banner-name">
 TEMPLATES['showcase'] = `<div class="showcase">
         <div class="header">
             <!--<div class="players-logo"></div>-->
-            <div class="header-bar">
+            <div class="showcase-header-bar">
+                <div class="interface-element-header-1-background-stretch"></div>
                 <span class="clan-level"></span>
                 <span class="amount-members"></span>
                 <span class="recruite-info"></span>
             </div>
         </div>
         <div class="header-menu"></div>
+        <div class="showcase-background interface-element-middle-2-background"></div>
         <div class="card-content"></div>
     </div>`;
 
@@ -2945,21 +3296,21 @@ TEMPLATES['prof-wrapper'] = `<div class="prof-wrapper">
 TEMPLATES['member-rank'] = `<div class="member-rank"></div>`;
 
 TEMPLATES['member-lvl'] = `<span class="member-lvl"></span>`;
-
-//<!-- logged price -->
-TEMPLATES['logged-price'] = `<div class="logged-price">
+/*
+    //<!-- logged price -->
+    TEMPLATES['logged-price'] = `<div class="logged-price">
         <div class="price-header"></div>
         <div class="price-content"></div>
         <div class="price-get-item"></div>
     </div>`;
 
-//<!-- one price -->
-TEMPLATES['one-price'] = `<div class="one-price">
+    //<!-- one price -->
+    TEMPLATES['one-price'] = `<div class="one-price">
         <div class="item-wrapper"></div>
         <div class="price-state"></div>
         <div class="price-day"><span></span></div>
     </div>`;
-
+*/
 //<!-- one checkbox -->
 //<!--<div data-template="check-box-wrapper">-->
 //<!--<div class="check-box">-->
@@ -2984,6 +3335,7 @@ TEMPLATES['one-numerable-rank'] = `<div class="one-numerable-rank">
 
 //<!-- label witch amount -->
 TEMPLATES['amount-label'] = `<div class="amount-label">
+        <div class="interface-element-header-1-background-stretch"></div>
         <div class="label-wprapper">
             <div class="label"></div>
         </div>
@@ -2998,9 +3350,10 @@ TEMPLATES['premium-panel'] = `<div class="premium-panel">
         <!--<div class="graphic"></div>-->
         <!--<div class="premium-label">Premium</div>-->
         <!--</div>-->
-        <div class="premium-graphic"></div>
+        <div class="premium-graphic interface-element-middle-1-background"></div>
         <div class="product-kind"></div>
         <div class="premium-bottom-panel">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="chest-wrapper">
                 <div class="chest"></div>
             </div>
@@ -3011,14 +3364,14 @@ TEMPLATES['premium-panel'] = `<div class="premium-panel">
             </div>
         </div>
     </div>`;
-
-TEMPLATES['item-changer-group'] = `<div class="item-changer-group">
+/*
+    TEMPLATES['item-changer-group'] = `<div class="item-changer-group">
         <div class="header-wrapper"></div>
         <div class="background-grid"></div>
         <div class="grid"></div>
     </div>`;
 
-TEMPLATES['item-changer'] = `<div class="item-changer">
+    TEMPLATES['item-changer'] = `<div class="item-changer">
         <!--<div class="header-wrapper">-->
         <!--<div class="graphic"></div>-->
         <!--<div class="item-changer-label"></div>-->
@@ -3052,7 +3405,7 @@ TEMPLATES['item-changer'] = `<div class="item-changer">
             <!--<div class="do-recipe"></div>-->
         </div>
     </div>`;
-
+*/
 TEMPLATES['require-and-receive-item'] = `<div class="require-and-receive-item">
         <div class="require-wrapper">
             <div class="require-wrapper-align"></div>
@@ -3100,9 +3453,9 @@ TEMPLATES['news-panel'] = `<div class="news-panel">
         <!--<div class="graphic"></div>-->
         <!--<div class="news-panel-label"></div>-->
         <!--</div>-->
-        <div class="middle-graphics"></div>
+        <div class="middle-graphics interface-element-middle-1-background"></div>
         <div class="news-content">
-            <div class="crazy-bar"></div>
+            <div class="crazy-bar interface-element-vertical-wood"></div>
             <div class="news-section">
                 <div class="section-content">
                     <div class="news-section-overflow"></div>
@@ -3112,7 +3465,7 @@ TEMPLATES['news-panel'] = `<div class="news-panel">
                 <div class="news-pagination"></div>
             </div>
             <div class="news-for-you-section">
-                <div class="section-header" data-trans="#forYou#news"></div>
+                <div class="section-header interface-element-table-header-1-background" data-trans="#forYou#news"></div>
                 <div class="section-content">
                     <div class="for-you"></div>
                 </div>
@@ -3167,11 +3520,11 @@ TEMPLATES['news-time-promo-tile'] = `<div class="news-time-promo-tile">
         <div class="buy-info"></div>
     </div>`;
 
-TEMPLATES['news-message'] = `<div class="news-message">
-        <div class="news-date"></div>
-        <div class="news-text"></div>
-        <div class="news-author"></div>
-    </div>`;
+//TEMPLATES['news-message'] = `<div class="news-message">
+//    <div class="news-date"></div>
+//    <div class="news-text"></div>
+//    <div class="news-author"></div>
+//</div>`;
 
 TEMPLATES['buy-button-wrapper'] = `<div class="buy-button-wrapper buy-button"></div>`;
 
@@ -3185,7 +3538,7 @@ TEMPLATES['stamina-shop'] = `<div class="stamina-shop">
         <!--<div class="graphic"></div>-->
         <!--<div class="edit-header-label" data-trans="#stat-stamina"></div>-->
         <!--</div>-->
-        <div class="background-graphic"></div>
+        <div class="background-graphic interface-element-middle-1-background"></div>
         <div class="description1" data-trans="#stamina_renew_4h#static"></div>
         <div class="description" data-trans="#stamina_renew_4h#static"></div>
         <div class="one-day">
@@ -3202,8 +3555,9 @@ TEMPLATES['stamina-shop'] = `<div class="stamina-shop">
         </div>
         <!--<div class="cancel-but"></div>-->
         <div class="footer">
-            <div class="bottom-panel-graphics"></div>
-            <div class="chest-graphic"></div>
+            <!--<div class="bottom-panel-graphics"></div>-->
+            <div class="interface-element-bottom-bar-background-stretch"></div>
+            <div class="chest-graphic interface-element-chest-sl"></div>
             <div class="table-wrapper">
                 <div class="sl-label"></div>
                 <div class="buy-sl-btn"></div>
@@ -3213,41 +3567,9 @@ TEMPLATES['stamina-shop'] = `<div class="stamina-shop">
     </div>`;
 
 //<!-- trade !-->
-TEMPLATES['trade-window'] = `<div class="trade-window">
-        <div class="window-background">
-        </div>
-        <div class="content">
-            <div class="info-icon tip"></div>
-            <div class="info">
-                <div class="watch label"></div>
-                <div class="show label"></div>
-                <div class="buy label"></div>
-                <div class="sell label"></div>
-                <div class="gold-left label gold-label"></div>
-                <div class="gold-right label gold-label"></div>
-                <div class="credits-left label credits-label"></div>
-                <div class="credits-right label credits-label"></div>
-            </div>
-            <div class="other-buy-item"></div>
-            <div class="hero-sell-item"></div>
-            <div class="other-watch-item"></div>
-            <div class="hero-show-item"></div>
-            <div class="decision">
-                <div class="other_decision dec-item"></div>
-                <div class="other-result result refuse"></div>
-                <div class="hero_decision dec-item"></div>
-                <div class="hero-result result refuse"></div>
-            </div>
-            <div class="prize">
-                <div class="other-prize gold-prize">0</div>
-                <input class="hero-prize gold-prize" placeholder="0"/>
-            </div>
-            <div class="credits">
-              <span class="other-credits"></span>
-              <span class="hero-credits"></span>
-            </div>
-            <div class="buttons btns-spacing-y"></div>
-        </div>
+TEMPLATES['trade-window'] = `<div class="trade-window interface-element-border-window-frame">
+        <!--<div class="window-background">-->
+        <!--</div>-->
         <header>
             <div class="h_background">
                 <div class="left"></div>
@@ -3256,6 +3578,59 @@ TEMPLATES['trade-window'] = `<div class="trade-window">
             </div>
             <div class="h_content"></div>
         </header>
+        <div class="interface-element-middle-3-background-stretch"></div>
+        <div class="content">
+            <div class="decision-background interface-element-background-color-2 interface-element-box-shadow-1"></div>
+            <div class="info-icon tip"></div>
+            <div class="info">
+                <div class="interface-element-grid-border watch label"></div>
+                <div class="interface-element-grid-border show label"></div>
+                <div class="interface-element-grid-border buy label"></div>
+                <div class="interface-element-grid-border sell label"></div>
+                <div class="interface-element-grid-border gold-left label gold-label"></div>
+                <div class="interface-element-grid-border gold-right label gold-label"></div>
+                <div class="interface-element-grid-border credits-left label credits-label"></div>
+                <div class="interface-element-grid-border credits-right label credits-label"></div>
+            </div>
+            <div class="other-buy-item interface-element-grid-border">
+                <div class="interface-element-item-slot-grid-stretch"></div>
+            </div>
+            <div class="hero-sell-item interface-element-grid-border">
+                <div class="interface-element-item-slot-grid-stretch"></div>
+            </div>
+            <div class="other-watch-item  interface-element-grid-border">
+                <div class="slot-1 interface-element-one-item-slot"></div>
+                <div class="slot-2 interface-element-one-item-slot"></div>
+                <div class="slot-3 interface-element-one-item-slot"></div>
+            </div>
+            <div class="hero-show-item  interface-element-grid-border">
+                <div class="slot-1 interface-element-one-item-slot"></div>
+                <div class="slot-2 interface-element-one-item-slot"></div>
+                <div class="slot-3 interface-element-one-item-slot"></div>
+            </div>
+            <div class="wood-1 interface-element-vertical-wood"></div>
+            <div class="wood-2 interface-element-vertical-wood"></div>
+            <div class="decision">
+                <div class="other_decision dec-item"></div>
+                <div class="line-1 interface-element-line-1-background"></div>
+                <div class="line-2 interface-element-line-1-background"></div>
+                <div class="other-result result refuse"></div>
+                <div class="hero_decision dec-item"></div>
+                <div class="hero-result result refuse"></div>
+            </div>
+            <div class="prize">
+                <div class="other-prize interface-element-grid-border gold-prize">0</div>
+                <input class="hero-prize interface-element-grid-border gold-prize" placeholder="0"/>
+            </div>
+            <div class="credits">
+              <span class="other-credits interface-element-grid-border"></span>
+              <span class="hero-credits interface-element-grid-border"></span>
+            </div>
+            <div class="buttons btns-spacing-y"></div>
+        </div>
+        <div class="bottom-bar">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
+        </div>
     </div>`;
 
 TEMPLATES['divide-panel'] = `<div class="divide-panel">
@@ -3264,9 +3639,11 @@ TEMPLATES['divide-panel'] = `<div class="divide-panel">
         <!--<div class="green-panel-label"></div>-->
         <!--</div>-->
         <div class="left-column">
-            <div class="top-left-column-graphics"></div>
-            <div class="middle-left-column-graphics"></div>
-            <div class="bottom-left-column-graphics"></div>
+        <div class="interface-element-middle-1-background-stretch"></div>
+            <!--<div class="top-left-column-graphics"></div>-->
+            <!--<div class="middle-left-column-graphics"></div>-->
+            <!--<div class="bottom-left-column-graphics"></div>-->
+            <div class="header-graphic interface-element-active-card-background-stretch"></div>
             <div class="left-column-header"></div>
             <div class="search-wrapper search-item-wrapper">
                 <input class="search search-item"/>
@@ -3277,28 +3654,42 @@ TEMPLATES['divide-panel'] = `<div class="divide-panel">
             </div>
         </div>
         <div class="right-column">
-            <div class="location-graphics"></div>
-            <div class="middle-graphics"></div>
+        <div class="interface-element-middle-1-background-stretch"></div>
+            <!--<div class="location-graphics"></div>-->
+            <!--<div class="middle-graphics"></div>-->
+            <div class="header-graphic interface-element-active-card-background-stretch"></div>
             <div class="right-column-header"></div>
             <div class="right-scroll scroll-wrapper classic-bar">
                 <div class="scroll-pane"></div>
             </div>
         </div>
         <div class="bottom-part">
-            <div class="bottom-panel-graphics"></div>
+            <div class="interface-element-bottom-bar-background-stretch"></div>
+            <!--<div class="bottom-panel-graphics"></div>-->
         </div>
     </div>`;
 
+TEMPLATES['table'] = `
+        <table class="table">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    `;
 
-TEMPLATES['table-with-static-header'] = `
-        <div class="table-with-static-header-wrapper">
-            <div class="table-with-static-header">
-                <table class="table-with-static-header-header"></table>
-                <div class="table-with-static-header-body scroll-wrapper classic-bar">
-                    <div class="table-with-static-header-scroll-pane scroll-pane">
-                        <table class="table-with-static-header-table"></table>
-                    </div>
-                </div>
+TEMPLATES['table-component'] = `
+        <div class="c-table"></div>
+    `;
+
+
+TEMPLATES['table-wrapper'] = `
+        <div class="table__wrapper">
+            <table class="table__header"></table>
+        </div>
+    `;
+TEMPLATES['table-scrollbar'] = `
+        <div class="table__scroll-wrapper scroll-wrapper classic-bar">
+            <div class="table__scroll-pane scroll-pane">
+                ${TEMPLATES['table']}
             </div>
         </div>
     `;
@@ -3466,7 +3857,7 @@ TEMPLATES['builds-window'] = `
         <div class="builds-window">
             <div class="attach-icon-show-handheld attach-icon" data-trans="data-tip#attach_to_quick_items"></div>
             <div class="scroll-wrapper classic-bar">
-                <div class="window-wood-background"></div>
+                <div class="window-wood-background interface-element-middle-1-background"></div>
                 <div class="scroll-pane">
 
                 </div>
@@ -3485,13 +3876,16 @@ TEMPLATES['one-build'] = `
                 <div class="build-icon"></div>
             </div>
             <div class="build-items-wrapper">
-                <div class="items"></div>
-                <div class="build-index-wrapper">
-                    <div class="build-index"></div>
-                </div>
+                <!--<div class="items"></div>-->
+                <!--<div class="build-index-wrapper">-->
+                    <!--<div class="build-index"></div>-->
+                <!--</div>-->
+            </div>
+            <div class="build-index-wrapper">
+                <div class="build-index"></div>
             </div>
             <div class="build-skills-left-wrapper">
-                <div class="build-skills-left"></div>
+                <span class="build-skills-left"></span>
             </div>
             <div class="build-overlay"></div>
         </div>
@@ -3513,13 +3907,13 @@ TEMPLATES['one-build-to-buy'] = `
 
 TEMPLATES['auction-window'] = `
         <div class="auction-window">
-            <div class="middle-graphic"></div>
+            <div class="middle-graphic interface-element-middle-1-background"></div>
             <div class="cards-header-wrapper">
-                <div class="header-background-graphic"></div>
-                <div class="cards-header"></div>
+<!--                <div class="header-background-graphic"></div>-->
+<!--                <div class="cards-header"></div>-->
             </div>
 
-            <div class="left-column-auction-and-main-column-auction">
+            <div class="left-column-auction-and-main-column-auction interface-element-vertical-wood">
 
             </div>
 
@@ -3538,17 +3932,18 @@ TEMPLATES['auction-window'] = `
                     <div class="all-auction-info" data-trans="#choose_category#auction"></div>
                 </div>
                 <div class="all-auction-section section middle">
-                    <table class="auction-table-header"></table>
+                    <table class="auction-table-header interface-element-table-3"></table>
                     <div class="scroll-wrapper main-all-auction-scroll classic-bar">
                         <div class="scroll-pane">
-                            <table class="auction-table"></table>
+                            <table class="auction-table interface-element-table-3"></table>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div class="bottom-part">
-                <div class="bottom-panel-graphics"></div>
+                <!--<div class="bottom-panel-graphics"></div>-->
+                <div class="interface-element-bottom-bar-background-stretch"></div>
 <!--                <div class="additional-soulbond-payment" data-trans="#filter_bound_price_info#auction"></div>-->
                 <div class="auction-off-btn-wrapper"></div>
                 <div class="auction-renew-btn-wrapper"></div>
@@ -3558,10 +3953,10 @@ TEMPLATES['auction-window'] = `
 
 TEMPLATES['auction-off-item-panel'] = `
                 <div class="auction-off-item-panel">
-                    <div class="middle-graphic"></div>
+                    <div class="middle-graphic interface-element-middle-1-background"></div>
                     <div class="auction-off-item-panel-wrapper">
                         <div class="item-slot-wrapper">
-                            <div class="item-slot"></div>
+                            <div class="item-slot interface-element-one-item-slot"></div>
                         </div>
                         <div class="all-field">
                             <div class="one-record auction-bid"><div class="label"></div></div>
@@ -3626,7 +4021,7 @@ TEMPLATES['auction-observe-action'] = `
 
 
 TEMPLATES['action-menu-item'] = `
-        <div class="action-menu-item">
+        <div class="action-menu-item drop-down-menu-item">
             <div class="label"></div>
         </div>
     `
@@ -3662,7 +4057,7 @@ TEMPLATES['drop-down-menu-section'] =
       </div>`;
 
 TEMPLATES['one-category-auction'] =
-    `<div class="one-category-auction">
+    `<div class="one-category-auction drop-down-menu-item">
         <div class="icon"></div>
       </div>`;
 
@@ -3689,7 +4084,7 @@ TEMPLATES['dropdown-menu'] = `<div class="dropdown-menu">
         <div class="arrow">
             <div class="menu-arrow"></div>
         </div>
-        <div class="reset" data-trans="data-tip#reset#ah_filter_history"></div>
+        <div class="reset" data-trans="data-tip#reset#ah_filter_history"><div class="ie-icon ie-icon-close"></div></div>
 
         <div class="scroll-wrapper menu-wrapper">
             <div class="wrapper scroll-pane"></div>
@@ -3712,11 +4107,12 @@ TEMPLATES['gold-shop'] = `<div class="gold-shop">
         <div class="header-big-label"></div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
-                <div class="middle-graphics"></div>
+                <div class="middle-graphics interface-element-middle-1-background"></div>
             </div>
         </div>
         <div class="footer">
-            <div class="bottom-panel-graphics"></div>
+            <!--<div class="bottom-panel-graphics"></div>-->
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="chest-graphic"></div>
             <div class="table-wrapper">
                 <div class="sl-label"></div>
@@ -3748,20 +4144,16 @@ TEMPLATES['draconite-shop'] = `<div class="draconite-shop">
     </div>`;
 
 TEMPLATES['addons-panel'] = `<div class="addons-panel">
-        <!--<div class="header-wrapper">-->
-        <!--<div class="graphic"></div>-->
-        <!--<div class="edit-header-label" data-trans="#extend#extManager"></div>-->
-        <!--</div>-->
-        <div class="main-header">
-            <div class="addon-list-label"></div>
-        </div>
         <div class="left-column">
-            <div class="middle-left-column-graphics"></div>
+            <div class="interface-element-middle-3-background-stretch"></div>
+            <div class="main-header">
+            <div class="interface-element-active-card-background-stretch"></div>
+                <div class="addon-list-label"></div>
+            </div>
             <div class="search-wrapper addon-search">
                 <input class="search" data-trans="placeholder#search"/>
                 <div class="search-x" data-trans="data-tip#delete"></div>
             </div>
-            <div class="bottom-left-column-graphics"></div>
             <div class="left-scroll scroll-wrapper classic-bar">
                 <div class="scroll-pane">
                     <div class="addon-list"></div>
@@ -3769,7 +4161,10 @@ TEMPLATES['addons-panel'] = `<div class="addons-panel">
             </div>
         </div>
         <div class="right-column">
-            <div class="middle-right-column-graphics"></div>
+            <div class="interface-element-middle-2-background-stretch"></div>
+            <div class="right-header-graphic">
+                <div class="interface-element-active-card-background-stretch"></div>
+            </div>
             <div class="addon-header">
                 <div class="img-wrapper">
                     <div class="widget-button red no-hover">
@@ -3780,17 +4175,12 @@ TEMPLATES['addons-panel'] = `<div class="addons-panel">
                     <div class="addon-header-title"></div>
                 </div>
             </div>
-            <div class="paper-graphics"></div>
             <div class="right-scroll scroll-wrapper classic-bar">
                 <div class="scroll-pane">
                 </div>
             </div>
         </div>
     </div>`;
-
-//<!--TEMPLATES['dupa'] = <div class="widget-button">-->
-//<!--<div class="icon"></div>-->
-//<!--</div>-->
 
 TEMPLATES['border-blink'] = `<div class="border-blink"></div>`;
 
@@ -3887,8 +4277,9 @@ TEMPLATES['skills-window'] = `<div class="skills-window">
         <!--<div class="edit-header-label" data-trans="#clickSkills"></div>-->
         <!--</div>-->
         <div class="left-column">
-            <div class="middle-graphic"></div>
+            <div class="middle-graphic interface-element-middle-1-background"></div>
             <div class="list-label-wrapper">
+                <div class="interface-element-active-card-background-stretch"></div>
                 <div class="list-border"></div>
                 <div class="list-label">
                     <div class="label" data-trans="#skills_tip#buttons"></div>
@@ -3901,12 +4292,15 @@ TEMPLATES['skills-window'] = `<div class="skills-window">
             </div>
         </div>
         <div class="right-column">
-            <div class="middle-graphic"></div>
-            <div class="maku-wood"></div>
+            <div class="middle-graphic interface-element-middle-2-background"></div>
+            <!--<div class="maku-wood"></div>-->
             <div class="points-header-wrapper">
+                <div class="interface-element-active-card-background-stretch"></div>
                 <div class="skills-points-wrapper">
                     <div class="skills-points-description" data-trans="#skills_points_description#skills"></div>
-                    <div class="skills-points"></div>
+                    <div class="skills-points">
+                    <span class="skills_learnt"></span>/<span class="skills_total"></span>
+                    </div>
                 </div>
                 <!--<div class="operations-cost"></div>-->
                 <!--<div class="btn-wrapper"></div>-->
@@ -3925,7 +4319,8 @@ TEMPLATES['skills-window'] = `<div class="skills-window">
             </div>
         </div>
         <div class="bottom-part">
-            <div class="bottom-panel-graphics"></div>
+            <!--<div class="bottom-panel-graphics"></div>-->
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="free-skills-label"></div>
             <div class="MB-wrapper">
                 <div class="MB-label-1" data-trans="#available_label"></div>
@@ -3940,6 +4335,8 @@ TEMPLATES['skills-window'] = `<div class="skills-window">
 
 //<!-- single skill !-->
 TEMPLATES['skill'] = `<div class="skill">
+        <div class="icon-background"></div>
+        <div class="val-background"></div>
         <div class="skill-tip"></div>
         <div class="skill-background"></div>
         <div class="label-wrapper">
@@ -3970,12 +4367,12 @@ TEMPLATES['skill-description'] = `<div class="skill-description">
             </div>
         </div>
         <div class="board-wrapper">
-            <div class="board-graphic"></div>
-            <div class="requirements-wrapper stone">
+            <!--<div class="board-graphic"></div>-->
+            <div class="requirements-wrapper stone interface-element-active-card-border-image">
                 <div class="title" data-trans="#lower_requirements#skills"></div>
                 <div class="icons"></div>
             </div>
-            <div class="stats-wrapper stone">
+            <div class="stats-wrapper stone interface-element-active-card-border-image">
                 <div class="stats-h" data-trans="#stats_header#skills"></div>
                 <div class="icon-tip" data-trans="data-tip#next_level_stat_info#buttons"></div>
                 <div class="all-stats"></div>
@@ -3983,7 +4380,7 @@ TEMPLATES['skill-description'] = `<div class="skill-description">
         </div>
     </div>`;
 
-TEMPLATES['skills-description-wrapper'] = `<div class="skills-description-wrapper description-wrapper"></div>`;
+TEMPLATES['skills-description-wrapper'] = `<div class="info-box skills-description-wrapper description-wrapper"></div>`;
 
 TEMPLATES['skills-notif'] = `<div class="skills-notif notif"></div>`;
 
@@ -3991,7 +4388,7 @@ TEMPLATES['del-skill-middle-layer'] = `<div class="del-skill-middle-layer"></div
 TEMPLATES['del-skill-left-layer'] = `<div class="del-skill-left-layer"></div>`;
 TEMPLATES['del-skill-right-layer'] = `<div class="del-skill-right-layer"></div>`;
 
-TEMPLATES['skill-background-tpl'] = `<div class="skill-background-tpl background"></div>`;
+TEMPLATES['skill-background-tpl'] = `<div class="skill-background-tpl interface-element-box-shadow-1 background"></div>`;
 
 TEMPLATES['battle-skill-in-skill-panel'] = `<div class="battle-skill-in-skill-panel battle-skill"></div>`;
 
@@ -4000,6 +4397,7 @@ TEMPLATES['MBEditor'] = `<div class="MBEditor">
         <div class="list-name"></div>
         <div class="buttons-wrapper">
             <!--<div class="close-btn"></div>-->
+            <div class="interface-element-header-1-background-stretch"></div>
             <div class="save-btn"></div>
             <div class="clear-btn"></div>
             <div class="checkbox-wrapper">
@@ -4012,18 +4410,24 @@ TEMPLATES['MBEditor'] = `<div class="MBEditor">
     </div>`;
 
 TEMPLATES['additional-skill-panel'] = `<div class="additional-skill-panel">
+        <div class="graphics">
+            <div class="additional-skill-panel-border"></div>
+            <div class="bottom-graphic">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
+            </div>
+        </div>
         <div class="header-tip" data-trans="#dragSkills#skills"></div>
         <div class="skill-usable-add-slots left">
-            <div class="skill-usable-slot" slot="8"></div>
-            <div class="skill-usable-slot" slot="9"></div>
-            <div class="skill-usable-slot" slot="10"></div>
-            <div class="skill-usable-slot" slot="11"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="8"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="9"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="10"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="11"></div>
         </div>
         <div class="skill-usable-add-slots right">
-            <div class="skill-usable-slot" slot="15"></div>
-            <div class="skill-usable-slot" slot="14"></div>
-            <div class="skill-usable-slot" slot="13"></div>
-            <div class="skill-usable-slot" slot="12"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="15"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="14"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="13"></div>
+            <div class="skill-usable-slot interface-element-one-item-slot-2" slot="12"></div>
         </div>
     </div>`;
 
@@ -4035,9 +4439,9 @@ TEMPLATES['single-skill-row'] = `<div class="single-skill-row">
             <div class="sl-buy"></div>
         </div>
         <div class="arrows-wrapper">
-            <div class="remove-cross pos-up"></div>
-            <div class="up-arrow pos-up"></div>
             <div class="down-arrow pos-up"></div>
+            <div class="up-arrow pos-up"></div>
+            <div class="remove-cross pos-up"></div>
         </div>
     </div>`;
 
@@ -4055,7 +4459,7 @@ TEMPLATES['battle-pass-window'] =
         </div>
         <div class="battle-pass-challenges section">
             <div class="scroll-wrapper classic-bar">
-                <div class="battle-pass-bg"></div>
+                <div class="battle-pass-bg interface-element-middle-1-background"></div>
                 <div class="scroll-pane">
                     <div class="daily-mission battle-pass-tiles-wrapper">
                         <div class="tiles-wrapper-header" data-trans="#daily_chalanges"></div>
@@ -4064,7 +4468,7 @@ TEMPLATES['battle-pass-window'] =
                         <div class="roll-mission-wrapper">
                             <div class="roll-mission-label" data-trans="#reload_mission"></div>
                             <div class="roll-mission-icon"></div>
-                            <div class="line"></div>
+                            <div class="line interface-element-line-1-background"></div>
                         </div>
                     </div>
                     <div class="global-mission battle-pass-tiles-wrapper">
@@ -4090,7 +4494,8 @@ TEMPLATES['battle-pass-window'] =
             </div>
         </div>
         <div class="bottom-row-panel">
-            <div class="bottom-panel-graphics"></div>
+        <div class="interface-element-middle-2-background-stretch"></div>
+            <!--<div class="bottom-panel-graphics"></div>-->
             <div class="your-all-points-wrapper">
                 <div class="all-points-icon"></div>
                 <div class="points"></div>
@@ -4124,7 +4529,7 @@ TEMPLATES['battle-pass-reward-record'] = `
                 </div>
                 <div class="premium-reward-button-ceil"></div>
             </div>
-            <div class="line"></div>
+            <div class="line interface-element-line-1-background"></div>
             <div class="battle-pass-reward-progress-barr-wrapper">
                 <div class="vertical-progress-bar-wrapper">
                     <div class="inner"></div>
@@ -4147,55 +4552,94 @@ TEMPLATES['mission-progress-bar'] = `
 
 //<!-- settings window !-->
 TEMPLATES['settings-window'] = `<div class="settings-window">
+        <!--
         <div class="cards-header-wrapper">
             <div class="header-background-graphic"></div>
             <div class="cards-header"></div>
         </div>
+        -->
+        <div class="cards-header-wrapper"></div>
         <div class="hero-options-config section">
             <div class="scroll-wrapper classic-bar">
                 <div class="scroll-pane">
-                    <div class="graphic-background"></div>
+                    <div class="graphic-background interface-element-middle-1-background"></div>
                     <div class="first-c">
-                        <h2 class="settings-notification"><span></span></h2>
+                        <h2 class="settings-notification">
+                            <div class="interface-element-header-1-background-stretch"></div>
+                            <span></span>
+                        </h2>
                         <ul class="hero-options">
-                            <li data-serveroption="1"><div class="checkbox"></div><span class="label"></span></li>
-                            <li data-serveroption="6"><div class="checkbox"></div><span class="label"></span></li>
-                            <li data-serveroption="3"><div class="checkbox"></div><span class="label"></span></li>
-                            <!--<li data-serveroption="10"><div class="checkbox"></div><span class="label"></span></li>-->
-                            <li data-serveroption="5"><div class="checkbox"></div><span class="label"></span></li>
-                            <li data-serveroption="21"><div class="checkbox"></div><span class="label"></span></li>
-                            <li data-serveroption="2"><div class="checkbox"></div><span class="label"></span></li>
-                            <li data-serveroption="14"><div class="checkbox"></div><span class="label"></span></li>
-                            <!--<li data-serveroption="20"><span class="checkbox"></span><span class="label"></span></li>-->
-                            <li data-serveroption="9"><div class="checkbox"></div><span class="label"></span></li>
-                            <li data-serveroption="15"><div class="checkbox"></div><span class="label"></span></li>
-                            <li data-serveroption="18"><div class="checkbox"></div><span class="label"></span></li>
+                            <li data-serveroption="1" class="opt_${RECEIVE_PRIVATE_CHAT_MESSAGE}"></li>
+                            <li data-serveroption="6" class="opt_${MAIL_FROM_UNKNOWN}"></li>
+                            <li data-serveroption="3" class="opt_${TRADE_WITH_OTHERS}"></li>
+                            <li data-serveroption="5" class="opt_${INVITATION_TO_FRIENDS}"></li>
+                            <li data-serveroption="21" class="opt_${INFORM_ABOUT_FREE_PLACE_IN_BAG}"></li>
+                            <li data-serveroption="2" class="opt_${INVITATION_TO_CLAN_AND_DIPLOMACY}"></li>
+                            <li data-serveroption="14" class="opt_${INVITATION_TO_PARTY_BEYOND_FRIENDS_AND_CLANS_AND_CLANS_ALLY}"></li>
+                            <li data-serveroption="9" class="opt_${CLAN_MEMBER_ENTRY_CHAT_MESSAGE}"></li>
+                            <li data-serveroption="15" class="opt_${FRIEND_ENTRY_CHAT_MESSAGE}"></li>
+                            <li data-serveroption="18" class="opt_${ADD_OR_REMOVE_PARTY_MEMBER_CHAT_MESSAGE}"></li>
                         </ul>
                     </div>
                     <div class="seccond-c">
-                        <h2 class="settings-game"><span></span></h2>
+                        <h2 class="settings-game">
+                            <div class="interface-element-header-1-background-stretch"></div>
+                            <span></span>
+                        </h2>
                         <ul class="hero-options">
-                            <li data-serveroption="8"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="7"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="16"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="11"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="23"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="24"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="17"><span class="checkbox"></span><span class="label"></span></li>
-                          
-            ${isEn() ? '' :'<li data-serveroption="26"><span class="checkbox"></span><span class="label"></span></li>'}
-                           
-                            <li data-serveroption="19"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="13"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="12"><span class="checkbox"></span><span class="label"></span></li>
-                            <li data-serveroption="4"><span class="checkbox"></span><span class="label"></span></li>
-                            <!--<li data-serveroption="22"><span class="checkbox"></span><span class="label"></span></li>-->
-                            <li data-serveroption="25"><span class="checkbox"></span><span class="label"></span></li>
-                            <!--<li data-localoption="15"><span class="checkbox"></span><span class="label"></span></li>-->
-                            <li data-serveroption="27"><span class="checkbox"></span><span class="label"></span></li>
-                            <!--<li data-serveroption="30"><span class="checkbox"></span><span class="label"></span></li>-->
+
+                            <li data-serveroption="8" class="opt_${INTERFACE_ANIMATION}"></li>
+                            <li data-serveroption="7" class="opt_${MOUSE_HERO_WALK}"></li>
+                            <li data-serveroption="16" class="opt_${WEATHER_AND_EVENT_EFFECTS}"></li>
+                            <li data-serveroption="11" class="opt_${CYCLE_DAY_AND_NIGHT}"></li>
+                            <li data-serveroption="23" class="opt_${LOADER_SPLASH}"></li>
+                            <li data-serveroption="24" class="opt_${WAR_SHADOW}"></li>
+                            <li data-serveroption="17" class="opt_${BANNERS}"></li>
+
+            
+
+                            <li data-serveroption="19" class="opt_${MAP_ANIMATION}"></li>
+                            <li data-serveroption="13" class="opt_${SHOW_ITEMS_RANK}"></li>
+                            <li data-serveroption="12" class="opt_${AUTO_GO_THROUGH_GATEWAY}"></li>
+                            
+                            <li data-serveroption="25" class="opt_${AUTO_COMPARE_ITEMS}"></li>
+                            
+
+                            <li>
+                                <div class="settings-opt-menu-wrapper opt_${KIND_OF_SHOW_LEVEL_AND_OPERATION_LEVEL}"></div>
+                            </li>
+
                         </ul>
                     </div>
+                    
+                    <div class="third-c">
+                        <h2 class="settings-battle">
+                            <div class="interface-element-header-1-background-stretch"></div>
+                            <span></span>
+                        </h2>
+                        <ul class="hero-options">
+                            ${isEn() ? '' :`<li data-serveroption="26" class="opt_${BATTLE_EFFECTS}"></li>`}
+                            <li data-serveroption="4" class="opt_${TURN_BASED_COMBAT_AFTER_MONSTER_ATTACK}"></li>
+                            <li data-serveroption="27" class="opt_${AUTO_CLOSE_BATTLE}"></li>
+                            <div class="opt_${BERSERK}">
+                              <li data-serveroption="${BERSERK_V}"></li>
+                              <li data-serveroption="${BERSERK_LVL_MIN_LVL_MAX}"></li>
+                              <div class="berserk-opt-label opt-label" data-trans="#monster_type"></div>
+                              <li data-serveroption="${BERSERK_COMMON}"></li>
+                              <li data-serveroption="${BERSERK_ELITE}"></li>
+                              <li data-serveroption="${BERSERK_ELITE2}"></li>
+                            </div>
+                            <div class="opt_${BERSERK_GROUP}">
+                              <li data-serveroption="${BERSERK_GROUP_V}"></li>
+                              <li data-serveroption="${BERSERK_GROUP_LVL_MIN_LVL_MAX}"></li>
+                              <div class="berserk-group-opt-label opt-label" data-trans="#monster_type"></div>
+                              <li data-serveroption="${BERSERK_GROUP_COMMON}"></li>
+                              <li data-serveroption="${BERSERK_GROUP_ELITE}"></li>
+                              <li data-serveroption="${BERSERK_GROUP_ELITE2}"></li>
+                            </div>
+                        </ul>
+                    </div>
+                    
                     <!--<div class="options-config-buttons"></div>-->
                 </div>
             </div>
@@ -4203,42 +4647,53 @@ TEMPLATES['settings-window'] = `<div class="settings-window">
         <div class="hot-keys-config section">
             <div class="scroll-wrapper classic-bar">
                 <div class="scroll-pane">
-                    <div class="graphic-background"></div>
+                    <div class="graphic-background interface-element-middle-1-background"></div>
                     <!--<h2 class="settings-keys"></h2>-->
 
                     <div class="move-keys keys-section">
-                        <h2><span></span></h2>
-                        <table class="hot-keys-list"></table>
+                        <table class="hot-keys-list interface-element-table-3">
+                            <tr class="table-header-tr"><td colspan="4" data-trans="#move-header#help"></td></tr>
+                        </table>
                     </div>
                     <div class="fight-keys keys-section">
-                        <h2><span></span></h2>
-                        <table class="hot-keys-list"></table>
+                        <table class="hot-keys-list interface-element-table-3">
+                            <tr class="table-header-tr"><td colspan="4" data-trans="#fight-header#help"></td></tr>
+                        </table>
                     </div>
                     <div class="map-keys keys-section">
-                        <h2><span></span></h2>
-                        <table class="hot-keys-list"></table>
+                        <table class="hot-keys-list interface-element-table-3">
+                        <tr class="table-header-tr"><td colspan="4" data-trans="#clickMiniMap"></td></tr>
+                        </table>
                     </div>
                     <div class="social-keys keys-section">
-                        <h2><span></span></h2>
-                        <table class="hot-keys-list"></table>
+                        <table class="hot-keys-list interface-element-table-3">
+                            <tr class="table-header-tr"><td colspan="4" data-trans="#society"></td></tr>
+                        </table>
                     </div>
                     <div class="other-keys keys-section">
-                        <h2><span></span></h2>
-                        <table class="hot-keys-list"></table>
+                        <table class="hot-keys-list interface-element-table-3">
+                            <tr class="table-header-tr"><td colspan="4" data-trans="#tab_other#auction"></td></tr>
+                        </table>
                     </div>
                 </div>
-                <table class="static-bar-table"></table>
+                <!--<table class="static-bar-table"></table>-->
             </div>
             <!--<div class="hot-keys-config-buttons"></div>-->
         </div>
         <div class="notifications-config section">
             <div class="scroll-wrapper classic-bar">
                 <div class="scroll-pane">
-                    <div class="graphic-background"></div>
-                    <h2 class="settings-notifications"><span></span></h2>
+                    <div class="graphic-background interface-element-middle-1-background"></div>
+                    <h2 class="settings-notifications">
+                        <div class="interface-element-header-1-background-stretch"></div>
+                        <span></span>
+                    </h2>
                     <div class="all-notification"></div>
                     <!--<div class="notifications-config-buttons"></div>-->
-                    <h2 class="settings-sounds"><span></span></h2>
+                    <h2 class="settings-sounds">
+                        <div class="interface-element-header-1-background-stretch"></div>
+                        <span></span>
+                    </h2>
                     <div class="display-table">
                         <div class="middle music-manager-wrapper"></div>
                     </div>
@@ -4246,13 +4701,14 @@ TEMPLATES['settings-window'] = `<div class="settings-window">
             </div>
         </div>
         <div class="bottom-bar">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="options-config-buttons save-card-button"></div>
             <div class="hot-keys-config-buttons save-card-button"></div>
             <div class="notifications-config-buttons save-card-button"></div>
         </div>
     </div>`;
 
-TEMPLATES['sound-volume-bar'] = `
+TEMPLATES['sound-volume-bar-old'] = `
         <div class="display-table">
             <div class="middle">
                 <!--<div class="loudly-panel-txt" data-trans="#sound_notification_level"></div>-->
@@ -4273,13 +4729,33 @@ TEMPLATES['sound-volume-bar'] = `
             </div>
         </div>`;
 
+TEMPLATES['sound-volume-bar'] = `
+        <div class="display-table">
+            <div class="middle">
+                <!--<div class="loudly-panel-txt" data-trans="#sound_notification_level"></div>-->
+                <div class="loudly-panel-txt" data-trans="#sound_notification_level"></div>
+                <div class="loudly-panel">
+                    <div class="center">
+                        <div class="icon-wrapper">
+                            <div class="loudly-icon"></div>
+                        </div>
+                        <div class="slider-wrapper"></div>
+                    </div>
+                </div>
+                <div class="loudly-panel-buttons"></div>
+            </div>
+        </div>`;
+
 TEMPLATES['catch-char'] = `<div class="catch-char">
+        <div class="middle-background interface-element-middle-2-background-stretch"></div>
         <div class="give-char"></div>
         <div class="cancel-char btns-spacing"></div>
     </div>`;
 
 TEMPLATES['pad-controller'] = `<div class="pad-controller">
-        <div class="pad-bck"></div>
+        <div class="pad-bck interface-element-box-shadow-2">
+            <div class="pad-ball"></div>
+        </div>
     </div>`;
 
 TEMPLATES['one-checkbox'] = `<div class="one-checkbox">
@@ -4329,32 +4805,41 @@ TEMPLATES['motel-window'] = `<div class="motel-window">
         <!--<div class="graphic"></div>-->
         <!--<div class="motel-label"></div>-->
         <!--</div>-->
-        <div class="desc"></div>
+        <div class="interface-element-middle-1-background-stretch"></div>
+        <!--<div class="desc"></div>-->
         <div class="table-wrapper scroll-wrapper classic-bar">
             <div class="scroll-pane">
-                <div class="yours-room-header rooms-header" data-trans="yours-room-header"></div>
-                <table class="yours-room">
+                <div class="info-box info-box-1" data-trans="yours-room-header"></div>
+                <!--<div class="interface-element-header-1">-->
+                    <!--<div class="interface-element-header-1-background-stretch"></div>-->
+                    <!--<span data-trans="yours-room-header"></span>-->
+                <!--</div>-->
+                <table class="yours-room interface-element-table-3">
                     <thead>
-                    <tr>
-                        <th class="room-th"></th>
-                        <th class="state-th"></th>
-                        <th class="amount-th"></th>
-                        <th class="price-th"></th>
-                        <th class="action-th"></th>
+                    <tr class="table-header-tr">
+                        <td class="room-th"></td>
+                        <td class="state-th"></td>
+                        <td class="amount-th"></td>
+                        <td class="price-th"></td>
+                        <td class="action-th"></td>
                     </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
-                <div class="rooms-to-rent-header rooms-header" data-trans="rooms-to-rent-header"></div>
-                <div class="rooms-description" data-trans="rooms-to-rent-header"></div>
-                <table class="to-rent-room">
+                <div class="info-box info-box-2" data-trans="rooms-to-rent-header"></div>
+                <!--<div class="interface-element-header-1">-->
+                    <!--<div class="interface-element-header-1-background-stretch"></div>-->
+                    <!--<span data-trans="rooms-to-rent-header"></span>-->
+                <!--</div>-->
+                    <!--<div class="rooms-description" data-trans="rooms-to-rent-header"></div>-->
+                <table class="to-rent-room interface-element-table-3">
                     <thead>
-                    <tr>
-                        <th class="room-th"></th>
-                        <th class="state-th"></th>
-                        <th class="time-th"></th>
-                        <th class="price-th"></th>
-                        <th class="action-th"></th>
+                    <tr class="table-header-tr">
+                        <td class="room-th"></td>
+                        <td class="state-th"></td>
+                        <td class="time-th"></td>
+                        <td class="price-th"></td>
+                        <td class="action-th"></td>
                     </tr>
                     </thead>
                     <tbody></tbody>
@@ -4365,7 +4850,7 @@ TEMPLATES['motel-window'] = `<div class="motel-window">
     </div>`;
 
 
-TEMPLATES['music-manager'] = `<div class="music-manager">
+TEMPLATES['music-manager-old'] = `<div class="music-manager">
         <div class="loudly-panel-txt" data-trans="#clickMusic"></div>
         <div class="loudly-panel">
             <div class="center">
@@ -4384,6 +4869,12 @@ TEMPLATES['music-manager'] = `<div class="music-manager">
             <div class="list-wrapper"></div>
             <div class="divide-wrapper"></div>
         </div>
+    </div>`;
+
+TEMPLATES['music-manager'] = `<div class="music-manager loudly-panel-buttons">
+            <div class="quality-wrapper"></div>
+            <div class="list-wrapper"></div>
+            <div class="divide-wrapper"></div>
     </div>`;
 
 TEMPLATES['relogger'] = `<div class="relogger">
@@ -4438,10 +4929,10 @@ TEMPLATES['who-is-here'] = `<div class="who-is-here">
                 <div class="player-list"></div>
             </div>
         </div>
-        <div class="search-wrapper">
-            <input class="search" data-trans="placeholder#search">
-            <div class="search-x" data-trans="data-tip#delete"></div>
-        </div>
+        <!--<div class="search-wrapper">-->
+            <!--<input class="search" data-trans="placeholder#search">-->
+            <!--<div class="search-x" data-trans="data-tip#delete"></div>-->
+        <!--</div>-->
     </div>`;
 
 TEMPLATES['quest-observe-window'] = `<div class="quest-observe-window">
@@ -4454,11 +4945,25 @@ TEMPLATES['quest-observe-window'] = `<div class="quest-observe-window">
         <div class="relogger__error"></div>
     </div>`;
 
-TEMPLATES['one-quest-observe'] = `<div class="one-quest-observe">
-        <div class="title"></div>
-        <div class="quest-content"></div>
-        <div class="delete-observe-btn"></div>
-        <div class="end-line"></div>
+TEMPLATES['activity-observe'] = `<div class="activity-observe">
+        <div class="activity-observe__players"></div>
+        <div class="c-line mt-0 mb-2"></div>
+        <div class="scroll-wrapper">
+            <div class="scroll-pane">
+                <div class="activity-observe__list"></div>
+                <div class="activity-observe__empty" data-trans="#no-activities#activities"></div>
+            </div>
+        </div>
+    </div>`;
+
+TEMPLATES['activity-observe-category'] = `<div class="activity-observe__category"></div>`;
+
+TEMPLATES['one-observe'] = `<div class="one-observe">
+        <span class="one-observe__debug"></span>
+        <div class="one-observe__title"></div>
+        <div class="one-observe__content"></div>
+        <div class="one-observe__remove-btn"><div class="ie-icon ie-icon-close"></div></div>
+        <div class="c-line end-line"></div>
     </div>`;
 
 TEMPLATES['outfit-selector-arrow'] = `<div class="outfit-selector-arrow"></div>`
@@ -4470,7 +4975,7 @@ TEMPLATES['outfit-selector-header'] = `<div class="outfit-selector-header">
     </div>`;
 
 TEMPLATES['choose-outfit'] = `<div class="choose-outfit">
-        <div class="middle-graphics"></div>
+        <div class="middle-graphics interface-element-middle-1-background"></div>
         <div class="choose-outfit-info" data-trans="#choose-outfit-info"></div>
         <div class="all-outfits"></div>
         <div class="buttons-wrapper">
@@ -4487,11 +4992,11 @@ TEMPLATES['choose-outfit-wrapper'] = `<div class="choose-outfit-wrapper">
 
 
 TEMPLATES['change-outfit'] = `<div class="change-outfit">
-        <div class="middle-graphics"></div>
+        <div class="middle-graphics interface-element-middle-1-background"></div>
 
         <div class="cards-header-wrapper">
-            <div class="header-background-graphic"></div>
-            <div class="cards-header"></div>
+            <!--<div class="header-background-graphic"></div>-->
+            <!--<div class="cards-header"></div>-->
         </div>
 
         <div class="default-section scroll-wrapper section classic-bar">
@@ -4505,32 +5010,61 @@ TEMPLATES['change-outfit'] = `<div class="change-outfit">
         </div>
 
         <div class="your-outfit">
-            <div class="outfit-header"></div>
+            <div class="outfit-header interface-element-table-header-1-background"></div>
             <div class="outfit-wrapper">
                 <div class="outfit-graphic"></div>
             </div>
         </div>
 
-        <div class="crazy-bar"></div>
+        <div class="crazy-bar interface-element-vertical-wood"></div>
 
         <div class="preview-outfit">
-            <div class="outfit-header"></div>
+            <div class="outfit-header interface-element-table-header-1-background"></div>
             <div class="outfit-wrapper">
                 <div class="outfit-graphic"></div>
             </div>
         </div>
 
         <div class="bottom-change-outfit-panel">
-            <div class="bottom-panel-graphics"></div>
+            <!--<div class="bottom-panel-graphics"></div>-->
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="save-button"></div>
         </div>
     </div>`;
 
-TEMPLATES['one-outfit'] = `<div class="one-outfit">
+//TEMPLATES['one-outfit'] = `<div class="one-outfit">
+//    <div class="outfit-border"></div>
+//    <div class="outfit-wrapper"></div>
+//    <div class="outfit-timelimit"></div>
+//    <div class="requirements">
+//        <span class="text"></span>
+//    </div>
+//    <div class="amount"></div>
+//</div>`;
+
+TEMPLATES['character-reset'] = `<div class="character-reset">
+        <div class="graphic-background interface-element-middle-1-background"></div>
+        <div class="sex-section">
+            <div class="info-box" data-trans="#selectGenderLabel#characterReset"></div>
+            <div class="sex-wrapper"></div>
+        </div>
+        <div class="prof-section">
+            <div class="info-box" data-trans="#selectProfLabel#characterReset"></div>
+            <div class="prof-wrapper"></div>
+            <div class="prof-description"></div>
+        </div>
+        <div class="payment-section">
+            <div class="info-box" data-trans="#confirmCharacterReset#characterReset"></div>
+            <div class="payment-wrapper info-box-cost"></div>
+        </div>
+        <div class="button-wrapper"></div>
+    </div>`;
+
+TEMPLATES['outfit-card'] = `<div class="outfit-card">
         <div class="outfit-border"></div>
         <div class="outfit-wrapper"></div>
-        <div class="outfit-timelimit"></div>
-        <div class="requirements">
+        <div class="disable-text"></div>
+        <div class="text-wrapper">
             <span class="text"></span>
         </div>
         <div class="amount"></div>
@@ -4542,6 +5076,7 @@ TEMPLATES['who-is-here-one-type'] = `<div class="who-is-here-one-type clearfix">
     </div>`;
 
 TEMPLATES['log-off'] = `<div class="log-off">
+        <div class="middle-background interface-element-middle-2-background-stretch"></div>
         <div class="time-to-out"></div>
         <div class="log-out-actions btns-spacing"></div>
     </div>`;
@@ -4632,7 +5167,7 @@ TEMPLATES['who-is-here-color'] = `<div class="who-is-here-color">
     </div>`;
 
 TEMPLATES['divide-and-color-edit'] = `<div class="divide-and-color-edit">
-        <div class="middle-graphic"></div>
+        <div class="middle-graphic interface-element-middle-1-background"></div>
         <div class="global-option-wrapper">
             <div class="info-box visibility-header" data-trans="#visibility-header#edit-panel-option"></div>
             <div class="global-option"></div>
@@ -4640,6 +5175,7 @@ TEMPLATES['divide-and-color-edit'] = `<div class="divide-and-color-edit">
         </div>
         <div class="by-name-option"></div>
         <div class="bottom-bar">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="buttons save-colors"></div>
         </div>
     </div>`;
@@ -4679,8 +5215,8 @@ TEMPLATES['color-picker'] = `
                 </div>
         </div>
     `;
-
-TEMPLATES['divide-edit-panel'] = `<div class="divide-edit-panel">
+/*
+    TEMPLATES['divide-edit-panel'] = `<div class="divide-edit-panel">
         <div class="header-wrapper">
             <div class="graphic"></div>
             <div class="edit-header-label"></div>
@@ -4695,7 +5231,7 @@ TEMPLATES['divide-edit-panel'] = `<div class="divide-edit-panel">
             <div class="buttons save-colors"></div>
         </div>
     </div>`;
-
+*/
 //<!--TEMPLATES['dupa'] = <div class="one-edit-option">-->
 //<!--<div class="txt-wrapper"><div class="text"></div></div>-->
 //<!--<div class="menu-wrapper"><div class="menu"></div></div>-->
@@ -4742,8 +5278,8 @@ TEMPLATES['great-merchamp-menu'] = `<div class="great-merchamp-menu">
         </div>
         <div class="button-pannel btns-spacing"></div>
     </div>`;
-
-TEMPLATES['loot-filter-manager'] = `<div class="loot-filter-manager">
+/*
+    TEMPLATES['loot-filter-manager'] = `<div class="loot-filter-manager">
         <div class="text-wrapper">
             <span class="loot-text"></span>
         </div>
@@ -4753,7 +5289,7 @@ TEMPLATES['loot-filter-manager'] = `<div class="loot-filter-manager">
         <div class="button-wrapper"></div>
         <div class="loot-info"></div>
     </div>`;
-
+*/
 TEMPLATES['details-progress'] = `<div class="details-progress">
         <div class="details-header"></div>
         <div class="details-txt"></div>
@@ -4762,9 +5298,11 @@ TEMPLATES['details-progress'] = `<div class="details-progress">
 TEMPLATES['matchmaking-overlay'] = `<div class="matchmaking-overlay"></div>`;
 
 TEMPLATES['matchmaking-summary'] = `<div class="matchmaking-summary">
-        <div class="middle-graphics"></div>
+        <div class="graphic-background interface-element-middle-1-background-stretch"></div>
         <div class="summary-content">
             <div class="difficult-stars wood-bar">
+
+                <div class="interface-element-header-1-background-stretch"></div>
                 <div class="difficult-stars-val wood-bar-val">
                     <div class="text" data-trans="#fight_dificult"></div>
                     <div class="stars-wrapper">
@@ -4775,7 +5313,8 @@ TEMPLATES['matchmaking-summary'] = `<div class="matchmaking-summary">
             <div class="result-panel">
                 <div class="your-side">
                     <div class="your-result"></div>
-                    <div class="your-name-and-level"></div>
+                    <div class="your-name"></div>
+                    <div class="your-level-and-prof"></div>
                     <div class="your-prof"></div>
                     <div class="your-pr"></div>
                 </div>
@@ -4786,7 +5325,7 @@ TEMPLATES['matchmaking-summary'] = `<div class="matchmaking-summary">
                                 <div class="out-icon"></div>
                             </div>
                             <div class="vs-img-wrapper">
-                                <div class="vs-img"></div>
+                                <div class="vs-img">VS</div>
                             </div>
                             <div class="enemy-outfit-wrapper">
                                 <div class="out-icon"></div>
@@ -4798,22 +5337,26 @@ TEMPLATES['matchmaking-summary'] = `<div class="matchmaking-summary">
                 </div>
                 <div class="enemy-side">
                     <div class="enemy-result"></div>
-                    <div class="enemy-name-and-level"></div>
-                    <div class="enemy-prof"></div>
+                    <div class="enemy-name"></div>
+                    <div class="enemy-level-and-prof"></div>
                     <div class="enemy-pr"></div>
                 </div>
             </div>
             <div class="progress-points wood-bar">
+
+                <div class="interface-element-header-1-background-stretch"></div>
                 <div class="progress-points-val wood-bar-val"></div>
             </div>
             <div class="current-stage"></div>
             <div class="price-info" data-trans="#price_info#matchmaking"></div>
             <div class="classification-match wood-bar">
+                <div class="interface-element-header-1-background-stretch"></div>
                 <div class="classification-match-val wood-bar-val"></div>
             </div>
         </div>
 
         <div class="bottom-panel-graphics">
+        <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="tokens-amount"></div>
             <div class="close-wrapper"></div>
         </div>
@@ -4826,6 +5369,7 @@ TEMPLATES['card'] = `<div class="card">
                 <div class="cl-icon icon-soulbound"></div>
             </div>
         </div>
+        <div class="card-notification"></div>
         <div class="amount"></div>
     </div>`;
 
@@ -4842,11 +5386,13 @@ TEMPLATES['achievement-panel'] = `<div class="achievement-panel">
         </div>
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
-                <div class="middle-graphics">
+                <div class="middle-graphics interface-element-middle-1-background">
                 </div>
             </div>
         </div>
-        <div class="bottom-panel-graphics"></div>
+        <div class="bottom-panel-graphics">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
+        </div>
     </div>`;
 
 TEMPLATES['one-achievement'] = `<div class="one-achievement">
@@ -4887,8 +5433,10 @@ TEMPLATES['matchmaking-panel'] = `<div class="matchmaking-panel">
             <div class="graphic"></div>
             <div class="edit-header-label"></div>
         </div>
-        <div class="middle-graphics"></div>
-        <div class="bottom-panel-graphics"></div>
+        <div class="middle-graphics interface-element-middle-1-background"></div>
+        <div class="bottom-panel-graphics">
+            <div class="interface-element-bottom-bar-background-stretch"></div>
+        </div>
         <div class="all-pages">
             <div class="matchmaking-menu main-wnd">
                 <div class="show-reward-season-item"></div>
@@ -4923,7 +5471,7 @@ TEMPLATES['matchmaking-panel'] = `<div class="matchmaking-panel">
                     </div>
 
                     <div class="vs-wrapper">
-                        <div class="vs-graphic"></div>
+                        <div class="vs-graphic">VS</div>
                     </div>
                     <div class="opponent-info">
                         <div class="avatar-wrapper">
@@ -4941,7 +5489,7 @@ TEMPLATES['matchmaking-panel'] = `<div class="matchmaking-panel">
             </div>
 
             <div class="stats-and-history main-wnd">
-                <div class="cards-header-wrapper">
+                <div class="stats-and-history-tabs">
                     <div class="header-background-graphic"></div>
                     <div class="cards-header"></div>
                 </div>
@@ -4987,15 +5535,17 @@ TEMPLATES['matchmaking-panel'] = `<div class="matchmaking-panel">
 
                 <div class="season-wnd section">
 
-                    <div class="middle-wood"></div>
+                    <!--<div class="middle-wood"></div>-->
+                    <div class="interface-element-vertical-wood"></div>
 
-                    <div class="reward-header season-header" data-trans="#rewards_of_season#matchmaking"></div>
+                    <!--<div class="reward-header season-header" data-trans="#rewards_of_season#matchmaking"></div>-->
+                    <div class="reward-header interface-element-header-2-background season-header" data-trans="#rewards_of_season#matchmaking"></div>
                     <div class="reward-wrapper scroll-wrapper classic-bar">
                         <!--<div class="reward-graphic"></div>-->
                         <div class="scroll-pane"></div>
                     </div>
 
-                    <div class="winners-header season-header" data-trans="#last_season_winners#matchmaking"></div>
+                    <div class="winners-header interface-element-header-2-background season-header" data-trans="#last_season_winners#matchmaking"></div>
                     <div class="winners-wrapper">
                         <!--<div class="winners-not-exist" data-trans="#winners_not_exist#matchmaking"></div>-->
                         <div class="header-info"></div>
@@ -5028,10 +5578,7 @@ TEMPLATES['matchmaking-panel'] = `<div class="matchmaking-panel">
             </div>
 
             <div class="matchmaking-ranking main-wnd">
-                <div class="cards-header-wrapper">
-                    <div class="header-background-graphic"></div>
-                    <div class="cards-header"></div>
-                </div>
+                <div class="ranking-tabs"></div>
                 <div class="general-ranking-wnd section">
                     <table class="ranking-table"></table>
                     <div class="ladder_global-bottom-panel ranking-bottom-panel">
@@ -5077,7 +5624,7 @@ TEMPLATES['matchmaking-panel'] = `<div class="matchmaking-panel">
 
             <div class="wait-for-opponent no-exit main-wnd">
                 <div class="section">
-                    <div class="wait-for-graphic"></div>
+                    <!--<div class="wait-for-graphic"></div>-->
                     <div class="wait-for-label" data-trans="#wait-for-label#matchmaking"></div>
                 </div>
             </div>
@@ -5127,7 +5674,7 @@ TEMPLATES['first-cell-matchmaking'] = `<div class="first-cell-matchmaking first-
         <div class="info"></div>
     </div>`;
 
-TEMPLATES['skill-set-matchmaking'] = `<div class="skill-set-matchmaking skill-set"></div>`;
+//TEMPLATES['skill-set-matchmaking'] = `<div class="skill-set-matchmaking skill-set"></div>`;
 
 TEMPLATES['outfit-check-wrapper'] = `<div class="outfit-check-wrapper">
         <!--<div data-template-inside="one-checkbox"></div>-->
@@ -5163,12 +5710,13 @@ TEMPLATES['matchmaking-tile'] = `<div class="matchmaking-tile">
         </div>
         <!--<div class="matchmaking-tile-background"></div>-->
         <div class="matchmaking-tile-content"></div>
+        <div class="matchmaking-tile-img"></div>
         <div class="matchmaking-tile-bottom-label"></div>
     </div>`;
 
 TEMPLATES['cloud-tip'] = `<div class="cloud-tip">
         <div class="close">
-            <div class="cross"></div>
+            <div class="cross">x</div>
         </div>
         <div class="header"></div>
         <div class="content"></div>
@@ -5177,18 +5725,18 @@ TEMPLATES['cloud-tip'] = `<div class="cloud-tip">
 
     </div>`;
 
-TEMPLATES['eq-items-set'] = `<div class="eq-items-set">
-        <div class="eq-slot st-10"></div>
-        <div class="eq-slot st-1"></div>
-        <div class="eq-slot st-2"></div>
-        <div class="eq-slot st-3"></div>
-        <div class="eq-slot st-4"></div>
-        <div class="eq-slot st-5"></div>
-        <div class="eq-slot st-6"></div>
-        <div class="eq-slot st-7"></div>
-        <div class="eq-slot st-8"></div>
-        <div class="eq-slot st-9"></div>
-    </div>`;
+//TEMPLATES['eq-items-set'] = `<div class="eq-items-set">
+//    <div class="eq-slot st-10"></div>
+//    <div class="eq-slot st-1"></div>
+//    <div class="eq-slot st-2"></div>
+//    <div class="eq-slot st-3"></div>
+//    <div class="eq-slot st-4"></div>
+//    <div class="eq-slot st-5"></div>
+//    <div class="eq-slot st-6"></div>
+//    <div class="eq-slot st-7"></div>
+//    <div class="eq-slot st-8"></div>
+//    <div class="eq-slot st-9"></div>
+//</div>`;
 
 TEMPLATES['premium-item-wrapper'] = `<div class="premium-item-wrapper"></div>`;
 
@@ -5198,7 +5746,7 @@ TEMPLATES['premium-item'] = `<div class="premium-item">
 
 TEMPLATES['crafting-description-header'] = `<div class="crafting-description-header">
         <div class="item-name-wrapper">
-            <div class="result-item item-slot"></div>
+            <div class="result-item interface-element-one-item-slot"></div>
             <div class="offer-name"></div>
         </div>
     </div>`;
@@ -5228,7 +5776,7 @@ TEMPLATES['one-item-on-divide-list'] = `<div class="one-item-on-divide-list">
 TEMPLATES['crafting-reagent'] = `<div class="crafting-reagent">
         <div class="reagent-wrapper">
             <div class="item-reagent-wrapper">
-                <div class="item-reagent item-slot"></div>
+                <div class="item-reagent interface-element-one-item-slot"></div>
             </div>
             <div class="reagent-info">
                 <div class="item-name"></div>
@@ -5241,59 +5789,119 @@ TEMPLATES['crafting-reagent'] = `<div class="crafting-reagent">
     </div>`;
 
 TEMPLATES['crafting'] = `<div class="crafting">
-            <div class="crafting__tabs cards-header-wrapper">
-                <div class="header-background-graphic"></div>
-                <div class="cards-header"></div>
-            </div>
-            <div class="crafting__contents"></div>
-        </div>`;
+        <div class="crafting__tabs"></div>
+        <div class="crafting__contents"></div>
+    </div>`;
 
 TEMPLATES['salvage'] = `<div class="salvage">
         <div class="salvage__content">
-            <div class="scroll-wrapper classic-bar">
-                <div class="crafting__bg"></div>
-                <div class="scroll-pane">
-                    <div class="salvage__content-inner">
-                        <div class="salvage__info" data-trans="#info#salvager"></div>
-                        <div class="salvage__reagents items-grid">
-                            <div class="salvage__label" data-trans="#selected#salvager"></div>
-                        </div>
-                        <div class="salvage__arrows"></div>
-                        <div class="salvage__receives">
-                            <div class="salvage__label" data-trans="#result#salvager"></div>
-                        </div>
-                        <div class="salvage__submit"></div>
-                    </div>
-                </div>
+            <div class="info-box mt-3" data-trans="#info#salvager"></div>
+            <div class="salvage__reagents items-grid">
+                <div class="interface-element-item-slot-grid-stretch"></div>
+                <div class="salvage__label" data-trans="#selected#salvager"></div>
             </div>
+            <div class="salvage__arrows"></div>
+            <div class="salvage__receives">
+                <div class="interface-element-item-slot-grid-stretch"></div>
+                <div class="salvage__label" data-trans="#result#salvager"></div>
+            </div>
+            <div class="salvage__submit"></div>
         </div>
     </div>`;
 
 TEMPLATES['extraction'] = `<div class="extraction">
         <div class="extraction__content">
-            <div class="scroll-wrapper classic-bar">
-                <div class="crafting__bg"></div>
-                <div class="scroll-pane">
-                    <div class="extraction__content-inner">
-                        <div class="extraction__info" data-trans="#info#extraction"></div>
-                        <div class="extraction__item items-grid"></div>
-                        <div class="extraction__arrows"></div>
-                        <div class="extraction__receives">
-                            <div class="extraction__label" data-trans="#result#extraction"></div>
-                        </div>
-                        <div class="extraction__finalize">
-                            <div class="extraction__info" data-trans="#info2#extraction"></div>
-                            <div class="extraction__payment"></div>
-                            <div class="extraction__submit"></div>
-                        </div>
-                    </div>
-                </div>
+            <div class="info-box mt-3" data-trans="#info#extraction"></div>
+            <div class="extraction__item interface-element-one-item-slot-decor mt-5"></div>
+            <div class="extraction__arrows"></div>
+            <div class="extraction__receives">
+                <div class="interface-element-item-slot-grid-stretch"></div>
+                <div class="extraction__label" data-trans="#result#extraction"></div>
+            </div>
+            <div class="extraction__finalize mt-5">
+                <div class="extraction__payment"></div>
             </div>
         </div>
     </div>`;
 
-TEMPLATES['extractionPaymentOption'] = `
-        <div class="extraction__currency">
+TEMPLATES['payment-selector'] = `
+        <div class="payment-selector">
+            <div class="info-box"></div>
+            <div class="payment-selector__methods"></div>
+            <div class="payment-selector__submit"></div>
+        </div>
+    `;
+
+TEMPLATES['payment-selector-option'] = `
+        <div class="payment-selector__option">
+            <div class="payment-selector__icon"></div>
+            <div class="payment-selector__amount"></div>
+        </div>
+    `;
+
+
+TEMPLATES['socket_enchantment'] = `<div class="socket_enchantment">
+        <div class="socket_enchantment__content">
+            <div class="info-box mt-3">
+                <div data-trans="#info#socket_enchantment"></div>
+                <div class="info-icon" data-trans="data-tip#info_tip#socket_enchantment"></div>
+            </div>
+            <div class="d-flex justify-content-evenly mt-5">
+                <div class="socket_enchantment__source-item-slot interface-element-one-item-slot-decor"></div>
+                <div class="socket_enchantment__enhancer-item-slot interface-element-one-item-slot-decor"></div>
+            </div>
+            <div class="extraction__arrows"></div>
+            <div class="d-flex justify-content-evenly">
+                <div class="socket_enchantment__result-item interface-element-one-item-slot-decor"></div>
+            </div>
+            <div class="socket_enchantment__submit d-flex justify-content-evenly mt-5"></div>
+        </div>
+    </div>`;
+
+TEMPLATES['socket_extraction'] = `<div class="socket_extraction">
+        <div class="socket_extraction__content">
+            <div class="info-box mt-3">
+                <div data-trans="#info#socket_extraction"></div>
+                <div class="info-icon" data-trans="data-tip#info_tip#socket_extraction"></div>
+            </div>
+            <div class="d-flex justify-content-evenly mt-5">
+                <div class="socket_extraction__source-item-slot interface-element-one-item-slot-decor"></div>
+            </div>
+            <div class="extraction__arrows"></div>
+            <div class="d-flex justify-content-evenly">
+              <div class="socket_extraction__result-items ie-grid ie-grid--1x2">
+                  <div class="interface-element-item-slot-grid-stretch"></div>
+                  <div class="ie-grid__label" data-trans="#result#extraction"></div>
+              </div>
+            </div>
+            <div class="socket_extraction__payment mt-5"></div>
+        </div>
+    </div>`;
+
+TEMPLATES['socket_composition'] = `<div class="socket_composition">
+        <div class="socket_composition__content">
+            <div class="info-box mt-3">
+                <div data-trans="#info#socket_composition"></div>
+                <div class="info-icon socket-recipes-handler" data-trans="data-tip#info_tip#socket_composition"></div>
+            </div>
+            <div class="d-flex justify-content-evenly mt-5">
+                <div class="socket_composition__source-items ie-grid ie-grid--1x3">
+                  <div class="interface-element-item-slot-grid-stretch"></div>
+                  <div class="ie-grid__label" data-trans="#selected#enhancement"></div>
+              </div>
+            </div>
+            <div class="extraction__arrows"></div>
+            <div class="d-flex justify-content-evenly">
+              <div class="socket_composition__result-item-slot interface-element-one-item-slot-decor"></div>
+            </div>
+            <div class="socket_composition__payment mt-5"></div>
+        </div>
+    </div>`;
+
+
+
+TEMPLATES['cost-component'] = `
+        <div class="cost-component">
             <div class="icon"></div>
             <div class="amount"></div>
         </div>
@@ -5302,71 +5910,61 @@ TEMPLATES['extractionPaymentOption'] = `
 TEMPLATES['enhance'] = `
     <div class="enhance">
         <div class="enhance__content">
-            <div class="scroll-wrapper classic-bar">
-                <div class="crafting__bg"></div>
-                <div class="scroll-pane">
-                    <div class="enhance__content-inner">
-                        <div class="enhance__info enhance__info--top">
-                            <div class="enhance__info--1">
-                                <div class="enhance__info--top" data-trans="#info#enhancement"></div>
-                            </div>
-                            <div class="enhance__info--3">
-                                <div class="enhance__info--top" data-trans="#info3#enhancement"></div>
-                            </div>
-                        </div>
-                        <div class="enhance__top">
-                            <div class="enhance__item enhance__item--current">
-                                <div class="slot"></div>
-                                <div class="lvl">
-                                    <div class="cl-icon icon-star-0"></div>
-                                </div>
-                            </div>
-                            <div class="enhance__progressbar">
-                                <div class="enhance__progress-bg"></div>
-                                <div class="enhance__progress enhance__progress--current"></div>
-                                <div class="enhance__progress enhance__progress--preview"></div>
-                                <div class="enhance__progress-text enhance__progress-text--current"></div>
-                                <div class="enhance__progress-text enhance__progress-text--preview"></div>
-                            </div>
-                            <div class="enhance__item enhance__item--receive">
-                                <div class="slot"></div>
-                                <div class="lvl">
-                                    <div class="cl-icon icon-star-0"></div>
-                                </div>
-                            </div>
-                        </div> 
-                        
-                        <div class="enhance__enchant">
-                            <div class="enhance__wrapper">
-                                <div class="info-box mt-4">
-                                    <div data-trans="#info5#enhancement"></div>
-                                    <div class="info-icon" data-trans="data-tip#info_tip#enhancement"></div>
-                                </div>
-                                <div class="enhance__autofiller"></div>
-                                <div class="enhance__reagents items-grid disabled">
-                                    <div class="enhance__label" data-trans="#selected#enhancement"></div>
-                                </div>
-                            </div>
-                            <div class="enhance__limit">
-                                <span data-trans="#limit#enhancement"></span>:
-                                <span class="enhance__counter"></span>
-                            </div> 
-                            <div class="enhance__submit"></div> 
-                        </div>
-                        
-                        <div class="enhance__enhance">
-                            <div class="enhance__bonus"></div>
-                            <div class="enhance__requires">
-                                <div class="enhance__r-gold">
-                                    <div class="enhance__r-gold-icon"></div>
-                                    <div class="enhance__r-gold-amount"></div>
-                                </div>
-                                <div class="enhance__r-item"></div>
-                            </div>
-                            <div class="enhance__submit2"></div> 
-                        </div>
+            <div class="info-box enhance__info enhance__info--top mt-3">
+                <div class="enhance__info--1" data-trans="#info#enhancement"></div>
+                <div class="enhance__info--3" data-trans="#info3#enhancement"></div>
+            </div>
+            <div class="enhance__top">
+                <div class="enhance__item enhance__item--current interface-element-one-item-slot-decor">
+                    <div class="slot"></div>
+                    <div class="lvl">
+                        <div class="cl-icon icon-star-0"></div>
                     </div>
                 </div>
+                <div class="enhance__progressbar">
+                    <div class="enhance__progress-bg"></div>
+                    <div class="enhance__progress enhance__progress--current"></div>
+                    <div class="enhance__progress enhance__progress--preview"></div>
+                    <div class="enhance__progress-text enhance__progress-text--current"></div>
+                    <div class="enhance__progress-text enhance__progress-text--preview"></div>
+                </div>
+                <div class="enhance__item enhance__item--receive interface-element-one-item-slot-decor">
+                    <div class="slot"></div>
+                    <div class="lvl">
+                        <div class="cl-icon icon-star-0"></div>
+                    </div>
+                </div>
+            </div> 
+            
+            <div class="enhance__enchant">
+                <div class="info-box mt-4">
+                    <div data-trans="#info5#enhancement"></div>
+                    <div class="info-icon" data-trans="data-tip#info_tip#enhancement"></div>
+                </div>
+                <div class="enhance__wrapper">
+                    <div class="enhance__autofiller"></div>
+                    <div class="enhance__reagents items-grid disabled">
+                        <div class="interface-element-item-slot-grid-stretch"></div>
+                        <div class="enhance__label" data-trans="#selected#enhancement"></div>
+                    </div>
+                </div>
+                <div class="enhance__limit">
+                    <span data-trans="#limit#enhancement"></span>:
+                    <span class="enhance__counter"></span>
+                </div> 
+                <div class="enhance__submit"></div> 
+            </div>
+            
+            <div class="enhance__enhance">
+                <div class="enhance__bonus"></div>
+                <div class="enhance__requires">
+                    <div class="enhance__r-gold">
+                        <div class="enhance__r-gold-icon"></div>
+                        <div class="enhance__r-gold-amount"></div>
+                    </div>
+                    <div class="enhance__r-item interface-element-one-item-slot"></div>
+                </div>
+                <div class="enhance__submit2"></div> 
             </div>
         </div>
     </div>`;
@@ -5401,7 +5999,7 @@ TEMPLATES['tabs-content'] = `
 TEMPLATES['players-online'] = `
     <div class="players-online">
         <div class="players-online__content">
-            <div class="world-window__bg"></div>
+            <div class="world-window__bg interface-element-middle-1-background"></div>
             <div class="players-online__header">
                 <div class="search-wrapper">
                     <input class="search clan-name-input" data-trans="placeholder#search"/>
@@ -5420,6 +6018,7 @@ TEMPLATES['players-online'] = `
                 </div>
             </div>
             <div class="bottom-bar">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
                 <div class="filter-label" data-trans="#filter-level"></div>
                 <div class="start-lvl-wrapper"></div>
                 <div class="stop-lvl-wrapper"></div>
@@ -5443,13 +6042,15 @@ TEMPLATES['players-online-item'] = `
 TEMPLATES['server-parameters'] = `
     <div class="server-parameters">
         <div class="server-parameters__content">
-            <div class="world-window__bg"></div>
+            <div class="world-window__bg interface-element-middle-1-background"></div>
             <div class="scroll-wrapper classic-bar">
                 <div class="scroll-pane">
                     <div class="server-parameters__items-container"></div>
                 </div>
             </div>
-            <div class="bottom-bar"></div>
+            <div class="bottom-bar">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
+            </div>
         </div>
     </div>`;
 
@@ -5462,13 +6063,15 @@ TEMPLATES['server-parameters-item'] = `
 TEMPLATES['location-parameters'] = `
     <div class="location-parameters">
         <div class="location-parameters__content">
-            <div class="world-window__bg"></div>
+            <div class="world-window__bg  interface-element-middle-1-background"></div>
             <div class="scroll-wrapper classic-bar">
                 <div class="scroll-pane">
                     <div class="location-parameters__items-container"></div>
                 </div>
             </div>
-            <div class="bottom-bar"></div>
+            <div class="bottom-bar">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
+            </div>
         </div>
     </div>`;
 
@@ -5488,7 +6091,7 @@ TEMPLATES['hunting-statistics-table-header'] = `
 TEMPLATES['hunting-statistics'] = `
     <div class="hunting-statistics">
         <div class="hunting-statistics__content">
-            <div class="world-window__bg"></div>
+            <div class="world-window__bg interface-element-middle-1-background"></div>
             <div class="hunting-statistics__header">
                 <div class="search-wrapper">
                     <input class="search clan-name-input" data-trans="placeholder#search"/>
@@ -5504,6 +6107,7 @@ TEMPLATES['hunting-statistics'] = `
                 </div>
             </div>
             <div class="bottom-bar">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
                 <div class="filter-label" data-trans="#filter-level"></div>
                 <div class="start-lvl-wrapper"></div>
                 <div class="stop-lvl-wrapper"></div>
@@ -5527,6 +6131,25 @@ TEMPLATES['hunting-statistics-item'] = `
       <td class="hunting-statistics-item__heroic color-heroic"></td>
       <td class="hunting-statistics-item__legendary color-legendary"></td>
     </tr>`;
+
+TEMPLATES['activities'] = `
+    <div class="activities">
+        <div class="activities__content">
+            <div class="world-window__bg  interface-element-middle-1-background"></div>
+            <div class="activities__content-inner">
+                <div class="activities__players"></div>
+                <div class="activities__table"></div>
+            </div>
+<!--            <div class="scroll-wrapper classic-bar">-->
+<!--                <div class="scroll-pane">-->
+<!--                    <div class="activities__items-container"></div>-->
+<!--                </div>-->
+<!--            </div>-->
+            <div class="bottom-bar">
+                <div class="interface-element-bottom-bar-background-stretch"></div>
+            </div>
+        </div>
+    </div>`;
 
 TEMPLATES['radio-info'] = `
     <div class="radio-info">
@@ -5571,16 +6194,26 @@ TEMPLATES['c-color-picker'] = `
     `;
 
 TEMPLATES['left-grouped-list-and-right-description-window'] = `<div class="left-grouped-list-and-right-description-window">
-        <div class="main-header">
-            <div class="left-column-list-label"></div>
-        </div>
+        <!--<div class="main-header">-->
+             <!--<div class="card-background-wrapper">-->
+                <!--<div class="border-window-active-card-background-stretch"></div>-->
+             <!--</div>-->
+            <!--<div class="left-column-list-label"></div>-->
+        <!--</div>-->
         <div class="left-column">
-            <div class="middle-left-column-graphics"></div>
+            <!--<div class="middle-left-column-graphics"></div>-->
+            <div class="interface-element-middle-3-background-stretch"></div>
+            <div class="main-header">
+             <!--<div class="card-background-wrapper">-->
+            <div class="interface-element-active-card-background-stretch"></div>
+             <!--</div>-->
+            <div class="left-column-list-label"></div>
+            </div>
             <div class="search-wrapper search-in-left-column">
                 <input class="search" data-trans="placeholder#search"/>
                 <div class="search-x" data-trans="data-tip#delete"></div>
             </div>
-            <div class="bottom-left-column-graphics"></div>
+            <!--<div class="bottom-left-column-graphics"></div>-->
             <div class="left-scroll scroll-wrapper classic-bar">
                 <div class="scroll-pane">
                     <div class="items-list"></div>
@@ -5588,9 +6221,13 @@ TEMPLATES['left-grouped-list-and-right-description-window'] = `<div class="left-
             </div>
         </div>
         <div class="right-column">
-            <div class="middle-right-column-graphics"></div>
+            <!--<div class="middle-right-column-graphics"></div>-->
+            <div class="interface-element-middle-2-background-stretch"></div>
+            <div class="right-header-graphic">
+                <div class="interface-element-active-card-background-stretch"></div>
+            </div>
             <div class="right-column-header"></div>
-            <div class="paper-graphics"></div>
+            <!--<div class="paper-graphics"></div>-->
             <div class="right-scroll scroll-wrapper classic-bar">
                 <div class="scroll-pane">
                     <div class="additional-container"></div>
@@ -5603,7 +6240,8 @@ TEMPLATES['left-grouped-list-and-right-description-window'] = `<div class="left-
             </div>
         </div>
         <div class="bottom-row-panel">
-            <div class="bottom-panel-graphics"></div>
+            <!--<div class="bottom-panel-graphics"></div>-->
+            <div class="interface-element-bottom-bar-background-stretch"></div>
             <div class="filter-label" data-trans="#filter-level"></div>
             <div class="start-lvl-wrapper"></div>
             <div class="stop-lvl-wrapper"></div>
@@ -5620,7 +6258,7 @@ TEMPLATES['left-grouped-list-and-right-description-window'] = `<div class="left-
 
 TEMPLATES['divide-list-group'] = `<div class="divide-list-group">
         <div class="group-header">
-            <div class="card-graphic"></div>
+            <div class="card-graphic interface-element-active-card-border-image"></div>
             <div class="label"></div>
             <div class="direction"></div>
             <div class="amount"></div>
@@ -5642,33 +6280,13 @@ TEMPLATES['window-list'] = `<div class="window-list">
 
 //<!-- default edit window with list !-->
 TEMPLATES['window-list-edit'] = `<div class="window-list-edit">
-        <div class="con">
-            <!--<div class="header"></div>-->
-            <div class="middle-graphics"></div>
-            <div class="labels"></div>
-            <div class="all-options"></div>
-            <div class="buttons"></div>
-        </div>
-    </div>`;
-
-//<!-- default option for edit window with list !-->
-TEMPLATES['window-list-option'] = `<div class="window-list-option">
-        <div class="txt-wrapper"><div class="text"></div></div>
-        <div class="control-wrapper"><div class="control"></div></div>
-    </div>`;
-
-//<!-- default color-picker for edit window with list !-->
-TEMPLATES['window-list-color-pick'] = `<div class="window-list-color-pick">
-        <div class="choose-color-wrapper">
-            <!--<div class="open-palette"></div>-->
-            <!--<div class="back-color"></div>-->
-        </div>
-        <!--<div class="pick-color"></div>-->
+        <div class="all-options"></div>
+        <div class="buttons mt-3"></div>
     </div>`;
 
 TEMPLATES['loot-preview'] = `<div class="loot-preview">
         <div class="open-item-header"></div>
-        <div class="item-container"></div>
+        <div class="item-container d-none"></div>
         <div class="items-txt"></div>
         <div class="scroll-wrapper">
             <div class="scroll-pane"></div>
@@ -5679,6 +6297,12 @@ TEMPLATES['loot-preview-one-item'] = `<div class="loot-preview-one-item tw-list-
         <div class="item-wrapper"></div>
         <div class="name-wrapper"></div>
         <div class="amount-wrapper"></div>
+    </div>`;
+
+TEMPLATES['socket-recipe-preview-one-item'] = `<div class="socket-recipe-preview-one-item tw-list-item justify-content-between">
+        <div class="left-items"></div>
+        <div class="equals">=</div>
+        <div class="right-items"></div>
     </div>`;
 
 TEMPLATES['recipe-preview-content'] = `<div class="recipe-preview-content">
@@ -5707,18 +6331,18 @@ TEMPLATES['show-eq'] = `<div class="show-eq">
                 </div>
                 <div class="right-side">
                     <div class="other-items-wrapper">
-                        <div class="other-items">
-                            <div class="other-eq-slot st-10"></div>
-                            <div class="other-eq-slot st-1"></div>
-                            <div class="other-eq-slot st-2"></div>
-                            <div class="other-eq-slot st-3"></div>
-                            <div class="other-eq-slot st-4"></div>
-                            <div class="other-eq-slot st-5"></div>
-                            <div class="other-eq-slot st-6"></div>
-                            <div class="other-eq-slot st-7"></div>
-                            <div class="other-eq-slot st-8"></div>
-                            <div class="other-eq-slot st-9"></div>
-                        </div>
+                        <!--<div class="other-items">-->
+                            <!--<div class="other-eq-slot st-10"></div>-->
+                            <!--<div class="other-eq-slot st-1"></div>-->
+                            <!--<div class="other-eq-slot st-2"></div>-->
+                            <!--<div class="other-eq-slot st-3"></div>-->
+                            <!--<div class="other-eq-slot st-4"></div>-->
+                            <!--<div class="other-eq-slot st-5"></div>-->
+                            <!--<div class="other-eq-slot st-6"></div>-->
+                            <!--<div class="other-eq-slot st-7"></div>-->
+                            <!--<div class="other-eq-slot st-8"></div>-->
+                            <!--<div class="other-eq-slot st-9"></div>-->
+                        <!--</div>-->
                     </div>
                 </div>
             </div>
@@ -5730,7 +6354,7 @@ TEMPLATES['conquer-stats'] = `<div class="conquer-stats">
         <!--<div class="graphic"></div>-->
         <!--<div class="edit-header-label"></div>-->
         <!--</div>-->
-        <div class="middle-graphics"></div>
+        <div class="middle-graphics interface-element-middle-1-background"></div>
         <div class="search-wrapper conquer-stats-search">
             <input class="search" data-trans="placeholder#search" />
             <div class="search-x" data-trans="data-tip#delete"></div>
@@ -5759,7 +6383,7 @@ TEMPLATES['conquer-stat-one'] = `<div class="conquer-stat-one">
 
 TEMPLATES['item-details'] = `
     <div class="item-details">
-        <div class="item-details__slot"></div>
+        <div class="item-details__slot interface-element-one-item-slot"></div>
         <div class="item-details__rows"></div>
     </div>`;
 
@@ -5816,13 +6440,13 @@ TEMPLATES['chat-message-wrapper'] = `
     </div>`;
 
 TEMPLATES['chat-channel-card'] = `
-    <div class="chat-channel-card">
+    <div class="chat-channel-card card">
         <div class="chat-channel-card-icon"></div>
         <div class="chat-channel-not-read-counter"></div>
     </div>`;
 
 TEMPLATES['chat-channel-card-wrapper'] = `
-    <div class="chat-channel-card-wrapper">
+    <div class="chat-channel-card-wrapper tabs-nav">
 
     </div>`;
 
@@ -5839,11 +6463,11 @@ TEMPLATES['chat-configure-window'] = `
     <div class="chat-configure-window">
         <div class="scroll-wrapper classic-bar">
             <div class="scroll-pane">
-                <div class="middle-graphic"></div>
-                <div class="chat-option-header mt-2" data-trans="#notifications#chat_lang"></div>
+                <div class="middle-graphic interface-element-middle-1-background"></div>
+                <div class="info-box mt-2" data-trans="#notifications#chat_lang"></div>
                 <div class="notification-text" data-trans="#notifications_on_global_chat#chat_lang"></div>
                 <div class="notification-configuration"></div>
-                <div class="chat-option-header" data-trans="#formatting#chat_lang"></div>
+                <div class="info-box" data-trans="#formatting#chat_lang"></div>
                 <div class="color-configuration"></div>
                 <div class="default-colors-wrapper"></div>
                 <div class="time-configuration"></div>
@@ -5921,6 +6545,21 @@ TEMPLATES['ln-content'] = `<div class="ln-content">
         </div>
     </div>
     <div class="ln-buttons-container" id="ln-buttons-container"></div>
+</div>`;
+
+TEMPLATES['lf-content'] = `<div class="lf-content">
+    <div class="tw-tabs">
+<!--        <div class="do-action-cursor is-active" data-trans="#solo#loot-filter" data-tab="alone"></div>-->
+<!--        <div class="do-action-cursor" data-trans="#group#loot-filter" data-tab="group"></div>-->
+    </div>
+    <div class="c-line mb-0"></div>
+    <div class="scroll-wrapper classic-bar">
+        <div class="scroll-pane">
+            <div class="lf-fields-container"></div>
+        </div>
+    </div>
+    <div class="c-line mt-0"></div>
+    <div class="lf-buttons-container"></div>
 </div>`;
 
 TEMPLATES['cd-content'] = `<div class="cd-content">

@@ -1,6 +1,6 @@
-let Storage = require('core/Storage');
-let StorageData = require('core/StorageData');
-var Templates = require('core/Templates');
+let Storage = require('@core/Storage');
+let StorageData = require('@core/StorageData');
+var Templates = require('@core/Templates');
 
 module.exports = function() {
 
@@ -107,7 +107,8 @@ module.exports = function() {
 
         $btn.click(() => {
             toggleStateAddons();
-            location.reload();
+            //location.reload();
+            pageReload();
         });
 
         $consoleWnd.find('.console-bottom-panel-wrapper').append($btn);

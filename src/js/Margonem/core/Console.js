@@ -7,12 +7,19 @@
  * and open the template in the editor.
  */
 var log, warn, error;
-// var wnd = require('core/Window');
-var tpl = require('core/Templates');
-// var Storage = require('core/Storage');
-//var Items = require('core/items/ItemsManager');
-var Templates = require('core/Templates');
-let ThemeData = require('core/themeController/ThemeData');
+// var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
+// var Storage = require('@core/Storage');
+//var Items = require('@core/items/ItemsManager');
+var Templates = require('@core/Templates');
+let ThemeData = require('@core/themeController/ThemeData');
+const Storage = require("@core/Storage");
+const {
+    CONSOLE_COMMANDS
+} = require("@core/StorageData");
+const {
+    isMobileApp
+} = require('@core/HelpersTS');
 module.exports = function() {
     var self = this;
     var game = null;
@@ -20,6 +27,8 @@ module.exports = function() {
     let list = [];
 
     let buttonLastCommandAttach = false;
+    let buttonCSSThemeAttach = false;
+    let initCrazyButtonAttach = false;
     //this.isOpen = false;
 
     this.init = function() {
@@ -29,6 +38,76 @@ module.exports = function() {
         this.initScrollBar();
         this.initSizeButton()
     };
+
+
+    const initCSSThemeButton = () => {
+        if (buttonCSSThemeAttach) {
+            return
+        }
+
+        let btm1 = createButton("CSS_THEME", ["small", "css-theme-button"], function() {
+            //self.commandLine.previous()
+            getEngine().cssLoader.createWindow()
+            self.close();
+        });
+
+        let wrapper = this.wnd.$.find('.console-bottom-panel-wrapper')[0];
+
+        wrapper.appendChild(btm1);
+
+        buttonCSSThemeAttach = true;
+    }
+
+    const getTextToLightModeApp = () => {
+
+        let storeLightMode = Engine && Engine.interface && Engine.interface.getStateOfLightInterfaceFromStorage();
+
+        storeLightMode = storeLightMode || storeLightMode == null;
+
+        if (storeLightMode) {
+            return _t('off', null, 'buttons') + ' ' + _t('TEST_APP');
+        } else {
+            return _t('on', null, 'buttons') + ' ' + _t('TEST_APP');
+        }
+    }
+
+    const initCrazyButton = () => {
+
+        if (!isMobileApp()) {
+            return;
+        }
+
+        if (initCrazyButtonAttach) {
+            return;
+        }
+
+        let str = getTextToLightModeApp();
+        let btm1 = createButton(str, ["small", "green", "mobile-test"], function() {
+
+
+            let niInterface = Engine.interface;
+
+            niInterface.toggleInterfaceLightMode();
+            str = getTextToLightModeApp();
+
+            $(this).find('.label').html(str);
+
+            if (niInterface.getInterfaceLightMode()) {
+                var zoom = niInterface.findTheBestZoom();
+                niInterface.setZoomFactor(zoom);
+            }
+
+
+        });
+
+        let wrapper = this.wnd.$.find('.console-bottom-panel-wrapper')[0];
+
+        wrapper.appendChild(btm1);
+
+        initCrazyButtonAttach = true
+    }
+
+    const crazy = () => {}
 
     const initCommandButton = () => {
         if (!mobileCheck()) {
@@ -206,11 +285,11 @@ module.exports = function() {
         this.wnd.addToConsoleLayer();
 
         //this.isOpen = true;
-        if (!mobileCheck()) {
-            setTimeout(function() {
-                $('#console_input').focus().val('');
-            }, 50);
-        }
+        //if (!mobileCheck()) {
+        setTimeout(function() {
+            $('#console_input').focus().val('');
+        }, 50);
+        //}
         this.wnd.center();
         this.wnd.show();
         this.scrollBottom();
@@ -260,9 +339,18 @@ module.exports = function() {
 
     this.commandLine = new(function(p) {
         var parent = p;
-        var commands = [];
         var custom = null;
         var activeIdx = null;
+
+        const getCommands = () => {
+            return Storage.get(CONSOLE_COMMANDS) || [];
+        }
+
+        const saveCommands = () => {
+            Storage.set(CONSOLE_COMMANDS, commands.slice(-10));
+        }
+
+        const commands = getCommands();
 
         this.next = function(e) {
             if (e) {
@@ -308,7 +396,11 @@ module.exports = function() {
             parent.log('<i style="color:white">&gt; ' + msg + '</i>');
 
             //adding only new command to console history
-            if (activeIdx == null || (activeIdx != null && commands[activeIdx] != msg)) commands.push(msg);
+            if (activeIdx == null || (activeIdx != null && commands[activeIdx] != msg)) {
+                commands.push(msg);
+                saveCommands();
+                ``
+            }
             if (cmd.substr(0, 1) == '.') _g('console&custom=' + esc(msg));
             else {
                 switch (cmd) {
@@ -446,7 +538,9 @@ module.exports = function() {
     })(this);
 
 
+    this.initCSSThemeButton = initCSSThemeButton;
     this.initCommandButton = initCommandButton;
+    this.initCrazyButton = initCrazyButton;
 };
 
 // con.init();

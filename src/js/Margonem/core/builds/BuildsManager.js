@@ -1,9 +1,9 @@
-const BuildsData = require('core/builds/BuildsData.js');
-const BuildsWindow = require('core/builds/BuildsWindow.js');
-const BuildsHandheldWindow = require('core/builds/BuildsHandheldWindow.js');
-const BuildsCommons = require('core/builds/BuildsCommons.js');
-const BuildsInterface = require('core/builds/BuildsInterface.js');
-const BuildsRequests = require('core/builds/BuildsRequests.js');
+const BuildsData = require('@core/builds/BuildsData.js');
+const BuildsWindow = require('@core/builds/BuildsWindow.js');
+const BuildsHandheldWindow = require('@core/builds/BuildsHandheldWindow.js');
+const BuildsCommons = require('@core/builds/BuildsCommons.js');
+const BuildsInterface = require('@core/builds/BuildsInterface.js');
+const BuildsRequests = require('@core/builds/BuildsRequests.js');
 
 module.exports = function() {
 

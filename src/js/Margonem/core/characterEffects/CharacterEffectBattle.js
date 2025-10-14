@@ -1,4 +1,4 @@
-let CharacterEffectData = require('core/characterEffects/CharacterEffectsData');
+let CharacterEffectData = require('@core/characterEffects/CharacterEffectsData');
 
 module.exports = function() {
 

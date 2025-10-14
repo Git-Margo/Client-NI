@@ -1,17 +1,20 @@
-//var tpl = require('core/Templates');
-var averageTimeTestTool = require('core/AverageTimeTestTool');
+//var tpl = require('@core/Templates');
+var averageTimeTestTool = require('@core/AverageTimeTestTool');
 var slugify = require('slugify');
-let LayersData = require('core/interface/LayersData');
-let ServerStorageData = require('core/storage/ServerStorageData');
-var ItemState = require('core/items/ItemState');
+let LayersData = require('@core/interface/LayersData');
+let ServerStorageData = require('@core/storage/ServerStorageData');
+var ItemState = require('@core/items/ItemState');
 const {
     decodeHtmlEntities
 } = require('./HelpersTS');
-const InputMaskData = require('core/InputMaskData');
+const InputMaskData = require('@core/InputMaskData');
 const {
     parseText
-} = require("./TextModifyByTag");
-// var TutorialData = require('core/tutorial/TutorialData');
+} = require('./TextModifyByTag');
+const TextModifyByTag = require('./TextModifyByTag');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let CharacterInfo = require('@core/characters/CharacterInfo');
+// var TutorialData = require('@core/tutorial/TutorialData');
 
 var Helpers = new(function() {
 
@@ -75,6 +78,24 @@ var Helpers = new(function() {
         return Engine;
     }
 
+    window.createLoadingElement = ($wrapper, text) => {
+        let $loadingElement = require('@core/Templates').get('loading-element-component')
+
+        $loadingElement.find('.loading-element-text').html(text ? text : _t('city_loading'));
+
+        $wrapper.append($loadingElement)
+
+        return $loadingElement;
+    }
+
+    window.cutTextAndAddTip = ($el, text, rowsAmount) => {
+        $el.html(text);
+        //$el.css("line-clamp", lineClamp);
+        $el.addClass("overflow-text-with-several-rows");
+        $el.css("-webkit-line-clamp", rowsAmount.toString());
+        $el.tip(text, "overflow-text-with-several-rows");
+    }
+
     //window.createOtherContextMenu = (e, player) => {
     //	const contextMenu = [];
     //
@@ -119,7 +140,7 @@ var Helpers = new(function() {
     //
     //	if (issetAccountId && issetCharId) {
     //
-    //		const {showProfile} = require('core/HelpersTS.ts');
+    //		const {showProfile} = require('@core/HelpersTS.ts');
     //
     //		contextMenu.push([
     //			_t('show_profile', null, 'menu'),
@@ -136,9 +157,13 @@ var Helpers = new(function() {
     //}
 
     window.isSettingsOptionsInterfaceAnimationOn = () => {
-        if (!Engine.settingsOptions.heroOptExist()) {
-            return false;
+        //if (!Engine.settingsOptions.heroOptExist()) {
+        //	return false;
+        //}
+        if (!isHeroAlreadyInitialised()) {
+            return false
         }
+
         return Engine.settingsOptions.isInterfaceAnimationOn();
     };
 
@@ -174,6 +199,60 @@ var Helpers = new(function() {
         return Engine.settingsOptions.isShowItemsRankOn();
     };
 
+    window.isSettingsOptionsBerserk = () => {
+        return Engine.settingsOptions.isBerserk();
+    };
+
+    window.isSettingsOptionsBerserkGroup = () => {
+        return Engine.settingsOptions.isBerserkGroup();
+    };
+
+    window.getKindOfShowLevelAndOperationLevel = () => {
+        //return getRandomElementFromArray([0,1,2,3,4]);
+        //return 0;
+        return Engine.settingsOptions.getKindOfShowLevelAndOperationLevel()
+    }
+
+    window.getBerserkLvlMin = () => {
+        return Engine.settingsOptions.getBerserkLvlMin()
+    }
+
+    window.getBerserkLvlMax = () => {
+        return Engine.settingsOptions.getBerserkLvlMax()
+    }
+
+    window.getBerserkCommon = () => {
+        return Engine.settingsOptions.getBerserkCommon()
+    }
+
+    window.getBerserkElite = () => {
+        return Engine.settingsOptions.getBerserkElite()
+    }
+
+    window.getBerserkElite2 = () => {
+        return Engine.settingsOptions.getBerserkElite2()
+    }
+
+    window.getBerserkGroupLvlMin = () => {
+        return Engine.settingsOptions.getBerserkGroupLvlMin()
+    }
+
+    window.getBerserkGroupLvlMax = () => {
+        return Engine.settingsOptions.getBerserkGroupLvlMax()
+    }
+
+    window.getBerserkGroupCommon = () => {
+        return Engine.settingsOptions.getBerserkGroupCommon()
+    }
+
+    window.getBerserkGroupElite = () => {
+        return Engine.settingsOptions.getBerserkGroupElite()
+    }
+
+    window.getBerserkGroupElite2 = () => {
+        return Engine.settingsOptions.getBerserkGroupElite2()
+    }
+
     window.checkBattleWindowActive = () => {
         return Engine.battle.getShow();
     };
@@ -206,7 +285,7 @@ var Helpers = new(function() {
     };
 
     window.createCheckBox = (str, cl, clb) => {
-        let $oneCheckBox = require('core/Templates').get('one-checkbox')
+        let $oneCheckBox = require('@core/Templates').get('one-checkbox')
 
         $oneCheckBox.addClass(cl);
         $oneCheckBox.find('.label').html(str);
@@ -314,7 +393,7 @@ var Helpers = new(function() {
         //if (pattern.test(url)) window.open(url);
         //else {
         var safeURL = window.escapeHTML(url);
-        safeURL = ' ' + safeURL;
+        safeURL = ' ' + parseContentBB(safeURL);
         mAlert(_t('url_chat_warning %url%', {
             '%url%': safeURL
         }), [{
@@ -384,9 +463,10 @@ var Helpers = new(function() {
         keyUpClb,
         tip,
         readonly = false,
-        clear = true
+        clear = true,
+        useDebounce = false
     }) => {
-        let $niInput = require('core/Templates').get("ni-input-text");
+        let $niInput = require('@core/Templates').get("ni-input-text");
         let $input = $niInput.find('input').val(val);
         let $clearCross = $niInput.find('.clear-cross');
 
@@ -397,6 +477,19 @@ var Helpers = new(function() {
         if (cl) {
             $niInput.addClass(cl);
         }
+
+        let waitTime = 300;
+
+        if (isset(useDebounce)) {
+
+            let debounceIntVal = useDebounce !== true && isIntVal(useDebounce)
+
+            if (debounceIntVal) {
+                waitTime = useDebounce;
+            }
+        }
+
+        const debouncedCallback = window.debounce((callback) => callback(), waitTime);
 
         setInputMask($input, type);
 
@@ -421,7 +514,11 @@ var Helpers = new(function() {
 
             if (isset(changeClb)) {
                 let val = $input.val();
-                changeClb(val)
+                if (!useDebounce) {
+                    changeClb(val);
+                } else {
+                    debouncedCallback(() => changeClb(val));
+                }
             }
         });
 
@@ -432,7 +529,12 @@ var Helpers = new(function() {
 
             if (isset(keyUpClb)) {
                 let val = $input.val();
-                keyUpClb(val, e);
+
+                if (!useDebounce) {
+                    keyUpClb(val, e);
+                } else {
+                    debouncedCallback(() => keyUpClb(val, e));
+                }
             }
         });
 
@@ -516,7 +618,7 @@ var Helpers = new(function() {
         //	a.push(arguments[i]);
         //}
 
-        if (!CFG.debug) return;
+        if (!getDebug()) return;
 
         //if (Engine.worldConfig.getWorldName() == "dev") console.log("DEV MSG", a.join(", "));
         if (Engine.worldConfig.getWorldName() == "dev") {
@@ -533,7 +635,7 @@ var Helpers = new(function() {
     };
 
     window.getNIInfoIcon = function(data) {
-        let $smallInfo = require('core/Templates').get('info-icon');
+        let $smallInfo = require('@core/Templates').get('info-icon');
 
         if (isset(data.tip)) $smallInfo.tip(data.tip);
 
@@ -566,6 +668,24 @@ var Helpers = new(function() {
         }
     };
 
+    window.createHamburgerMenuButton = (cl, clb) => {
+        const $manageHamburgerButton = $('<div>');
+        const $iconClose = $('<div>').addClass('ie-icon ie-icon-menu');
+
+        $manageHamburgerButton.addClass(cl);
+        $manageHamburgerButton.append($iconClose);
+
+        $manageHamburgerButton.click(function(e) {
+            let menu = [];
+
+            clb(e, menu);
+
+            Engine.interface.showPopupMenu(menu, getE(e, e));
+        });
+
+        return $manageHamburgerButton;
+    }
+
     window.zero = function(x, z) {
         if (!isset(z)) z = 2;
         x = x.toString();
@@ -584,6 +704,33 @@ var Helpers = new(function() {
     window.pageReload = function() {
         location.reload();
     }
+
+    window.checkPosIsCollisionWithLayers = function(mousePos, whiteListLayersData) {
+        const posX = mousePos.x;
+        const posY = mousePos.y;
+
+        for (let pos in whiteListLayersData) {
+
+            let $whiteLayerData = whiteListLayersData[pos];
+            let $whiteLayer = $whiteLayerData[0];
+            let margin = $whiteLayerData[1];
+            let rect = $whiteLayer[0].getBoundingClientRect();
+            let minX = rect.left - margin;
+            let minY = rect.top - margin;
+            let maxX = minX + rect.width + margin;
+            let maxY = minY + rect.height + margin;
+
+            if (
+                minX < posX && posX < maxX &&
+                minY < posY && posY < maxY) {
+
+                return true
+            }
+
+        }
+
+        return false
+    };
 
     window.hexToRgb = function(hex) {
 
@@ -702,6 +849,12 @@ var Helpers = new(function() {
         return engine && engine.interface && Engine.interface.getAlreadyInitialised();
     };
 
+    window.isHeroAlreadyInitialised = () => {
+        let engine = getEngine();
+        //return engine && Object.keys(engine.hero.d).length > 0;
+        return engine && engine.hero && engine.hero.getHeroAlreadyInitialised();
+    };
+
     window.getProfIcons = function(p) {
         var tab = '';
         for (var i in p)
@@ -775,6 +928,10 @@ var Helpers = new(function() {
         optionalData = optionalData ? optionalData : '';
         console.warn(`[${file}, ${method}] ${message}`, optionalData);
     };
+
+    window.connectStrings = function(...str) {
+        return str.join("_");
+    }
 
     window.getSecondLeft = function(time, opt) {
         var m = Math.floor(time / 60);
@@ -876,9 +1033,7 @@ var Helpers = new(function() {
     };
 
     window.setTipWhenNameToLong = function($el, tip) {
-        //if ($el[0].scrollWidth >  $el.innerWidth()) $el.attr('data-tip', tip);
-        if ($el[0].scrollWidth > $el.innerWidth()) $el.tip(parseBasicBB(tip));
-        //else $el.removeAttr('data-tip');
+        if ($el[0].scrollWidth > Math.round($el.innerWidth())) $el.tip(parseBasicBB(tip));
         else $el.tip();
     };
 
@@ -932,7 +1087,8 @@ var Helpers = new(function() {
         mAlert(_t(txt), [{
             txt: _t('yes'),
             callback: function() {
-                location.reload();
+                //location.reload();
+                pageReload();
                 return true;
             }
         }, {
@@ -950,7 +1106,8 @@ var Helpers = new(function() {
             callback: function() {
                 let domain = getMainDomain();
                 window.location.href = `https://margonem.${domain}`;
-                location.reload();
+                //location.reload();
+                pageReload();
 
             }
         }, {
@@ -1028,7 +1185,7 @@ var Helpers = new(function() {
             document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
         }
         //if (!mobileCheck()) return;
-        //var Storage = require('core/Storage');
+        //var Storage = require('@core/Storage');
         //var store = Storage.get('zoomFactorMobile');
         //if (!store) {
         //	Engine.zoomFactor = 0.6;
@@ -1047,8 +1204,8 @@ var Helpers = new(function() {
         } else if (document.webkitCancelFullScreen) {
             document.webkitCancelFullScreen();
         }
-        //var Storage = require('core/Storage');
-        //require('core/Interface').setZoomFactor(Storage.get('ZoomFactor'));
+        //var Storage = require('@core/Storage');
+        //require('@core/Interface').setZoomFactor(Storage.get('ZoomFactor'));
         Engine.onResize();
     };
 
@@ -1080,23 +1237,30 @@ var Helpers = new(function() {
     //	return false;
     //};
 
-    window.getWidthOfBar = function($bar) {
-        var index = getMaxWidgetIndex($bar);
-        //for (var i = 6; i > 0; i--) {
-        //	if ($bar.find("[widget-index='" + i + "']").size() > 0) {
-        //		index = i;
-        //		break;
-        //	}
-        //}
-        return $bar.width() / 6 * index;
-    };
+    //window.getWidthOfBar = function ($bar) {
+    //	var index = getMaxWidgetIndex($bar);
+    //	//for (var i = 6; i > 0; i--) {
+    //	//	if ($bar.find("[widget-index='" + i + "']").size() > 0) {
+    //	//		index = i;
+    //	//		break;
+    //	//	}
+    //	//}
+    //	return $bar.width() / 6 * index;
+    //};
 
-    window.getMaxWidgetIndex = function($bar) {
-        var index = 0;
-        for (var i = 6; i > 0; i--) {
-            if ($bar.find("[widget-index='" + i + "']").length > 0) {
-                return i;
-                break;
+    window.getMaxWidgetIndex = function($bar, side) {
+        //var index = 0;
+        if (side == 'left') {
+            for (var i = 6; i > 0; i--) {
+                if ($bar.find("[widget-index='" + i + "']").length > 0) {
+                    return i;
+                }
+            }
+        } else {
+            for (var i = 0; i < 6; i++) {
+                if ($bar.find("[widget-index='" + i + "']").length > 0) {
+                    return Math.abs(i - 6);
+                }
             }
         }
         return 0;
@@ -1110,43 +1274,43 @@ var Helpers = new(function() {
     //	return false;
     //};
 
-    window.tooBigScreen = function(newFactor) {
-        //var bodyW = $('body').width() * newFactor;
-
-        var ballAndSlotsW = 564 * newFactor;
-        var halfBody = $('body').width() * newFactor / 2;
-        var halfHudCont = $('.hud-container').width() * newFactor / 2;
-        var halfBallPanel = ballAndSlotsW / 2;
-
-        var leftDownWidgetW = getWidthOfBar($('.bottom-left.main-buttons-container')) * newFactor;
-        if (leftDownWidgetW + halfBallPanel > halfBody) {
-            return 'leftDownWidgetW'
-        }
-        var rightDownWidgetW = getWidthOfBar($('.bottom-right.main-buttons-container')) * newFactor;
-        if (rightDownWidgetW + halfBallPanel > halfBody) {
-            return 'rightDownWidgetW';
-        }
-
-        var leftAddWidgetW = getWidthOfBar($('.bg-additional-widget-left')) * newFactor;
-        if (leftAddWidgetW + halfBallPanel > halfBody) {
-            return 'leftAddWidgetW';
-        }
-        var rightAddWidgetW = getWidthOfBar($('.bg-additional-widget-left')) * newFactor;
-        if (rightAddWidgetW + halfBallPanel > halfBody) {
-            return 'rightAddWidgetW';
-        }
-
-        var leftUpWidgetW = getWidthOfBar($('.top-left.main-buttons-container')) * newFactor;
-        if (leftUpWidgetW + halfHudCont > halfBody) {
-            return 'leftUpWidgetW';
-        }
-        var rightUpWidgetW = getWidthOfBar($('.top-right.main-buttons-container')) * newFactor;
-        if (rightUpWidgetW + halfHudCont > halfBody) {
-            return 'rightUpWidgetW';
-        }
-
-        return false;
-    };
+    //window.tooBigScreen = function (newFactor) {
+    //	//var bodyW = $('body').width() * newFactor;
+    //
+    //	var ballAndSlotsW = 564 * newFactor;
+    //	var halfBody = $('body').width() * newFactor / 2;
+    //	var halfHudCont = $('.hud-container').width()* newFactor / 2;
+    //	var halfBallPanel = ballAndSlotsW / 2;
+    //
+    //	var leftDownWidgetW  = getWidthOfBar($('.bottom-left.main-buttons-container')) * newFactor;
+    //	if (leftDownWidgetW + halfBallPanel > halfBody) {
+    //		return 'leftDownWidgetW'
+    //	}
+    //	var rightDownWidgetW  = getWidthOfBar($('.bottom-right.main-buttons-container')) * newFactor;
+    //	if (rightDownWidgetW + halfBallPanel > halfBody) {
+    //		return 'rightDownWidgetW';
+    //	}
+    //
+    //	var leftAddWidgetW  = getWidthOfBar($('.bg-additional-widget-left')) * newFactor;
+    //	if (leftAddWidgetW + halfBallPanel > halfBody) {
+    //		return 'leftAddWidgetW';
+    //	}
+    //	var rightAddWidgetW  = getWidthOfBar($('.bg-additional-widget-left')) * newFactor;
+    //	if (rightAddWidgetW + halfBallPanel > halfBody) {
+    //		return 'rightAddWidgetW';
+    //	}
+    //
+    //	var leftUpWidgetW  = getWidthOfBar($('.top-left.main-buttons-container')) * newFactor;
+    //	if (leftUpWidgetW + halfHudCont > halfBody) {
+    //		return 'leftUpWidgetW';
+    //	}
+    //	var rightUpWidgetW  = getWidthOfBar($('.top-right.main-buttons-container')) * newFactor;
+    //	if (rightUpWidgetW + halfHudCont > halfBody) {
+    //		return 'rightUpWidgetW';
+    //	}
+    //
+    //	return false;
+    //};
 
     window.setCookie = function(name, value, expires, path, domain, secure) {
         var curCookie = name + "=" + escape(value) +
@@ -1252,8 +1416,18 @@ var Helpers = new(function() {
         return true;
     }
 
-    window.checkRGBOrRGBAObject = function(fileName, method, color, data) {
+    window.checkRGBOrRGBAObject = function(fileName, method, color, data, allowOnlyAlpha) {
         if (!isset(color.r) || !isset(color.g) || !isset(color.b)) {
+
+            if (isset(color.a) && allowOnlyAlpha) {
+                if (!isFloatVal(color.a)) {
+                    errorReport(fileName, method, 'attr color.a have to double val!', data);
+                    return false
+                }
+
+                return true;
+            }
+
             errorReport(fileName, method, 'attr color.r or color.g or color.b not exist!', data);
             return false
         }
@@ -1419,7 +1593,7 @@ var Helpers = new(function() {
     }
 
     window.createCostIconComponent = function(text, val, valClass, iconClass, item) {
-        var $costIconComponent = require('core/Templates').get('cost-icon-component'),
+        var $costIconComponent = require('@core/Templates').get('cost-icon-component'),
             txt = text === true ? _t('cost', null, 'recover') : text,
             cost;
 
@@ -1471,6 +1645,20 @@ var Helpers = new(function() {
         } else return e;
     };
 
+    window.getXYFromRealLeftTop = function(clientX, clientY) {
+        let zoom = getEngine().zoomManager.getActualZoom();
+        let factor = Engine.zoomFactor;
+        let $GAME_CANVAS = getEngine().interface.get$GAME_CANVAS();
+        let $offset = $GAME_CANVAS.offset();
+        let left = $offset.left;
+        let top = $offset.top;
+
+        return {
+            x: (clientX - left) / factor / zoom + Engine.map.offset[0],
+            y: (clientY - top) / factor / zoom + Engine.map.offset[1]
+        }
+    }
+
     //window.transformEPointerEventIfMobile = function (e) {
     //	getE(e)
     //}
@@ -1496,6 +1684,21 @@ var Helpers = new(function() {
     window.isNumberFunc = function(n) {
         return !isNaN(parseFloat(n)) && isFinite(n);
     };
+
+    window.setPositiveAndNegativeNumberInInput = function($input) {
+        $input.mask('Z0000000', {
+            translation: {
+                // 'Z': { pattern: /-?/, optional: true },
+                'Z': {
+                    pattern: /[-]/,
+                    optional: true
+                },
+                '0': {
+                    pattern: /\d/
+                }
+            }
+        });
+    }
 
     window.setOnlyPositiveNumberInInput = function($input) {
         $input.mask('0#');
@@ -1533,6 +1736,9 @@ var Helpers = new(function() {
 
     window.setInputMask = ($input, type) => {
         switch (type) {
+            case InputMaskData.TYPE.NUMBER_POSITIVE_AND_NEGATIVE:
+                setPositiveAndNegativeNumberInInput($input);
+                break;
             case InputMaskData.TYPE.NUMBER:
                 setOnlyPositiveNumberInInput($input);
                 break;
@@ -1564,6 +1770,7 @@ var Helpers = new(function() {
         var re = data.re;
         var clb = data.clb;
         var inputCheck = data.inputCheck;
+        const question = TextModifyByTag.parseText(data.q);
         var postName = data.postName;
         var wnd = null;
         var aux = '';
@@ -1848,7 +2055,7 @@ var Helpers = new(function() {
         if (isset(confirmClb) && !isset(confirmClb.hotkeyClass) && !isConfirmHotkey) confirmClb.hotkeyClass = '';
         if (isset(cancelClb) && !isset(cancelClb.hotkeyClass) && !isCancelHotkey) cancelClb.hotkeyClass = '';
 
-        mAlert(data.q + icon + aux, callbacks, function(w) {
+        mAlert(question + icon + aux, callbacks, function(w) {
             wnd = w;
             if (confirmType == 'no-quit') {
                 wnd.$.addClass('no-exit-button');
@@ -2028,6 +2235,8 @@ var Helpers = new(function() {
             addClass: 'mAlert'
         });
 
+        wnd.$.prepend($('<div>').addClass('paper-background interface-element-middle-1-background-stretch'));
+
         switch (layerName) {
             case LayersData.$_M_ALERT_LAYER:
                 wnd.addToMAlertLayer();
@@ -2116,6 +2325,177 @@ var Helpers = new(function() {
         return isExist;
     };
 
+    window.getHeroLevel = () => {
+        if (!Engine.hero) {
+            return 0;
+        }
+
+        return Engine.hero.getLevel();
+    };
+
+    window.getHeroProf = () => {
+        if (!Engine.hero) {
+            return 0;
+        }
+
+        return Engine.hero.getProf();
+    };
+    /*
+    	window.addCharacterInfoTip = ($objectToTip, charData) => {
+
+    		let br 					= "<br>";
+    		let colon 				= ": ";
+    		let nick 				= charData.nick;
+    		let level 				= charData.level;
+    		let operationLevel 		= charData.operationLevel;
+    		let prof 				= charData.prof;
+
+    		if (level < 301) {
+    			operationLevel = 0;
+    		}
+
+    		let operationLevelStr 	= operationLevel ? (_t('character_operation_lvl') + colon + operationLevel + br) : '';
+
+
+    		let tip = _t('character_nick') + colon + nick + br +
+    			_t('character_lvl') + colon + level + br +
+    			operationLevelStr +
+    			_t('character_prof') + colon + getAllProfName(prof) + br;
+
+    		$objectToTip.tip(tip);
+    	};
+    */
+
+    window.addCharacterInfoTip = ($objectToTip, data) => {
+        CharacterInfo.addCharacterInfoTip($objectToTip, data);
+    }
+
+    window.getCharacterInfo = (data) => {
+        return CharacterInfo.getCharacterInfo(data);
+    };
+
+    window.updateAllCharacterInfo = () => {
+        CharacterInfo.updateAllCharacterInfo();
+    };
+    /*
+    	window.getCharacterInfo = (options = {}) => {
+    		let nick;
+
+    		if (options.showNick) {
+    			nick = options.nick;
+    			nick += " ";
+    		} else {
+    			nick = "";
+    		}
+
+    		let operationLevel 		=  options.operationLevel;
+    		let level 				=  options.level;
+    		let prof				=  options.prof;
+
+    		if (level < 301) {
+    			operationLevel = 0;
+    		}
+
+    		//let strOperationLevel 	= operationLevel ? ("|" + operationLevel + prof) : '';
+    		//let strProf 			= prof ? prof : '';
+
+    		//let kindOfShowLevelAndOperationLevel = getKindOfShowLevelAndOperationLevel();
+
+    		let result = getCharacterInfoText(nick, level, operationLevel, prof);
+
+    		//switch (kindOfShowLevelAndOperationLevel) {
+    		//	case 0: result = nick + "(" + level + strProf + strOperationLevel + ")";	break;
+    		//	case 1: result = nick + "(" + strOperationLevel + level + strProf + ")";	break;
+    		//	case 2: result = nick + "(" + level + strProf + ")";						break;
+    		//	case 3: result = nick + "(" + strOperationLevel + ")";						break;
+    		//	default : {
+    		//		errorReport("Helpers.js", "getCharacterInfo", "incorrect case", kindOfShowLevelAndOperationLevel);
+    		//		result =  nick + "(" + level + strProf + strOperationLevel + ")";
+    		//	}
+    		//}
+
+    		if (!options.htmlElement) {
+    			return result;
+    		}
+
+    		result = `<div class="character-info" nick="${nick}" level="${level}" operationLevel="${operationLevel}" prof="${prof}">${result}</div>`;
+
+    		return result;
+
+    		//return nick + "(" + level + strProf + strOperationLevel + ")";
+    	};
+
+    	window.getLevelAndOperationLevel = (nick, level, operationLevel, prof) => {
+    		let strOperationLevel 	= operationLevel ? ("|" + operationLevel + prof) : '';
+    		let strProf 			= prof ? prof : '';
+
+    		return nick + "(" + level + strProf + strOperationLevel + ")"
+    	};
+
+    	window.getOperationLevelAndLevel = (nick, level, operationLevel, prof) => {
+    		let strOperationLevel 	= operationLevel ? (operationLevel + prof + "|") : '';
+    		let strProf 			= prof ? prof : '';
+
+    		return nick + "(" + strOperationLevel + level + strProf + ")"
+    	};
+
+    	window.getOnlyLevel = (nick, level, operationLevel, prof) => {
+    		let strProf 			= prof ? prof : '';
+
+    		return	nick + "(" + level + strProf + ")";
+    	};
+
+    	window.getOnlyOperationLevel = (nick, level, operationLevel, prof) => {
+    		let strOperationLevel 	= operationLevel ? (operationLevel + prof) : (level + prof);
+
+    		return nick + "(" + strOperationLevel + ")"
+    	};
+
+    	window.getCharacterInfoText = (nick, level, operationLevel, prof) => {
+    		let kindOfShowLevelAndOperationLevel = getKindOfShowLevelAndOperationLevel();
+
+    		let result = '';
+
+    		switch (kindOfShowLevelAndOperationLevel) {
+    			case 0: result = getLevelAndOperationLevel(nick, level, operationLevel, prof);			break;
+    			case 1: result = getOperationLevelAndLevel(nick, level, operationLevel, prof);			break;
+    			case 2: result = getOnlyLevel(nick, level, operationLevel, prof);						break;
+    			case 3: result = getOnlyOperationLevel(nick, level, operationLevel, prof);				break;
+    			default : {
+    				errorReport("Helpers.js", "getCharacterInfo", "incorrect case", kindOfShowLevelAndOperationLevel);
+    				result =  getLevelAndOperationLevel(nick, level, operationLevel, prof);
+    			}
+    		}
+
+    		return result;
+    	}
+
+    	window.updateAllCharacterInfo = function () {
+
+    		getEngine().others.otherTipRefresh();
+    		//getEngine().others.clearDataToDraw();
+    		Engine.miniMapController.handHeldMiniMapController.refreshMiniMapController();
+    		Engine.whoIsHere.updateWhoIsHereAfterSaveInServerStorage();
+    		Engine.hero.updateTip();
+    		Engine.hero.updateNick();
+
+    		let $allCharacterInfo = $(".character-info");
+
+    		console.log($allCharacterInfo.length);
+
+    		$allCharacterInfo.each(function () {
+    			let $this = $(this);
+
+    			let nick 			= $this.attr("nick");
+    			let level 			= $this.attr("level");
+    			let operationLevel 	= parseInt($this.attr("operationLevel"));
+    			let prof 			= $this.attr("prof");
+    			let result 			= getCharacterInfoText(nick, level, operationLevel, prof);
+
+    			$this.html(result);
+    		})
+    	}
+    */
     window.message = function(text, noWait) {
         if (text === '') return;
         text = decodeHtmlEntities(text);
@@ -2125,7 +2505,10 @@ var Helpers = new(function() {
             noWait = true;
         }
         var display = $('.loader-layer').css('display');
-        var $bigMessage = Engine.interface.get$mAlertLayer().find('.big-messages');
+        let interfaceLightMode = getEngine().interface && getEngine().interface.getInterfaceLightMode();
+        let selectorOfBigMessages = interfaceLightMode ? '.big-messages-light-mode' : '.big-messages'
+        var $bigMessage = Engine.interface.get$mAlertLayer().find(selectorOfBigMessages);
+
         if (!noWait && display == 'block') {
             setTimeout(function() {
                 message(text);
@@ -2150,6 +2533,16 @@ var Helpers = new(function() {
         $m.click(function() {
             $(this).remove();
         });
+
+        if (interfaceLightMode) {
+            //$m.addClass('active');
+            setTimeout(function() {
+                $m.delay(4000).fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 100);
+            return
+        }
 
         if (noWait) {
             $m.addClass('active');
@@ -2594,7 +2987,7 @@ var Helpers = new(function() {
 
     window.createButton = (name, classes, clb) => {
         //const btn = tpl.get('button')[0];
-        const btn = require('core/Templates').get('button')[0];
+        const btn = require('@core/Templates').get('button')[0];
         btn.classList.add(...classes);
         btn.querySelector('.label').innerHTML = name;
         btn.addEventListener('click', clb);
@@ -2603,8 +2996,8 @@ var Helpers = new(function() {
 
     window.createSmallButtonWithBackground = (imgClass, btnClasses, clb) => {
         //const btn = tpl.get('button')[0];
-        const btn = require('core/Templates').get('button')[0];
-        const bck = require('core/Templates').get('add-bck')[0];
+        const btn = require('@core/Templates').get('button')[0];
+        const bck = require('@core/Templates').get('add-bck')[0];
         btn.append(bck)
         btn.classList.add('small');
         btn.classList.add('small-button-with-background');
@@ -2615,9 +3008,28 @@ var Helpers = new(function() {
         return btn;
     };
 
-    window.setDebugMode = (state) => {
-        CFG.debug = state;
+    window.setDebugMode = (debugKeysList) => {
+
+        if (!elementIsArray(debugKeysList)) {
+            errorReport("Helpers.js", "setDebugMode", "debugKeysList is not array", debugKeysList);
+            return;
+        }
+
+        for (let debugKey in CFG.DEBUG_KEYS) {
+            CFG.debug[debugKey] = debugKeysList.includes(debugKey);
+        }
+
         afterDebugModeChanged();
+
+        let debugCl = 'debug-mode-on';
+        let $body = $('body');
+
+        if (CFG.debug[CFG.DEBUG_KEYS.MAIN]) $body.addClass(debugCl);
+        else $body.removeClass(debugCl);
+    }
+
+    window.getDebug = (key = CFG.DEBUG_KEYS.MAIN) => {
+        return CFG.debug[key];
     }
 
     window.afterDebugModeChanged = () => {
@@ -2791,7 +3203,12 @@ var Helpers = new(function() {
             if (ItemState.isEquippedSt(item.st)) continue;
             if (item.tpl != tplId) continue;
 
-            amount += parseInt(item._cachedStats['amount']);
+            //amount += parseInt(item._cachedStats['amount']);
+            if (item.issetAmountStat()) {
+                amount += item.getAmountStat();
+            } else {
+                amount++;
+            }
         }
 
         return amount;
@@ -2887,9 +3304,11 @@ var Helpers = new(function() {
 
         switch (currencyKind) {
             case 'z':
+            case 'gold':
                 data.ip = "/goldIconNormal.png";
                 break;
             case 's':
+            case 'credits':
                 data.ip = "/draconite_small.gif";
                 break;
             default:
@@ -2966,17 +3385,17 @@ var Helpers = new(function() {
         if (i.getAttribute('crossOrigin') == null) i.setAttribute('crossOrigin', '');
     }
 
-    window.turnOnDebug = () => {
-        CFG.debug = true;
-    }
+    //window.turnOnDebug = () => {
+    //	CFG.debug.MAIN = true;
+    //}
+    //
+    //window.turnOffDebug = () => {
+    //	CFG.debug.MAIN = false
+    //}
 
-    window.turnOffDebug = () => {
-        CFG.debug = false;
-    }
-
-    window.isDebug = () => {
-        return CFG.debug;
-    }
+    //window.isDebug = () => {
+    //	return CFG.debug;
+    //}
 
     window.isSeptemberEnd = () => {
         const targetDate = new Date(2023, 8, 30, 23, 0, 0); // Month is zero-based (8 is September).
@@ -2989,6 +3408,10 @@ var Helpers = new(function() {
         let dy = aY - bY;
 
         return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+    }
+
+    window.checkPartyExist = () => {
+        return Engine && Engine.party;
     }
 
     (function($) {

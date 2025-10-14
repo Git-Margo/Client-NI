@@ -1,14 +1,22 @@
-var ThemeData = require('core/themeController/ThemeData');
-var RajData = require('core/raj/RajData');
-var RajTemplate = require('core/raj/RajTemplate');
-var RajGetSpecificData = require('core/raj/RajGetSpecificData');
-var RajFullJSONReplacer = require('core/raj/RajFullJSONReplacer');
+var ThemeData = require('@core/themeController/ThemeData');
+var RajData = require('@core/raj/RajData');
+var RajTemplate = require('@core/raj/RajTemplate');
+var RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+var RajFullJSONReplacer = require('@core/raj/RajFullJSONReplacer');
+//const SpecificEventsData = require('@core/oneResponseSpecificEvents/SpecificEventsData');
 module.exports = function() {
 
     let dispatcher;
     //let characterEffectTemplate;
 
     let rajClass = {};
+
+    let addSrajToQueue = false;
+    let addSrajToCaseQueue = false;
+
+    let rajQueue;
+    let rajCaseQueue;
+    //let callbackQueue;
 
     let moduleData = {
         fileName: "RajController.js"
@@ -21,11 +29,18 @@ module.exports = function() {
     const AFTER_ = "after_";
 
     const init = function() {
+        setAddSrajToQueue(false);
+        clearRajQueue();
+        clearRajCaseQueue();
         initRajFullJSONReplacer();
 
         initDispatcher();
         //initTemplate();
     };
+
+    //this.getRajQueue = () => {
+    //    return rajQueue
+    //}
 
     const addSrajClass = (kindOfSrajClass, moduleName) => {
         if (!rajClass[kindOfSrajClass]) rajClass[kindOfSrajClass] = {};
@@ -46,66 +61,229 @@ module.exports = function() {
     //    characterEffectTemplate = {};
     //};
 
-    const getDataGetTplFullParseJson = (data) => {
-        let rajTemplate = new RajTemplate();
-        rajTemplate.init();
+    //const getDataGetTplFullParseJson = (data) => {
+    //    let rajTemplate = new RajTemplate();
+    //    rajTemplate.init();
+    //
+    //    let replaceData = rajTemplate.getReplaceData(data);
+    //
+    //    devConsoleLog(["mergeRajTemplate", "inputDataWithTemplate", data, "outputDataWithTemplate", replaceData]);
+    //
+    //    return replaceData
+    //}
 
-        let replaceData = rajTemplate.getReplaceData(data);
 
-        devConsoleLog(["mergeRajTemplate", "inputDataWithTemplate", data, "outputDataWithTemplate", replaceData]);
+    const callSrajFromEngine = (data, kind) => {
+        let srajStore = Engine.srajStore;
+        for (let i = 0; i < data.length; i++) {
 
-        return replaceData
-    }
+            let id = data[i].id;
+            let additionalData = {
+                srajId: id
+            };
+            //let exceptionData       = data[i].exception ? data[i].exception : [];
+            let exceptionData = [];
 
-    const parseJSON = function(d) {
+            if (srajStore.checkSrajTemplate(id)) {
+                let srajToCall = srajStore.getSrajTemplate(id, kind);
+
+                //if (getDebug(CFG.DEBUG_KEYS.SRAJ)) {
+                //    devConsoleLog(['callFromTemplate id', id]);
+                //}
+
+                parseJSON(srajToCall, exceptionData, additionalData)
+            }
+
+        }
+    };
+
+    const parseJSON = function(d, exception = [], additionalData) {
         let data;
         try {
             data = JSON.parse(d);
         } catch (e) {
-            errorReport('RajController.js', 'parseJSON', 'Incorrect JSON format!', d);
+            errorReport(moduleData.fileName, 'parseJSON', 'Incorrect JSON format!', d);
             return
         }
 
-        updateRajObject(data, [], {
-            source: "ENGINE"
-        });
-    }
-
-    const parseObject = function(data, exception, additionalData) {
+        if (addSrajToQueue) {
+            addToSrajQueue(data, exception, additionalData);
+            return;
+        }
 
         updateRajObject(data, exception, additionalData);
+    }
+
+    const parseObject = function(data, exception, additionalData, callback) {
+
+        if (addSrajToQueue) {
+            addToSrajQueue(data, exception, additionalData, callback);
+            return;
+        }
+
+        updateRajObject(data, exception, additionalData, callback);
 
     };
 
-    const updateRajObject = (data, exception, additionalData) => {
-        //devConsoleLog(['SRAJ_CALL_BEFORE_REPLACE', data]);
-        if (CFG.debug) {
-            //devConsoleLog('SRAJ_CALL_BEFORE_REPLACE', GET_HARD_COPY_STRUCTURE(data), additionalData);
+    const setAddSrajToQueue = (_addSrajToQueue) => {
+        addSrajToQueue = _addSrajToQueue;
+    }
+
+    const setAddSrajToCaseQueue = (_addSrajToCaseQueue) => {
+        addSrajToCaseQueue = _addSrajToCaseQueue;
+    }
+
+    const addToSrajQueue = (data, exception, additionalData, callback) => {
+        rajQueue.push({
+            data: data,
+            exception: exception ? exception : null,
+            additionalData: additionalData ? additionalData : null,
+            callback: callback ? callback : null
+        });
+    }
+
+    const addToCaseSrajQueue = (callback) => {
+        rajCaseQueue.push(callback);
+    }
+
+    //const addToCallbackQueue = (callback) => {
+    //    callbackQueue.push(callback);
+    //}
+
+    const clearRajCaseQueue = () => {
+        rajCaseQueue = [];
+    }
+
+    //const clearCallbackQueue = () => {
+    //    callbackQueue = []
+    //}
+
+    const callSrajQueue = () => {
+
+        if (!rajQueue.length) {
+            return
         }
-        data = rajFullJSONReplacer.getRajDataAfterAllReplace(data);
-        devConsoleLog('SRAJ_CALL_AFTER_REPLACE', data, additionalData);
+        setAddSrajToCaseQueue(true);
+        clearRajCaseQueue();
+
+        if (getDebug(CFG.DEBUG_KEYS.SRAJ)) {
+            //devConsoleLog('CALL_SRAJ_QUEUE', rajQueue);
+        }
+
+        for (let index in rajQueue) {
+            let data = rajQueue[index];
+
+            updateRajObject(data.data, data.exception, data.additionalData, data.callback);
+        }
+
+        let counter = 0
+
+        callSrajCaseQueue(counter);
+        setAddSrajToCaseQueue(false);
+        //callCallbackQueue();
+        //clearCallbackQueue();
+        clearRajCaseQueue();
+    }
+
+    //const callCallbackQueue = () => {
+    //    if (!callbackQueue.length) {
+    //        return
+    //    }
+    //
+    //    for (let index in callbackQueue) {
+    //        callbackQueue[index]();
+    //    }
+    //
+    //}
+
+    const callSrajCaseQueue = (counter) => {
+        if (!rajCaseQueue.length) {
+            return
+        }
+
+        //console.log('callSrajCaseQueue', counter)
+
+        let a = [];
+
+        for (let i = 0; i < rajCaseQueue.length; i++) {
+            a.push(rajCaseQueue[i]);
+        }
+
+        clearRajCaseQueue();
+
+        for (let i = 0; i < a.length; i++) {
+            a[i].callback();
+        }
+
+        if (a.length == rajCaseQueue.length) {
+            return;
+        } else {
+            counter++;
+            callSrajCaseQueue(counter);
+        }
+    }
+
+    const clearRajQueue = () => {
+        rajQueue = [];
+    }
+
+    const updateRajObject = (data, exception, additionalData, callback) => {
+        //devConsoleLog(['SRAJ_CALL_BEFORE_REPLACE', data]);
+        let onlyTutotrialCloseInternalFunction = false;
+        if (data[RajData.TUTORIAL_CLOSE_INTERNAL_FUNCTION] && lengthObject(data)) {
+            onlyTutotrialCloseInternalFunction = true
+        }
+
+        if (!onlyTutotrialCloseInternalFunction) {
+
+            if (getDebug(CFG.DEBUG_KEYS.SRAJ)) {
+                //devConsoleLog('SRAJ_CALL_BEFORE_REPLACE', GET_HARD_COPY_STRUCTURE(data), additionalData);
+            }
+            data = rajFullJSONReplacer.getRajDataAfterAllReplace(data);
+            if (getDebug(CFG.DEBUG_KEYS.SRAJ)) {
+                devConsoleLog('SRAJ_CALL_AFTER_REPLACE', data, additionalData);
+            }
+
+        }
 
         for (let beforeDataAddress in data) {
 
             if (exception && exception.indexOf(beforeDataAddress) > -1) continue;
             let key = BEFORE_ + beforeDataAddress;
-            if (dispatcher[key]) dispatcher[key](data[beforeDataAddress], additionalData);
+            if (dispatcher[key]) {
+                dispatcher[key](data[beforeDataAddress], additionalData, callback);
+            }
         }
 
         for (let onDataAddress in data) {
 
             if (exception && exception.indexOf(onDataAddress) > -1) continue;
             let key = ON_ + onDataAddress;
-            if (dispatcher[key]) dispatcher[key](data[onDataAddress], additionalData);
+            if (dispatcher[key]) {
+                dispatcher[key](data[onDataAddress], additionalData, callback);
+            }
         }
 
         for (let onDataAddress in data) {
 
             if (exception && exception.indexOf(onDataAddress) > -1) continue;
             let key = AFTER_ + onDataAddress;
-            if (dispatcher[key]) dispatcher[key](data[onDataAddress], additionalData);
+            if (dispatcher[key]) {
+                dispatcher[key](data[onDataAddress], additionalData, callback);
+            }
         }
     };
+
+    const manageSrajBeforeSuccessRespond = () => {
+        setAddSrajToQueue(true);
+        clearRajQueue();
+    };
+
+    const manageSrajAfterSuccessRespond = () => {
+        setAddSrajToQueue(false);
+        callSrajQueue()
+        clearRajQueue();
+    }
 
     const initDispatcher = function() {
 
@@ -153,6 +331,13 @@ module.exports = function() {
             [ON_ + RajData.TUTORIAL]: function(v) {
                 Engine.tutorialManager.startTutorialFromRayController(v)
             },
+            [ON_ + RajData.TUTORIAL_CLOSE_INTERNAL_FUNCTION]: function(v) {
+                Engine.tutorialManager.checkCanFinishExternalAndFinish(v)
+            },
+            [ON_ + RajData.CALLBACK_INTERNAL_FUNCTION]: function(v, additionalData, callback) {
+                //Engine.tutorialManager.checkCanFinishExternalAndFinish(v)
+                callback();
+            },
             [ON_ + RajData.BATTLE_EVENTS]: function(v, additionalData) {
                 //debugger;
                 Engine.rajBattleEvents.updateData(v, additionalData);
@@ -175,6 +360,9 @@ module.exports = function() {
             },
             [ON_ + RajData.CAMERA]: function(v, additionalData) {
                 Engine.rajCamera.updateData(v, additionalData);
+            },
+            [ON_ + RajData.JS_SCRIPT]: function(v, additionalData) {
+                eval(v);
             },
             [ON_ + RajData.DIALOGUE]: function(v, additionalData) {
                 Engine.rajDialogue.updateData(v, additionalData);
@@ -221,8 +409,14 @@ module.exports = function() {
             [ON_ + RajData.MAP_MUSIC]: function(v, additionalData) {
                 Engine.rajMapMusicManager.updateData(v, additionalData);
             },
+            [ON_ + RajData.SRAJ_WINDOW]: function(v, additionalData) {
+                Engine.rajWindowManager.updateData(v, additionalData);
+            },
             [AFTER_ + RajData.ZOOM]: function(v, additionalData) {
                 Engine.rajZoomManager.updateData(v, additionalData);
+            },
+            [AFTER_ + RajData.CANVAS_FILTER]: function(v, additionalData) {
+                Engine.rajCanvasFilter.updateData(v, additionalData);
             },
             [AFTER_ + RajData.CONNECT_SRAJ]: function(v, additionalData) {
                 for (let i = 0; i < v.length; i++) {
@@ -411,7 +605,7 @@ module.exports = function() {
     }
 
     this.testPreventRepeatAttackNpcTutorial = () => {
-        let o = '{"tutorial":{"textPc":"Podejdz do zioma tekst","textMobile":"Podejdz do zioma tekst","headerPc":"Podejdz do zioma header","headerMobile":"Podejdz do zioma header","htmlPositionOffset":{"left":10,"top":0},"htmlPosition":".tutorial-banner-anchor","graphic":"/img/gui/newTutorial/8.gif","htmlMultiGlow":[".widget-in-interface-bar.widget-npc-talk-icon"],"canvasMultiGlow":{"objects":[{"typeObject":"npc","id":1}]},"canvasPosition":{"typeObject":"npc","id":76972},"blink":true,"preventRepeat":{"name":"asd"},"onFinish":{"require":[{"attackNpcId":76972}]}}}';
+        let o = '{"tutorial":{"id":-1132134,"textPc":"Podejdz do zioma tekst","textMobile":"Podejdz do zioma tekst","headerPc":"Podejdz do zioma header","headerMobile":"Podejdz do zioma header","htmlPositionOffset":{"left":10,"top":0},"htmlPosition":".tutorial-banner-anchor","graphic":"/img/gui/newTutorial/8.gif","htmlMultiGlow":[".widget-in-interface-bar.widget-npc-talk-icon"],"canvasMultiGlow":{"list":[{"kind":"NPC","id":104271}]},"canvasPosition":{"kind":"NPC","id":104271},"blink":true,"preventRepeat":{"name":"asd"},"onFinish":{"require":[{"attackNpcId":104271}]}}}';
         parseJSON(o)
     }
 
@@ -545,6 +739,56 @@ module.exports = function() {
 
     this.testGetTemplate = () => {
         let o = '{"template":{"0":{"action":"CREATE","windowTarget":"MAP","effect":"ANIMATION","target":{"kind":"FAKE_NPC"},"params":{"position":"RIGHT","gifUrl":"204_blyskawiczny-atak.gif","repeat":1}},"1":{"action":"CREATE","windowTarget":"MAP","effect":"TEXT","target":{"kind":"FAKE_NPC"},"params":{"position":"TOP","text":["one","two","three","four","five","six","seven","eight"]}}},"fakeNpc":{"list":[{"action":"CREATE","id":0,"x":1,"y":5,"img":"/noob/hm.gif","behavior":{"repeat":true,"list":[{"name":"WALK_AND_TP_START","x":13,"y":7,"speed":2,"external_properties":{"characterEffect":{"list":[{"getTpl":0,"name":"Sralala1","target":{"id":0}}]}}}]}},{"action":"CREATE","id":1,"x":2,"y":8,"img":"/noob/hm.gif","click":{"characterEffect":{"list":[{"getTpl":1,"name":"textText2","target":{"id":1},"params":{"repeat":1,"random":"ONE","height":20,"color":"0,255,0"}},{"getTpl":0,"name":"anim1","target":{"id":1},"params":{"position":"CENTER"}}]}},"behavior":{"repeat":true,"list":[{"name":"IDLE"}]}}]}}';
+        parseJSON(o);
+    }
+
+    this.testSrajWindow0 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":"0","header":"Nazwa okienka","overlay":true,"list":[{"name":"TEXT","text":"[center]Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore eo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. r adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Totam rem odit aut fugit. Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON_CONTAINER","list":[{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}},{"name":"BUTTON","label":"CANCEL","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}]}}'
+        parseJSON(o);
+    }
+
+    this.testSrajWindow1 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":"1","header":"Nazwa okienka","list":[{"name":"TEXT","text":"[center]Lorem ipsptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur e dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit. Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}}'
+        parseJSON(o);
+    }
+
+    this.testSrajWindow2 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":"2","header":"Nazwa okienka","list":[{"name":"TEXT","text":"[center]Lorem ips nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis au, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit. Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON_CONTAINER","list":[{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}},{"name":"BUTTON","label":"MAYBE","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}},{"name":"BUTTON","label":"CANCEL","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}]}}'
+        parseJSON(o);
+    }
+
+    this.testSrajWindow3 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":"2","header":"Nazwa okienka","list":[{"name":"TEXT","text":"[center]Lorem ips nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis au, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit. Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON_CONTAINER","list":[{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}},{"name":"BUTTON","label":"MAYBE","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}},{"name":"BUTTON","label":"CANCEL","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}]}}'
+        parseJSON(o);
+    }
+
+    this.testSrajWindow4 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":3,"header":"Nazwa okienka","position":{"canvasPosition":{}},"list":[{"name":"TEXT","text":"[center]Lorem ipsptate quia dolor sit amet.[/center][br]"},{"name":"IMAGE","url":"chmury/obj2.png"},{"name":"TEXT","text":"[center]Lorem ipsptati dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}}'
+        parseJSON(o);
+    }
+
+    this.testSrajWindow5 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":3,"header":"Nazwa okienka","position":{"canvasPosition":{}},"list":[{"name":"TEXT","text":"[center]Lorem ipsptate quia dolor sit amet.[/center][br]"},{"name":"IMAGE","url":"chmury/obj1.png"},{"name":"TEXT","text":"[center]Lorem ipsptati dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}}'
+        parseJSON(o);
+    }
+
+    this.testSrajWindow6 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":3,"header":"Nazwa okienka","position":{"canvasPosition":{}},"list":[{"name":"TEXT","text":"[center]Lorem ipsptate quia dolor sit amet.[/center][br]"},{"name":"IMAGE","url":"chmury/obj1.png"},{"name":"TEXT","text":"[center]Lorem ipsptati dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"IMAGE","url":"chmury/obj1.png"},{"name":"TEXT","text":"[center]Lorem ipsptati dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}}'
+        parseJSON(o);
+    }
+
+    this.testSrajWindow7 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":3,"header":"Nazwa okienka","position":{"target":{"kind":"HERO"}},"list":[{"name":"TEXT","text":"[center]Lorem ipsptate quia dolor sit amet.[/center][br]"},{"name":"IMAGE","url":"chmury/obj1.png"},{"name":"TEXT","text":"[center]Lorem ipsptati dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"IMAGE","url":"chmury/obj1.png"},{"name":"TEXT","text":"[center]Lorem ipsptati dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}}'
+        parseJSON(o);
+    }
+
+    this.testSrajWindow8 = () => {
+        let o = '{"srajWindow":{"list":[{"action":"CREATE","id":3,"header":"Nazwa okienka","position":{"htmlTarget":".interface-layer>.right-column.main-column"},"list":[{"name":"TEXT","text":"[center]Lorem ipsptate quia dolor sit amet.[/center][br]"},{"name":"IMAGE","url":"chmury/obj1.png"},{"name":"TEXT","text":"[center]Lorem ipsptati dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"IMAGE","url":"chmury/obj1.png"},{"name":"TEXT","text":"[center]Lorem ipsptati dolorem ipsum quia dolor sit amet.[/center][br]"},{"name":"BUTTON","label":"OK","click":{"external_properties":{},"function":"CLOSE","jsScript":"console.log()"}}]}]}}'
+        parseJSON(o);
+    }
+
+    this.removeSrajWindow = () => {
+        let o = '{"srajWindow":{"list":[{"action":"REMOVE","id":"2"}]}}';
         parseJSON(o);
     }
 
@@ -753,7 +997,22 @@ module.exports = function() {
     }
 
     this.testRajEmoCreate = () => {
-        let o = '{"emoDefinitions":{"list":[{"name":"NPC_SL_SHOP","priority":65,"params":{"action":"OnSelf","filename":"battle.gif","offset":[0,-4]}}]},"emoActions":{"list":[{"action":"CREATE","name":"NPC_SL_SHOP","target":{"kind":"NPC","id":150951}}]}}';
+        let o = '{"emoDefinitions":{"list":[{"name":"NPC_SL_SHOP","priority":65,"params":{"action":"OnSelf","filename":"battle.gif","offsetX": 20,"offsetY": 20}}]},"emoActions":{"list":[{"action":"CREATE","name":"NPC_SL_SHOP","target":{"kind":"NPC","id":150951}}]}}';
+        parseJSON(o);
+    };
+
+    this.testRajEmoCreate2 = () => {
+        let o = '{"emoDefinitions":{"list":[{"name":"NPC_SL_SHOP","priority":65,"params":{"action":"StickToMap","filename":"battle.gif"}}]},"emoActions":{"list":[{"action":"CREATE","name":"NPC_SL_SHOP","target":{"kind":"MAP","id":1,"x":10,"y":20}}]}}';
+        parseJSON(o);
+    };
+
+    this.testRajEmoCreate3 = () => {
+        let o = '{"emoActions":{"list":[{"action":"REMOVE","name":"NPC_SL_SHOP","target":{"kind":"MAP","id":1}}]}}';
+        parseJSON(o);
+    };
+
+    this.testRajEmoCreate4 = () => {
+        let o = '{"emoDefinitions":{"list":[{"name":"NPC_SL_SHOP","priority":65,"params":{"action":"StickToMap","filename":"shop_mark.gif"}}]},"emoActions":{"list":[{"action":"CREATE","name":"NPC_SL_SHOP","target":{"kind":"MAP","id":1,"x":10,"y":20}}]}}';
         parseJSON(o);
     };
 
@@ -933,6 +1192,11 @@ module.exports = function() {
         parseJSON(o);
     }
 
+    this.testSoundRemove = () => {
+        let o = '{"sound":{"list":[{"id":0,"action":"REMOVE"}]}}';
+        parseJSON(o);
+    }
+
     this.testSoundRepeat = () => {
         let o = '{"sound":{"list":[{"id":0,"action":"CREATE","repeat":2,"url":"kogut01.mp3"}]}}';
         parseJSON(o);
@@ -992,7 +1256,7 @@ module.exports = function() {
     }
 
     this.testBehaviorDynamicLight = () => {
-        let o = '{"behaviorDynamicLight":{"list":[{"id":0,"action":"CREATE","d":{"x":10,"y":10,"r":200,"light":{"r":20,"color":{"r":0,"g":0,"b":0,"a":1}},"behavior":{"list":[{"name":"IDLE"},{"name":"MOVE_TO_CORDS","x":5,"y":15},{"name":"TRANSITION_AND_MOVE_TO_CORDS","x":5,"y":15,"light":{"color":{"r":0,"g":0,"b":0,"a":1}}},{"name":"TRANSITION","light":{"color":{"r":200,"g":200,"b":200,"a":1}}},{"name":"TRANSITION","r":400},{"name":"TRANSITION","light":{"r":40,"color":{"r":100,"g":100,"b":100,"a":1}}}]}}}]}}';
+        let o = '{"behaviorDynamicLight":{"list":[{"id":321213,"configurationType":"ANIMATION","action":"CREATE","d":{"x":10,"y":10,"r":200,"light":{"r":20,"color":{"r":255,"g":0,"b":0,"a":1}},"behavior":{"list":[{"name":"IDLE"},{"name":"MOVE_TO_CORDS","x":5,"y":15},{"name":"TRANSITION_AND_MOVE_TO_CORDS","x":5,"y":15,"light":{"color":{"r":0,"g":0,"b":0,"a":1}}},{"name":"TRANSITION","light":{"color":{"r":200,"g":200,"b":200,"a":1}}},{"name":"TRANSITION","r":400},{"name":"TRANSITION","light":{"r":40,"color":{"r":100,"g":100,"b":100,"a":1}}}]}}}]}}';
         parseJSON(o);
     }
 
@@ -1049,11 +1313,6 @@ module.exports = function() {
 
     this.testInterfaceSkin2 = () => {
         let o = '{"interfaceSkin":{"clear":true}}';
-        parseJSON(o);
-    }
-
-    this.testInterfaceSkin3 = () => {
-        let o = '{"interfaceSkin":{"name":"neuro"}}';
         parseJSON(o);
     }
 
@@ -1149,7 +1408,14 @@ module.exports = function() {
 
     this.testBehaviorDynamicLight2 = () => {
         let o = `
-{"behaviorDynamicLight":{"list":[{"id":0,"action":"CREATE","d":{"x":10,"y":10,"r":200,"light":{"r":20,"color":{"r":255,"g":0,"b":0,"a":1}},"behavior":{"repeat":true,"list":[{"name":"IDLE"},{"name":"MOVE","x":10,"y":20},{"name":"IDLE","duration":1},{"name":"MOVE","x":20,"y":20}]}}}]}}
+            {"behaviorDynamicLight":{"list":[{"id":0,"action":"CREATE","d":{"x":10,"y":10,"r":200,"light":{"r":20,"color":{"r":255,"g":0,"b":0,"a":1}},"behavior":{"repeat":true,"list":[{"name":"IDLE"},{"name":"MOVE_TO_CORDS","x":10,"y":20},{"name":"IDLE","duration":1},{"name":"MOVE_TO_CORDS","x":20,"y":20}]}}}]}}
+        `
+        parseJSON(o);
+    }
+
+    this.testBehaviorDynamicLight3 = () => {
+        let o = `
+            {"behaviorDynamicLight":{"list":[{"id":0,"action":"CREATE","d":{"x":10,"y":10,"r":200,"light":{"onlyNight":true,"r":20,"color":{"r":255,"g":0,"b":0,"a":1}},"behavior":{"repeat":true,"list":[{"name":"IDLE"},{"name":"MOVE_TO_CORDS","x":10,"y":20},{"name":"IDLE","duration":1},{"name":"MOVE_TO_CORDS","x":20,"y":20}]}}}]}}
         `
         parseJSON(o);
     }
@@ -1407,6 +1673,370 @@ module.exports = function() {
     }
 
 
+    this.getForIndexInForVarsTest = () => {
+        Engine.rajController.parseObject({
+            "floatObject": {
+                "list": [{
+                    "getFor": {
+                        "idPrefix": "BOOM2-",
+                        "iterations": 20,
+
+                        "forVars": [{
+                                "x": 5
+                            },
+                            {
+                                "x": {
+                                    "getMath": {
+                                        "resultType": "int",
+                                        "list": [{
+                                            "v": {
+                                                "getForVar": "index"
+                                            }
+                                        }, {
+                                            "a": "+"
+                                        }, {
+                                            "v": 1
+                                        }]
+                                    }
+                                }
+                            },
+                            {
+                                "x": 15
+                            },
+                            {
+                                "x": 20
+                            }
+
+
+                        ],
+                        "data": {
+                            "action": "CREATE",
+                            "url": "chmury/obj2.png",
+                            "x": {
+                                "getForVar": "x"
+                            },
+                            "y": 10,
+                            "color": {
+                                "r": 255,
+                                "g": 163,
+                                "b": 242,
+                                "a": 0.6
+                            },
+                            "behavior": {
+                                "repeat": true,
+                                "list": [{
+                                    "name": "IDLE"
+                                }]
+                            }
+                        }
+                    }
+                }]
+            }
+        })
+    }
+
+    this.getForForVarsEachIterationTest = () => {
+        let o = {
+            "floatObject": {
+                "list": [{
+                    "getFor": {
+                        "idPrefix": "BOOM2-",
+                        "forVarsEachIteration": {
+                            "y": {
+                                "getMath": {
+                                    "resultType": "int",
+                                    "list": [{
+                                            "v": 2
+                                        },
+                                        {
+                                            "a": "*"
+                                        },
+                                        {
+                                            "v": {
+                                                "getForVar": "index"
+                                            }
+                                        },
+                                        {
+                                            "a": "+"
+                                        },
+                                        {
+                                            "v": 10
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "forVars": [{
+                                "x": 5
+                            },
+                            {
+                                "x": 10
+                            },
+                            {
+                                "x": 15
+                            },
+                            {
+                                "x": 20
+                            },
+                            {
+                                "x": {
+                                    "getMath": {
+                                        "resultType": "int",
+                                        "list": [{
+                                            "v": {
+                                                "getForVar": "index"
+                                            }
+                                        }, {
+                                            "a": "+"
+                                        }, {
+                                            "v": 1
+                                        }]
+                                    }
+                                }
+                            }
+                        ],
+                        "data": {
+                            "action": "CREATE",
+                            "url": "chmury/obj2.png",
+                            "x": {
+                                "getForVar": "x"
+                            },
+                            "y": {
+                                "getForVar": "y"
+                            },
+                            "color": {
+                                "r": 255,
+                                "g": 163,
+                                "b": 242,
+                                "a": 0.6
+                            },
+                            "behavior": {
+                                "repeat": true,
+                                "list": [{
+                                    "name": "IDLE"
+                                }]
+                            }
+                        }
+                    }
+                }]
+            }
+        }
+        Engine.rajController.parseObject(o);
+    }
+
+    this.getForForVarsEachIterationIterationsTest = () => {
+        let o = {
+            "floatObject": {
+                "list": [{
+                    "getFor": {
+                        "idPrefix": "BOOM2-",
+                        "iterations": 20,
+                        "forVarsEachIteration": {
+                            "x": {
+                                "getMath": {
+                                    "resultType": "int",
+                                    "list": [{
+                                            "v": 2
+                                        },
+                                        {
+                                            "a": "*"
+                                        },
+                                        {
+                                            "v": {
+                                                "getForVar": "index"
+                                            }
+                                        },
+                                        {
+                                            "a": "+"
+                                        },
+                                        {
+                                            "v": 10
+                                        }
+                                    ]
+                                }
+                            },
+                            "y": {
+                                "getMath": {
+                                    "resultType": "float",
+                                    "list": [{
+                                            "v": 0.5
+                                        },
+                                        {
+                                            "a": "*"
+                                        },
+                                        {
+                                            "v": {
+                                                "getForVar": "index"
+                                            }
+                                        },
+                                        {
+                                            "a": "+"
+                                        },
+                                        {
+                                            "v": 10
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "data": {
+                            "action": "CREATE",
+                            "url": "chmury/obj2.png",
+                            "x": {
+                                "getForVar": "x"
+                            },
+                            "y": {
+                                "getForVar": "y"
+                            },
+                            "color": {
+                                "r": 255,
+                                "g": 163,
+                                "b": 242,
+                                "a": 0.6
+                            },
+                            "behavior": {
+                                "repeat": true,
+                                "list": [{
+                                    "name": "IDLE"
+                                }]
+                            }
+                        }
+                    }
+                }]
+            }
+        }
+        Engine.rajController.parseObject(o);
+    }
+
+    this.ignoreStartAndEndCollision = () => {
+        let o = {
+            "fakeNpc": {
+                "list": [{
+                    "action": "CREATE_FORCE",
+                    "id": "perhana-dziecko-1",
+                    "x": 39,
+                    "y": 51,
+                    "img": "npc/tor-perhana-0.gif",
+                    "instantCreateFadeIn": true,
+                    "instantRemoveFadeOut": true,
+                    "behavior": {
+                        "repeat": true,
+                        "list": [{
+                            "name": "WALK_AND_TP_START",
+                            "x": 54,
+                            "y": 55,
+                            "speed": 4,
+                            "ignoreStartCollision": true,
+                            "ignoreEndCollision": true
+                        }]
+                    }
+                }]
+            }
+        }
+        Engine.rajController.parseObject(o)
+    }
+
+    this.getForForVarsEachIterationIterationsTest2 = () => {
+        let o = {
+            "floatObject": {
+                "list": [{
+                    "getFor": {
+                        "idPrefix": "BOOM2-",
+                        "iterations": 20,
+                        "forVarsEachIteration": {
+                            "x": {
+                                "getMath": {
+                                    "resultType": "int",
+                                    "list": [{
+                                            "v": 2
+                                        },
+                                        {
+                                            "a": "*"
+                                        },
+                                        {
+                                            "v": {
+                                                "getForVar": "index"
+                                            }
+                                        },
+                                        {
+                                            "a": "+"
+                                        },
+                                        {
+                                            "v": 10
+                                        }
+                                    ]
+                                }
+                            },
+                            //"y" : {"getMath":{"resultType":"float","list":[
+                            //    {"v":2},
+                            //    {"a":"*"},
+                            //    {"a":"SIN"},
+                            //    {"v":{"getForVar":"index"}},
+                            //    {"a":"+"},
+                            //    {"v":20}
+                            //]}},
+                            "y": {
+                                "getMath": {
+                                    "resultType": "float",
+                                    "list": [{
+                                            "v": 2
+                                        },
+                                        {
+                                            "a": "*"
+                                        },
+                                        {
+                                            "a": "SIN"
+                                        },
+                                        {
+                                            "a": "("
+                                        },
+                                        {
+                                            "v": {
+                                                "getForVar": "index"
+                                            }
+                                        },
+                                        {
+                                            "a": ")"
+                                        },
+                                        {
+                                            "a": "+"
+                                        },
+                                        {
+                                            "v": 20
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "data": {
+                            "action": "CREATE",
+                            "url": "chmury/obj2.png",
+                            "x": {
+                                "getForVar": "x"
+                            },
+                            "y": {
+                                "getForVar": "y"
+                            },
+                            "color": {
+                                "r": 255,
+                                "g": 0,
+                                "b": 0,
+                                "a": 1
+                            },
+                            "behavior": {
+                                "repeat": true,
+                                "list": [{
+                                    "name": "IDLE"
+                                }]
+                            }
+                        }
+                    }
+                }]
+            }
+        }
+        Engine.rajController.parseObject(o);
+    }
+
     this.attachScaleAttachRotation = () => {
         let o = `{"floatObject":{"list":[{"action":"CREATE","behavior":{"repeat":true,"list":[{"attachRotation":{"addAngle":180},"attachScale":{"vals":[{"duration":5,"scale":0.5},{"duration":5,"scale":5}]},"duration":5,"name":"IDLE"},{"name":"MOVE_TO_CORDS","x":20,"y":10},{"name":"MOVE_TO_CORDS","x":10,"y":10}]},"color":{"a":1,"b":0,"g":165,"r":255},"configurationType":"WEATHER","id":"attachScaleAttachRotationTest","url":"chmury/obj1.png","x":15,"y":10}]}}`;
         parseJSON(o)
@@ -1437,12 +2067,61 @@ module.exports = function() {
         parseJSON(o)
     }
 
+    this.ignoreUpdateCollisionAndStartEndPosIthan = () => {
+        let o = `{"fakeNpc":{"list":[{"action":"CREATE","x":51,"y":53,"id":"ignore-collision-0","img":"/noob/hm.gif","speed":5,"ignoreUpdateCollisionAndStartEndPos":true,"behavior":{"list":[{"name":"IDLE","duration":0.1},{"name":"WALK","x":54,"y":55},{"name":"WALK","x":49,"y":57},{"name":"WALK_START"}]}}]}}`;
+        parseJSON(o);
+    }
+
+    this.tutorialOrRequire = () => {
+        Engine.rajController.parseObject({
+            "tutorial": {
+                "id": -2,
+                "textPc": "",
+                "textMobile": "",
+                "headerPc": "Interaction with NPCs",
+                "headerMobile": "Interaction with NPCs",
+                "graphic": "/img/gui/newTutorial/8_eng.gif",
+                "draggableWnd": false,
+                "htmlPositionOffset": {
+                    "left": 10,
+                    "top": -30
+                },
+                "htmlPosition": ".tutorial-banner-anchor",
+                "onFinish": {
+                    "requireConnector": "OR",
+                    "require": [{
+                            "talkNpcId": 330192
+                        },
+                        {
+                            "talkNpcId": 330194
+                        }
+                    ]
+                }
+            }
+        })
+    }
+
+
+    const getAddSrajToQueue = () => {
+        return addSrajToQueue;
+    }
+
+    const getAddSrajToCaseQueue = () => {
+        return addSrajToCaseQueue;
+    }
 
     this.init = init;
     this.parseJSON = parseJSON;
     this.checkRajKeyExist = checkRajKeyExist;
+    this.getAddSrajToQueue = getAddSrajToQueue;
     this.parseObject = parseObject;
     this.addSrajClass = addSrajClass;
+    this.callSrajQueue = callSrajQueue;
     this.getAllSrajClass = getAllSrajClass;
+    this.addToCaseSrajQueue = addToCaseSrajQueue;
+    this.getAddSrajToCaseQueue = getAddSrajToCaseQueue;
+    this.manageSrajBeforeSuccessRespond = manageSrajBeforeSuccessRespond;
+    this.manageSrajAfterSuccessRespond = manageSrajAfterSuccessRespond;
+    this.callSrajFromEngine = callSrajFromEngine;
 
 }

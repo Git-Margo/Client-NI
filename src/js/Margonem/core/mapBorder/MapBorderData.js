@@ -1,0 +1,14 @@
+module.exports = {
+    RENDER_CONNECT_IMAGE_BORDER_WIDTH: 50,
+    RENDER_CONNECT_IMAGE_BORDER_HEIGHT: 100,
+
+    ACTION: {
+        CREATE: "CREATE",
+        REMOVE: "REMOVE"
+    },
+
+    KIND: {
+        QUEST_MAP: "QUEST_MAP",
+        QUEST_TRACKING_AREA: "QUEST_TRACKING_AREA"
+    }
+}

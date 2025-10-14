@@ -1,4 +1,4 @@
-var BusinessCard = require('core/businessCards/BusinessCard');
+var BusinessCard = require('@core/businessCards/BusinessCard');
 
 module.exports = function() {
 

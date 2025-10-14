@@ -1,5 +1,5 @@
 let imgLoader;
-let gif = require('core/GifReader');
+let gif = require('@core/GifReader');
 
 function ImgLoader() {
 
@@ -8,6 +8,10 @@ function ImgLoader() {
     }
     let graphicList = {};
     let graphicListGifReader = {};
+
+    let graphicListFilter = {};
+    let graphicListGifReaderFilter = {};
+
     let preLoadSuccessLoadedList = {};
 
     let yellowCanvas;
@@ -25,10 +29,7 @@ function ImgLoader() {
                 }
             },
             //{url: '../img/gui/dialogue/dialogue-border.png',                gifReader: false},
-            {
-                url: '../img/gui/dialogue/dialogue-header.png',
-                gifReader: false
-            },
+            //{url: '../img/gui/dialogue/dialogue-header.png',                gifReader: false},
             //{url: '../img/gui/buttony.png',                                 gifReader: false},
             {
                 url: '../img/gui/buttony.png',
@@ -40,6 +41,14 @@ function ImgLoader() {
             },
             {
                 url: CFG.oimg + "/questMapBorder/questMapMiddleBorder.png",
+                gifReader: false
+            },
+            {
+                url: CFG.oimg + "/questMapBorder/questTrackingCornerBorder.png",
+                gifReader: false
+            },
+            {
+                url: CFG.oimg + "/questMapBorder/questTrackingMiddleBorder.png",
                 gifReader: false
             },
             //{url: '../img/gui/buttony.png',                     gifReader: false},
@@ -75,6 +84,95 @@ function ImgLoader() {
 
         if (gifReader) this.gifReaderStrategy(img, path, gifReaderData, beforeOnloadCallback, afterOnloadCallback, onError, reload429);
         else this.imageReaderStrategy(img, path, beforeOnloadCallback, afterOnloadCallback, onError, reload429);
+    };
+
+    this.getImgWithFilter = (path, filter, gif) => {
+        if (gif) {
+            if (!graphicListGifReaderFilter[path]) {
+                graphicListGifReaderFilter[path] = {};
+            }
+
+            let img = this.checkExist(path, {});
+
+            if (!img) {
+                return null
+            }
+
+
+            //return createFilterImage(img, filter)
+
+            if (!graphicListGifReaderFilter[path][filter]) {
+                graphicListGifReaderFilter[path][filter] = createFilterImage(img, filter)
+            }
+
+            return graphicListGifReaderFilter[path][filter]
+
+        } else {
+            if (!graphicListFilter[path]) {
+                graphicListFilter[path] = {};
+            }
+
+            let img = this.checkExist(path, null);
+
+            if (!img) {
+                return null
+            }
+
+            //return createFilterImage(img, filter)
+
+            if (!graphicListFilter[path][filter]) {
+                graphicListFilter[path][filter] = createFilterImage(img, filter)
+            }
+
+            return graphicListFilter[path][filter]
+
+        }
+    }
+
+    this.clearFilters = () => {
+        graphicListFilter = {};
+        graphicListGifReaderFilter = {};
+    }
+
+    const createFilterImage = (img, filter) => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        if (filter == "binary") {
+
+            binanryFilter(canvas);
+
+        } else {
+            ctx.filter = filter;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }
+
+
+
+        return canvas
+    };
+
+    const binanryFilter = (canvas) => {
+
+        const ctx = canvas.getContext("2d");
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        const threshold = 128;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const brightness = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            const value = brightness > threshold ? 255 : 0;
+
+            data[i] = value;
+            data[i + 1] = value;
+            data[i + 2] = value;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
     };
 
     this.getEmptyImage = () => {
@@ -328,6 +426,10 @@ function init(list) {
     imgLoader.init(list);
 }
 
+function getImgWithFilter(path, filter, gif) {
+    return imgLoader.getImgWithFilter(path, filter, gif);
+}
+
 function onload(path, gifReaderData, beforeOnloadCallback, afterOnloadCallback, onError) {
     imgLoader.onload(path, gifReaderData, beforeOnloadCallback, afterOnloadCallback, onError);
 }
@@ -344,10 +446,21 @@ function getYellowCanvas() {
     return imgLoader.getYellowCanvas();
 }
 
+function checkExist(url, gifReader) {
+    return imgLoader.checkExist(url, gifReader);
+}
+
+function clearFilters() {
+    return imgLoader.clearFilters();
+}
+
 module.exports = {
     init,
     onload,
+    getImgWithFilter,
     manageUnlockImages,
     getYellowCanvas,
-    preLoadImages
+    preLoadImages,
+    clearFilters,
+    checkExist,
 };

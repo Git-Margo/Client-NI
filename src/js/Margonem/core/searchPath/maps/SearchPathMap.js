@@ -1,4 +1,4 @@
-var BaseMap = require("core/searchPath/maps/BaseMap");
+var BaseMap = require('@core/searchPath/maps/BaseMap');
 
 var SearchPathMap = function(size) {
     BaseMap.call(this, size.x, size.y, 8);

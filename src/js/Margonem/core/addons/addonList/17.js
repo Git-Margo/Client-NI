@@ -1,6 +1,16 @@
+const FormBuilder = require("@core/formBuilder/FormBuilder");
+const {
+    FieldTypes
+} = require("@core/formBuilder/FormBuilderData");
+const {
+    convertStringNumbers
+} = require("@core/HelpersTS");
+const InputMaskData = require("@core/InputMaskData");
+const {
+    isMobileApp
+} = require('@core/HelpersTS');
 module.exports = function() {
     const
-        //addonKey = 'addon_17',
         addonKey = Engine.windowsData.name.addon_17,
         addonName = _t('elite_timer', null, 'elite_timer');
 
@@ -9,37 +19,52 @@ module.exports = function() {
     var oldTitle = null;
     var interval = null;
     let revive = false;
+    let formBuilder = null;
 
-    var msettings = ["elite", "elite2", "heroes", "titans", "hero-resp", "sound", "title"];
-    var issettings = ["fadeout"];
-    var defaultVal = {
-        //"speed": 1,
-        "fadeout": 60
-    };
-    var settingTip = {
-        "elite": _t("elite_tip", null, "elite_timer"),
-        "elite2": _t("elite2_tip", null, "elite_timer"),
-        "heroes": _t("heroes_tip", null, "elite_timer"),
-        "titans": _t("titans_tip", null, "elite_timer"),
-        "hero-resp": _t("hero-resp_tip", null, "elite_timer"),
-        "sound": _t("sound_tip", null, "elite_timer"),
-        "title": _t("title_tip", null, "elite_timer"),
-        //"speed": _t("speed_tip", null, "elite_timer"),
-        "fadeout": _t("fadeout_tip", null, "elite_timer")
-    };
-    var colorTab = ["long", "short", "pass"];
+    const SettingKeys = {
+        ELITE: 'elite',
+        ELITE2: 'elite2',
+        ELITE3: 'elite3',
+        HEROES: 'heroes',
+        TITANS: 'titans',
+        SPECIAL: 'special',
+        HERO_RESP: 'hero-resp',
+        SOUND: 'sound',
+        TITLE: 'title',
+        FADEOUT: 'fadeout',
+        SHOW: 'show',
+    }
 
-    var settings = {
-        elite: 1,
-        elite2: 1,
-        heroes: 1,
-        titans: 1,
-        "hero-resp": 1,
-        sound: 0,
-        title: 1,
-        //speed: 1,
-        fadeout: 60,
-        show: false
+    const settingTip = {
+        [SettingKeys.ELITE]: _t("elite_tip", null, "elite_timer"),
+        [SettingKeys.ELITE2]: _t("elite2_tip", null, "elite_timer"),
+        [SettingKeys.ELITE3]: _t("elite3_tip", null, "elite_timer"),
+        [SettingKeys.HEROES]: _t("heroes_tip", null, "elite_timer"),
+        [SettingKeys.TITANS]: _t("titans_tip", null, "elite_timer"),
+        [SettingKeys.SPECIAL]: _t("special_tip", null, "elite_timer"),
+        [SettingKeys.HERO_RESP]: _t("hero-resp_tip", null, "elite_timer"),
+        [SettingKeys.SOUND]: _t("sound_tip", null, "elite_timer"),
+        [SettingKeys.TITLE]: _t("title_tip", null, "elite_timer"),
+        [SettingKeys.FADEOUT]: _t("fadeout_tip", null, "elite_timer")
+    };
+    const colorTab = ["long", "short", "pass"];
+
+    const defaultValues = {
+        [SettingKeys.FADEOUT]: 60
+    };
+
+    let settings = {
+        [SettingKeys.ELITE]: 1,
+        [SettingKeys.ELITE2]: 1,
+        [SettingKeys.ELITE3]: 1,
+        [SettingKeys.HEROES]: 1,
+        [SettingKeys.TITANS]: 1,
+        [SettingKeys.SPECIAL]: 1,
+        [SettingKeys.HERO_RESP]: 1,
+        [SettingKeys.SOUND]: 0,
+        [SettingKeys.TITLE]: 1,
+        [SettingKeys.FADEOUT]: defaultValues[SettingKeys.FADEOUT],
+        [SettingKeys.SHOW]: false
     };
 
     const npcsTypes = {
@@ -58,6 +83,14 @@ module.exports = function() {
         4: {
             short: 'T',
             fullname: _t('tytan', null, 'npcs_kind')
+        },
+        5: {
+            short: 'E3',
+            fullname: _t('elita3', null, 'npcs_kind')
+        },
+        6: {
+            short: 'Spec',
+            fullname: _t('special', null, 'npcs_kind')
         },
     }
 
@@ -95,16 +128,22 @@ module.exports = function() {
             type = 2;
         } else if (e.d.wt > 9 && e.d.wt <= 19) {
             type = 1;
+        } else if (e.d.wt > 29 && e.d.wt <= 37) {
+            type = 5;
         } else if (e.d.wt > 79 && e.d.wt <= 89) { // heroes
             type = 3;
         } else if (e.d.wt > 99 && e.d.wt <= 109) { // titans
             type = 4;
+        } else {
+            type = 6
         }
-        const boolElite = type == 1 && settings.elite == 1;
-        const boolE2 = type == 2 && settings.elite2 == 1;
-        const boolHeroes = type == 3 && settings.heroes == 1;
-        const boolTitans = type == 4 && settings.titans == 1;
-        if (boolElite || boolE2 || boolHeroes || boolTitans) {
+        const boolElite = type === 1 && settings.elite;
+        const boolE2 = type === 2 && settings.elite2;
+        const boolHeroes = type === 3 && settings.heroes;
+        const boolTitans = type === 4 && settings.titans;
+        const boolE3 = type === 5 && settings.elite3;
+        const boolSpecial = type === 6 && settings.special;
+        if (boolElite || boolE2 || boolHeroes || boolTitans || boolE3 || boolSpecial) {
             addDeathNpc(e, type);
         }
     }
@@ -181,7 +220,8 @@ module.exports = function() {
     }
 
     function itemUsed(item) {
-        if (isset(item._cachedStats.revive)) {
+        //if (isset(item._cachedStats.revive)) {
+        if (item.issetReviveStat()) {
             revive = true;
             //console.log('revive');
         }
@@ -343,7 +383,8 @@ module.exports = function() {
         saveSkippedDeadsToLS();
     }
 
-    function saveConfToLS() {
+    function saveConfigToLS() {
+        if (settings[SettingKeys.FADEOUT] === '') settings[SettingKeys.FADEOUT] = defaultValues[SettingKeys.FADEOUT];
         Engine.serverStorage.sendData({
             [addonKey]: {
                 settings: settings
@@ -365,47 +406,30 @@ module.exports = function() {
 
     function closeEdit() {
         if (hwndEdit !== null) {
-            //hwndEdit.$.remove();
             hwndEdit.remove();
-            //delete hwndEdit;
             hwndEdit = null;
         }
     }
 
     function initEditWindow() {
-        //hwndEdit = new API.Window({
-        //	onclose: function () {
-        //		closeEdit();
-        //	}
-        //});
-        //hwndEdit.title(_t('option'));
-        //var content = API.Templates.get("window-list-edit")
-        //hwndEdit.content(content);
-        //hwndEdit.$.find(".all-options").css({
-        //	"margin-top": 9
-        //});
-        //hwndEdit.$.find('.buttons').wrap("<div class='bottom-bar'></div>");
-        //var $buttonsBar = hwndEdit.$.find('.bottom-bar');
-        //var $con = hwndEdit.$.find('.con');
-        //$buttonsBar.insertAfter($con);
-        //hwndEdit.$.find('.window-list-edit').addClass("elite-timer-edit");
-        //$('.alerts-layer').append(hwndEdit.$);
-
 
         hwndEdit = Engine.windowManager.add({
             content: API.Templates.get("window-list-edit"),
-            title: _t('option'),
+            title: `${addonName} - ${_t('config-lower')}`,
             //nameWindow          : 'addon_17_edit',
             nameWindow: Engine.windowsData.name.addon_17_edit,
+            type: Engine.windowsData.type.TRANSPARENT,
+            addClass: 'elite-timer-edit-window',
+            manageOpacity: 3,
+            managePosition: {
+                'x': 251,
+                'y': 100
+            },
             onclose: () => {
                 closeEdit();
             }
         });
 
-
-        hwndEdit.$.find(".all-options").css({
-            "margin-top": 9
-        });
         hwndEdit.$.find('.buttons').wrap("<div class='bottom-bar'></div>");
 
         var $buttonsBar = hwndEdit.$.find('.bottom-bar');
@@ -417,17 +441,88 @@ module.exports = function() {
     }
 
     function initEditAllOptions() {
-        var $hlist = hwndEdit.$.find('.all-options');
-        for (var t in msettings) {
-            createOneEditOption($hlist, msettings[t], 0);
-        }
-        //for (var t in isettings) {
-        //	createOneEditOption($hlist, isettings[t], 2);
-        //}
-        for (var t in issettings) {
-            createOneEditOption($hlist, issettings[t], 1);
-        }
+        const wrapperElement = hwndEdit.$[0].querySelector('.all-options');
+
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.ELITE),
+            ...getDefaultCheckboxData(SettingKeys.ELITE),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.ELITE2),
+            ...getDefaultCheckboxData(SettingKeys.ELITE2),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.ELITE3),
+            ...getDefaultCheckboxData(SettingKeys.ELITE3),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.HEROES),
+            ...getDefaultCheckboxData(SettingKeys.HEROES),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.TITANS),
+            ...getDefaultCheckboxData(SettingKeys.TITANS),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.SPECIAL),
+            ...getDefaultCheckboxData(SettingKeys.SPECIAL),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.HERO_RESP),
+            ...getDefaultCheckboxData(SettingKeys.HERO_RESP),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.SOUND),
+            ...getDefaultCheckboxData(SettingKeys.SOUND),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.TITLE),
+            ...getDefaultCheckboxData(SettingKeys.TITLE),
+            wrapperElement
+        });
+        formBuilder.createField({
+            ...getBaseFieldData(SettingKeys.FADEOUT),
+            ...getDefaultInputData(SettingKeys.FADEOUT),
+            wrapperElement
+        });
     }
+
+    const configValueOnChange = (name, value) => {
+        settings[name] = value;
+        saveConfigToLS();
+    }
+
+    const getBaseFieldData = (name) => ({
+        name,
+        label: _t(name, null, 'elite_timer'),
+        value: settings[name]
+    });
+
+    const getDefaultCheckboxData = (name) => ({
+        type: FieldTypes.CHECKBOX,
+        checkboxOptions: {
+            highlight: false,
+            tip: settingTip[name]
+        }
+    });
+    const getDefaultInputData = (name) => ({
+        type: FieldTypes.INPUT,
+        labelTip: settingTip[name],
+        inputOptions: {
+            type: InputMaskData.TYPE.NUMBER,
+            clear: false,
+            useDebounce: true,
+            tip: settingTip[name],
+        }
+    });
 
     function setTitle(txt) {
         if (oldTitle === null) {
@@ -444,7 +539,7 @@ module.exports = function() {
     }
 
     function updateTitle() {
-        if (settings.title == 0) {
+        if (!settings.title) {
             clearTitle();
             return;
         }
@@ -460,138 +555,72 @@ module.exports = function() {
         }
     }
 
-    function createOneEditOption($h, name, input) {
-        var $e = API.Templates.get("window-list-option");
-        $e.find('.window-list-option').addClass("elite-timer-opt");
-        $e.find(".txt-wrapper").css("width", "148px");
-        $e.find(".control-wrapper").css("width", "100px");
-        var $eMenu = $e.find(".control");
-        $e.attr("id", name);
-        $h.append($e);
-        var txt = $e.find(".text").text(_t(name, null, 'elite_timer'));
-        var $icon = $("<div>").addClass("info-icon");
-        txt.prepend($icon);
-        var stip = settingTip[name];
-        if (isset(stip)) {
-            $icon.tip(stip);
-        }
-        if (input == 0) {
-            var data = [{
-                'text': _t('yes'),
-                'val': 1
-            }, {
-                'text': _t('no'),
-                'val': 0
-            }];
-            $eMenu.createDivideButton(data, name);
-            var state = settings[name];
-            $eMenu.find('.option[value=' + state + ']').addClass('active');
-        } else if (input == 1) {
-            var ip = API.Templates.get("input");
-            ip.find("input")
-                .on("keydown", checkInput0)
-                .on("keyup", checkInput0)
-                .val(settings[name]);
-            //.attr("placeholder", _t("seconds", null, "elite_timer"));
-            $eMenu.append(ip);
-        } else {
-            var ip = API.Templates.get("input");
-            ip.find("input")
-                .on("keydown", checkInputD1a3)
-                .on("keyup", checkInputD1a3)
-                .val(settings[name]);
-            $eMenu.append(ip);
-        }
-    }
-
-    function initEditLabels() {
-        hwndEdit.$.find('.header').html(_t('elite_timer', null, 'elite_timer'));
-        /*
-        $("<div>").appendTo(hwndEdit.$.find('.labels')).css({
-        	"margin-left": 159
-        }).html(_t('state', null, 'elite_timer'));
-        */
-    }
-
-    function initEditSaveButton() {
-        var $btn = API.Templates.get('button').addClass('green');
-        $btn.find('.label').html(_t('save'));
-        hwndEdit.$.find('.buttons').append($btn);
-        $btn.on("click", function() {
-            saveEditToStore();
-        });
-    }
-
-    function saveEditToStore() {
-        for (var t in msettings) {
-            var $oneSet = hwndEdit.$.find("#" + msettings[t]);
-            var active = $oneSet.find(".active");
-            settings[msettings[t]] = active.attr('value');
-        }
-        //var isinp = isettings.concat(issettings);
-        var isinp = issettings;
-        for (var t in isinp) {
-            var $oneVal = hwndEdit.$.find("#" + isinp[t] + " input");
-            var val = parseInt($oneVal.val());
-            if (isNaN(val)) {
-                val = defaultVal[isinp[t]];
-            }
-            settings[isinp[t]] = val;
-        }
-        saveConfToLS();
-        closeEdit();
-    }
-
     function initWindow() {
-        //hwnd = new API.Window({
-        //	onclose: function () {
-        //		self.manageVisible();
-        //	},
-        //	name: 'addon_17',
-        //	type: 'transparent',
-        //	manageOpacity: 3,
-        //	managePosition:{x: 251, y: 100}
-        //});
-        //hwnd.title(_t("timer", null, "elite_timer"));
-        //var content = API.Templates.get('window-list');
-        //hwnd.content(content);
-        //hwnd.$.addClass("elite-timer");
-        //hwnd.$.find('.window-list').addClass("elite-timer-wnd");
-        //hwnd.$.find(".list").addClass("npc-list");
-        //hwnd.setTransparentWindon();
-        //hwnd.changeDraggableContainment('.game-window-positioner');
-        // hwnd.setSavePosWnd('addon_17', {
-        // 	x: '251',
-        // 	y: '100'
-        // });
-        //hwnd.$.hide();
-        //$('.alerts-layer').append(hwnd.$);
-        //hwnd.updatePos();
 
-        hwnd = Engine.windowManager.add({
+        let windowConfig = {
             content: API.Templates.get('window-list'),
             title: addonName,
             nameWindow: addonKey,
             widget: Engine.widgetsData.name.addon_17,
             type: Engine.windowsData.type.TRANSPARENT,
+            manageConfiguration: {
+                fn: function(e) {
+                    clickConfig(e);
+                }
+            },
             manageOpacity: 3,
             managePosition: {
                 'x': 251,
                 'y': 100
             },
+            //mobileMenu			: [[_t('ad_comment', null, 'extManager'), toggleAdd]],
             onclose: () => {
                 self.manageVisible();
             }
-        });
+        }
+
+        //hwnd = Engine.windowManager.add({
+        //	content             : API.Templates.get('window-list'),
+        //	title               : addonName,
+        //	nameWindow          : addonKey,
+        //	widget              : Engine.widgetsData.name.addon_17,
+        //	type                : Engine.windowsData.type.TRANSPARENT,
+        //	manageConfiguration : {fn:function (e) {clickConfig(e);}},
+        //	manageOpacity       : 3,
+        //	managePosition      : {'x': 251, 'y': 100},
+        //	mobileMenu			: [[_t('ad_comment', null, 'extManager'), toggleAdd]],
+        //	onclose: () => {
+        //		self.manageVisible();
+        //	}
+        //});
+
+        if (isMobileApp()) {
+            windowConfig.mobileMenu = [
+                [_t('ad_comment', null, 'extManager'), toggleAdd]
+            ];
+        }
+
+        hwnd = Engine.windowManager.add(windowConfig);
 
         hwnd.$.addClass("elite-timer");
         hwnd.$.find('.window-list').addClass("elite-timer-wnd");
         hwnd.$.find(".list").addClass("npc-list");
-        //hwnd.changeDraggableContainment('.game-window-positioner');
         hwnd.hide();
         hwnd.addToAlertLayer();
         hwnd.updatePos();
     }
+
+    const toggleAdd = () => {
+        //let $rowAdd = hwnd.$.find('.row-add');
+        //
+        //if ($rowAdd.css('display') == 'none') {
+        //	$rowAdd.css('display', 'block')
+        //} else {
+        //	$rowAdd.css('display', 'none')
+        //}
+
+        edit();
+    };
 
     function initAddBtn() {
         var $ctrls = hwnd.$.find(".window-controlls");
@@ -600,7 +629,7 @@ module.exports = function() {
             edit();
         });
         var allbg = $("<div>").addClass("add do-action-cursor").appendTo(el);
-        $("<div>").addClass("btn-add").appendTo(allbg);
+        $("<div>").html("+").addClass("btn-add").appendTo(allbg);
         $ctrls.append(el);
     }
 
@@ -627,7 +656,7 @@ module.exports = function() {
     }
 
     function checkInput0a60() {
-        var currentvalÂ = $(this).val();
+        var currentval = $(this).val();
         var correctval = currentval.replace(/[^0-9]/g, "");
         if (isNaN(parseInt(correctval))) correctval = "";
         if (correctval > 60) correctval = "60";
@@ -637,23 +666,10 @@ module.exports = function() {
     }
 
     function checkInput0() {
-        var currentvalÂ = $(this).val();
+        var currentval = $(this).val();
         var correctval = currentval.replace(/[^0-9]/g, "");
         if (isNaN(parseInt(correctval))) correctval = "";
         if (correctval < 0) correctval = "0";
-        if (currentval !== correctval)
-            $(this).val(correctval);
-    }
-
-    function checkInputD1a3() {
-        var currentvalÂ = $(this).val();
-        var correctval = currentval.replace(/,/g, ".");
-        var correctval = currentval.replace(/[^0-9.]/g, "");
-        if (correctval < 0) correctval = "0";
-        if (correctval > 3) correctval = "3";
-        var p = parseFloat(correctval);
-        if (p != correctval) correctval = p;
-        if (isNaN(p)) correctval = "";
         if (currentval !== correctval)
             $(this).val(correctval);
     }
@@ -700,7 +716,6 @@ module.exports = function() {
     function initAddNewInp() {
         var $ctrls = hwnd.$.find(".window-controlls");
         $newinp = $("<div>").addClass("row row-input tw-list-item").hide().prependTo($ctrls);
-        //$("<div>").addClass("bg").appendTo($newinp);
     }
 
     function AddInputEdit(obj, name, sec, min, hours) {
@@ -720,23 +735,19 @@ module.exports = function() {
         }
     }
 
-    function initEditControlPanelBtn() {
-        var $btn = API.Templates.get('settings-button');
-        $btn.addClass('small green');
-        $btn.find('.label').html('...');
-        hwnd.$.find('.open-edit-panel').append($btn);
-        $btn.on("click", function(e) {
-            if (hwndEdit === null) {
-                initEditWindow();
-                initEditAllOptions();
-                initEditLabels();
-                hwndEdit.center();
-                initEditSaveButton();
-                e.stopPropagation();
-            } else {
-                closeEdit();
-            }
-        });
+    function clickConfig(e) {
+        if (hwndEdit === null) {
+            formBuilder = new FormBuilder.default([], {
+                onChangeCallback: (fieldName, value) => configValueOnChange(fieldName, value),
+                prefix: 'timer-'
+            });
+            initEditWindow();
+            initEditAllOptions();
+            hwndEdit.center();
+            e.stopPropagation();
+        } else {
+            closeEdit();
+        }
     }
 
     function initScroll() {
@@ -758,7 +769,7 @@ module.exports = function() {
         const shortClass = e.minResp <= unix_time() && !(e.presp <= unix_time()) ? 'text-orange' : ''; //e.$ && e.$.hasClass('short') && !e.$.hasClass('pass') ? 'text-orange' : '';
         const passClass = e.presp <= unix_time() ? 'text-red' : '';
         const fullType = isset(npcsTypes[e.type]) ? npcsTypes[e.type].fullname : '';
-        var tip = '<span class="elite_timer_tip_name">' + e.name + "</span>";
+        var tip = '<span class="elite_timer_tip_name">' + escapeHTML(e.name) + "</span>";
         tip += fullType ? `<i>${fullType}</i>` : '';
         if (!isset(e.user)) {
             tip += '<span class="elite_timer_tip_map">';
@@ -865,7 +876,7 @@ module.exports = function() {
             var conCell2 = $("<div>").addClass("time cell").appendTo(cell2);
             var $name = $("<div>").addClass("name-val").appendTo(conCell1);
             var $amend = $("<div>").addClass("btn btn-opt").hide().appendTo(conCell2);
-            var $remove = $("<div>").addClass("btn btn-del").hide().appendTo(conCell2);
+            var $remove = $("<div>").addClass("btn btn-del ie-icon ie-icon-close").hide().appendTo(conCell2);
             var $time = $("<div>").addClass("time-val").appendTo(conCell2);
             $name.text(getShortType(obj.type) + obj.name);
             if (isset(obj.heroData)) {
@@ -1102,14 +1113,14 @@ module.exports = function() {
         return {
             id: Engine.hero.d.id,
             name: Engine.hero.d.nick,
-            lvl: Engine.hero.d.lvl,
+            lvl: getHeroLevel(),
             prof: Engine.hero.d.prof,
             world: Engine.worldConfig.getWorldName()
         }
     };
 
     function soundNotif(id) {
-        if (settings.sound == 0) {
+        if (!settings.sound0) {
             return;
         }
         if (id == 1) {
@@ -1135,15 +1146,18 @@ module.exports = function() {
 				padding-top: 5px;
 			}
 			.elite-timer .npc-list{
-				display: table;
 				text-align: left;
-				border-collapse: collapse;
 				width: 100%;
 			}
 			.elite-timer .row{
 				font-size: 11px;
 				height: 22px;
 				color: white;
+				display: flex;
+				justify-content: space-between;
+				&.row-add {
+				  justify-content: center;
+				}
 			}
 			.elite-timer .row.long{
 				color: white;
@@ -1155,7 +1169,6 @@ module.exports = function() {
 				color: red;
 			}
 			.elite-timer .row .col{
-				display: table-cell;
 			}
 			.elite-timer .row .col .cell{
 				position: relative;
@@ -1167,12 +1180,12 @@ module.exports = function() {
 				width: 155px;
 			}
 			.elite-timer .row .col .time{
-				margin-left: 3px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
 			}
 			.elite-timer .row .col .time-val{
-				display: inline-block;
-				margin-left: 6px;
-				width: 44px;
+				margin-left: 2px;
 			}
 			.elite-timer .row .col .name-val{
 				width: 100%;
@@ -1189,10 +1202,8 @@ module.exports = function() {
 			.elite-timer .row .col .btn{
 				display: inline-block;
 				position: relative;
-				top: 2px;
 				width: 12px;
 				height: 12px;
-				background: red;
 			}
 			.elite-timer .row .col .btn-opt{
 				background: url('img/gui/buttony.png') -608px -118px;
@@ -1205,11 +1216,10 @@ module.exports = function() {
 				visibility: hidden;
 			}
 			.elite-timer .npc-list .row .col .btn-del{
-			  margin-left: 3px;
-				background: url('img/gui/buttony.png') -625px -118px;
+			  width: 18px;
+			  height: 18px;
 			}
 			.elite-timer .npc-list .row .col .btn-del:hover{
-				background: url('img/gui/buttony.png') -727px -118px;
 			}
 			/*scroll main window*/
 			.elite-timer .scrollable .scroll-pane{
@@ -1256,13 +1266,14 @@ module.exports = function() {
 				width: 15px;
 			}
 			/*edit window*/
-			.elite-timer-edit{
-				width: 290px;
-				height: 277px;
+			.elite-timer-edit-window .content {
+		  		margin: -10px -11px 0;
+		  	}
+			.elite-timer-edit .all-options {
+				color: #fff;
 			}
-			.elite-timer-edit .con .all-options{
-				margin: auto;
-				width: 260px;
+			.elite-timer-edit .ni-input {
+				width: 60px;
 			}
 			.elite-timer-edit input{
 				color: white;
@@ -1287,8 +1298,8 @@ module.exports = function() {
 				height: 16px;
 				background: url('img/gui/buttony.png') no-repeat -499px -199px;
 			}
-			.elite-timer-edit .window-list-option{
-				left: -7px;
+			.elite-timer-edit .bottom-bar {
+				position: initial;
 			}
 			.elite_timer_tip_name{
 				font-weight: bold;
@@ -1322,7 +1333,7 @@ module.exports = function() {
         } else {
             hwnd.hide();
         }
-        saveConfToLS();
+        saveConfigToLS();
     }
 
     this.start = function() {
@@ -1334,48 +1345,6 @@ module.exports = function() {
         if (getAlreadyInitialised()) {
             initAddon();
         }
-
-        //initStyle();
-        //initWindow();
-        //initAddInput();
-        //initAddNewInp();
-        //initAddBtn();
-        //initEditControlPanelBtn();
-        //initScroll();
-        //initChangeStyle();
-        //
-        //let { skippedDeads: nskippedDeads = [], data: ndata = {}, settings: nsettings = {} } = getAddonData(); // object destructuring
-        //// console.log(nskippedDeads);
-        //// console.log(ndata);
-        //// console.log(nsettings);
-        //
-        //skippedDeads = nskippedDeads;
-        //checkAndRemovesOldSkippedDeads();
-        //
-        //settings = { ...settings, ...nsettings };
-        //
-        //for (const t in ndata) {
-        //	loadData(ndata[t]);
-        //}
-        //sortData();
-        //if (hwnd !== null) {
-        //	refreshList();
-        //}
-        //
-        //heroLogIn();
-        //
-        //if (settings.show) {
-        //	hwnd.show();
-        //	hwnd.setWndOnPeak();
-        //} else {
-        //	hwnd.hide();
-        //}
-        ////hwnd.updateElementsWithOpacity();
-        //
-        //API.addCallbackToEvent(Engine.apiData.REMOVE_NPC, removeNpc);
-        //API.addCallbackToEvent(Engine.apiData.HERO_DEAD, heroDead);
-        //API.addCallbackToEvent(Engine.apiData.ITEM_USED, itemUsed);
-        //interval = setInterval(refreshList, 1000);
     };
 
     const initAddon = () => {
@@ -1384,7 +1353,6 @@ module.exports = function() {
         initAddInput();
         initAddNewInp();
         initAddBtn();
-        initEditControlPanelBtn();
         initScroll();
         initChangeStyle();
 
@@ -1402,7 +1370,7 @@ module.exports = function() {
 
         settings = {
             ...settings,
-            ...nsettings
+            ...convertStringNumbers(nsettings)
         };
 
         for (const t in ndata) {
@@ -1421,7 +1389,6 @@ module.exports = function() {
         } else {
             hwnd.hide();
         }
-        //hwnd.updateElementsWithOpacity();
 
         API.addCallbackToEvent(Engine.apiData.REMOVE_NPC, removeNpc);
         API.addCallbackToEvent(Engine.apiData.HERO_DEAD, heroDead);
@@ -1443,9 +1410,7 @@ module.exports = function() {
         // Engine.serverStorage.clearDataBySpecificKey(addonKey); // API.Storage.remove("addon_17");
         ``
         closeEdit();
-        //hwnd.$.remove();
         hwnd.remove();
-        //delete hwnd;
         hwnd = null;
 
         $style.remove();

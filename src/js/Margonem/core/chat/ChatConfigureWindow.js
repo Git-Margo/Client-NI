@@ -1,10 +1,16 @@
-const tpl = require('core/Templates');
-var ChatData = require('core/chat/ChatData');
+const tpl = require('@core/Templates');
+const ChatData = require('@core/chat/ChatData');
 
-const RadioList = require("core/components/RadioList");
-const ColorPicker = require("core/components/ColorPicker");
+const RadioList = require('@core/components/RadioList');
+const ColorPicker = require('@core/components/ColorPicker');
+const SettingsData = require('@core/settings/SettingsData');
+const Checkbox = require('@core/components/Checkbox');
 
 module.exports = function() {
+
+    const moduleData = {
+        fileName: "ChatConfigureWindow.js"
+    };
 
     let wnd = null;
     let content = null;
@@ -233,37 +239,66 @@ module.exports = function() {
         }).getList();
 
         //let $one = createCheckBox(_t("show_time", null, 'chat_lang'), '', function (state) {
-        let $one = createCheckBox(getEngine().chatController.chatLang("show_time"), '', function(state) {
-
-            let chatConfig = getEngine().chatController.getChatConfig();
-
-            chatConfig.setStorageData(
-                [ChatData.MESSAGE_SECTIONS.TS, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
-                state
-            );
-
-            if (state) {
-                radioList1.classList.add('active-section');
-                radioList2.classList.add('active-section');
-            } else {
-                radioList1.classList.remove('active-section');
-                radioList2.classList.remove('active-section');
-            }
-
-            getEngine().chatController.rebuiltMessage();
-            getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
-        });
+        //let $one = createCheckBox(getEngine().chatController.chatLang("show_time"), '', function (state) {
+        //
+        //    let chatConfig = getEngine().chatController.getChatConfig();
+        //
+        //    chatConfig.setStorageData(
+        //        [ChatData.MESSAGE_SECTIONS.TS, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
+        //        state
+        //    );
+        //
+        //    if (state) {
+        //        radioList1.classList.add('active-section');
+        //        radioList2.classList.add('active-section');
+        //    } else {
+        //        radioList1.classList.remove('active-section');
+        //        radioList2.classList.remove('active-section');
+        //    }
+        //
+        //    getEngine().chatController.rebuiltMessage();
+        //    getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
+        //});
 
         let state = getEngine().chatController.getChatConfig().getMessageSectionData(ChatData.MESSAGE_SECTIONS.TS, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY);
         if (state) {
-            $one.find('.checkbox').addClass('active');
+            //$one.find('.checkbox').addClass('active');
             radioList1.classList.add('active-section');
             radioList2.classList.add('active-section');
         }
 
 
+        const oneCheckbox = new Checkbox.default({
+                label: getEngine().chatController.chatLang("show_time"),
+                i: "show-time",
+                checked: state,
+                highlight: false
+            },
+            (state) => {
+                let chatConfig = getEngine().chatController.getChatConfig();
 
-        $wrapper.append($one);
+                chatConfig.setStorageData(
+                    [ChatData.MESSAGE_SECTIONS.TS, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
+                    state
+                );
+
+                if (state) {
+                    radioList1.classList.add('active-section');
+                    radioList2.classList.add('active-section');
+                } else {
+                    radioList1.classList.remove('active-section');
+                    radioList2.classList.remove('active-section');
+                }
+
+                getEngine().chatController.rebuiltMessage();
+                getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
+            }
+        );
+
+        let $oneCheckbox = $(oneCheckbox.getCheckbox())
+
+
+        $wrapper.append($oneCheckbox);
         $wrapper[0].appendChild(radioList1);
         $wrapper[0].appendChild(radioList2);
     }
@@ -297,73 +332,149 @@ module.exports = function() {
             label: label,
             elementAfterLabel: $smallIcon[0]
         }).getList();
-        const $one = createCheckBox(_t("tag_show_options", null, 'chat_lang'), '', function(state) {
-
-            getEngine().chatController.getChatConfig().setStorageData(
-                [ChatData.MESSAGE_SECTIONS.CHANNEL_TAG, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
-                state
-            );
-
-            if (state) radioList.classList.add('active-section');
-            else radioList.classList.remove('active-section');
-
-            getEngine().chatController.rebuiltMessage();
-            getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
-        });
+        //const $one          = createCheckBox(_t("tag_show_options", null, 'chat_lang'), '', function (state) {
+        //
+        //    getEngine().chatController.getChatConfig().setStorageData(
+        //        [ChatData.MESSAGE_SECTIONS.CHANNEL_TAG, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
+        //        state
+        //    );
+        //
+        //    if (state)  radioList.classList.add('active-section');
+        //    else        radioList.classList.remove('active-section');
+        //
+        //    getEngine().chatController.rebuiltMessage();
+        //    getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
+        //});
 
         let state = getEngine().chatController.getChatConfig().getMessageSectionData(ChatData.MESSAGE_SECTIONS.CHANNEL_TAG, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY);
         if (state) {
-            $one.find('.checkbox').addClass('active');
+            //$one.find('.checkbox').addClass('active');
             radioList.classList.add('active-section');
         }
 
-        $wrapper.append($one);
+        const oneCheckbox = new Checkbox.default({
+                label: _t("tag_show_options", null, 'chat_lang'),
+                i: "tag-conf",
+                checked: state,
+                highlight: false
+            },
+            (state) => {
+                getEngine().chatController.getChatConfig().setStorageData(
+                    [ChatData.MESSAGE_SECTIONS.CHANNEL_TAG, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
+                    state
+                );
+
+                if (state) radioList.classList.add('active-section');
+                else radioList.classList.remove('active-section');
+
+                getEngine().chatController.rebuiltMessage();
+                getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
+            }
+        );
+
+        let $oneCheckbox = $(oneCheckbox.getCheckbox())
+
+        $wrapper.append($oneCheckbox);
         $wrapper[0].appendChild(radioList);
     }
 
     const showEmoConfiguration = () => {
         const $wrapper = wnd.$.find('.emo-configuration').empty();
-        const $one = createCheckBox(getEngine().chatController.chatLang("show_emo_icons"), '', function(state) {
-
-            getEngine().chatController.getChatConfig().setStorageData(
-                [ChatData.MESSAGE_SECTIONS.EMO_ICON, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
-                state
-            );
-
-            getEngine().chatController.rebuiltMessage();
-            getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
-        });
+        //const $one          = createCheckBox(getEngine().chatController.chatLang("show_emo_icons"), '', function (state) {
+        //
+        //    getEngine().chatController.getChatConfig().setStorageData(
+        //        [ChatData.MESSAGE_SECTIONS.EMO_ICON, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
+        //        state
+        //    );
+        //
+        //    getEngine().chatController.rebuiltMessage();
+        //    getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
+        //});
 
         let state = getEngine().chatController.getChatConfig().getMessageSectionData(ChatData.MESSAGE_SECTIONS.EMO_ICON, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY);
-        if (state) {
-            $one.find('.checkbox').addClass('active');
-        }
+        //if (state) {
+        //    $one.find('.checkbox').addClass('active');
+        //}
 
-        $wrapper.append($one);
+        const oneCheckbox = new Checkbox.default({
+                label: getEngine().chatController.chatLang("show_emo_icons"),
+                i: "emo",
+                checked: state,
+                highlight: false
+            },
+            (state) => {
+                getEngine().chatController.getChatConfig().setStorageData(
+                    [ChatData.MESSAGE_SECTIONS.EMO_ICON, ChatData.MESSAGE_SUB_SECTIONS.DISPLAY],
+                    state
+                );
+
+                getEngine().chatController.rebuiltMessage();
+                getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
+            }
+        );
+
+        let $oneCheckbox = $(oneCheckbox.getCheckbox())
+
+        $wrapper.append($oneCheckbox);
     };
 
     const showEnemyMsgConfiguration = () => {
-        const settings = getEngine().settings;
-        const optionId = 28;
-        const $wrapper = wnd.$.find('.enemy-msg-configuration').empty();
-        const $one = createCheckBox(_t(`opt_${optionId}`, null, 'opts'), '', function(state) {
-            settings.changeSingleOptionsAndSave(optionId)
+        /*
+        const settings      = getEngine().settings;
+        const optionId      = SettingsData.KEY.RECEIVE_FROM_ENEMY_CHAT_MESSAGE;
+        const checkboxData  = settings.getDataToCreateCheckBox(optionId);
+        const $wrapper      = wnd.$.find('.enemy-msg-configuration').empty();
+        const $one          = createCheckBox(_t(`opt_${optionId}`, null, 'SettingsOptions'), '', function (state) {
+            //settings.changeSingleOptionsAndSave(optionId)
+            let nextValue = !checkboxData.getValue();
+            checkboxData.changeCallback(nextValue);
         });
 
+        const $checkbox = $one.find('.checkbox')
+
         $wrapper.append($one);
-        settings.updateSingleserveroption('.enemy-msg-configuration', getEngine().hero.d.opt);
+        //settings.updateSingleserveroption('.enemy-msg-configuration', getEngine().hero.d.opt);
+        //settings.updateSingleserveroption('.enemy-msg-configuration');
+        settings.updateOneCheckBoxOption(optionId, $checkbox);
+
+        Engine.settings.addUpdateSettingsTrigger(moduleData.fileName, optionId, null, function (v) {
+            settings.updateOneCheckBoxOption(optionId, $checkbox);
+        })
+        */
+
+        const optionId = SettingsData.KEY.RECEIVE_FROM_ENEMY_CHAT_MESSAGE;
+        const $wrapper = wnd.$.find('.enemy-msg-configuration').empty();
+
+        getEngine().settings.createOneSettingsCheckbox(moduleData.fileName, optionId, null, null, $wrapper);
     };
 
     const getLegendaryItemClanNotification = () => {
-        const settings = getEngine().settings;
-        const optionId = 29;
-        const $wrapper = wnd.$.find('.get-legendary-item-clan-notification').empty();
-        const $one = createCheckBox(_t(`opt_${optionId}`, null, 'opts'), '', function(state) {
-            settings.changeSingleOptionsAndSave(optionId)
+        /*
+        const settings      = getEngine().settings;
+        const optionId      = SettingsData.KEY.ANNOUNCE_CLAN_ABOUT_LEGEND_DROP_CHAT_MESSAGE;
+        const checkboxData  = settings.getDataToCreateCheckBox(optionId);
+        const $wrapper      = wnd.$.find('.get-legendary-item-clan-notification').empty();
+        const $one          = createCheckBox(_t(`opt_${optionId}`, null, 'SettingsOptions'), '', function (state) {
+            //settings.changeSingleOptionsAndSave(optionId)
+            let nextValue = !checkboxData.getValue();
+            checkboxData.changeCallback(nextValue);
         });
 
+        const $checkbox = $one.find('.checkbox')
+
         $wrapper.append($one);
-        settings.updateSingleserveroption('.get-legendary-item-clan-notification', getEngine().hero.d.opt);
+        //settings.updateSingleserveroption('.get-legendary-item-clan-notification');
+        settings.updateOneCheckBoxOption(optionId, $checkbox);
+
+        Engine.settings.addUpdateSettingsTrigger(moduleData.fileName, optionId, null, function (v) {
+            settings.updateOneCheckBoxOption(optionId, $checkbox);
+        })
+        */
+
+        const optionId = SettingsData.KEY.ANNOUNCE_CLAN_ABOUT_LEGEND_DROP_CHAT_MESSAGE;
+        const $wrapper = wnd.$.find('.get-legendary-item-clan-notification').empty();
+
+        getEngine().settings.createOneSettingsCheckbox(moduleData.fileName, optionId, null, null, $wrapper);
     };
 
     const clickHour = (e1, e2) => {
@@ -405,23 +516,44 @@ module.exports = function() {
     }
 
     const addMessageToGeneralOneCheckbox = (name, cl) => {
-        let $one = createCheckBox(_t(name.toLowerCase(), null, 'chat_lang'), cl, function(state) {
-            getEngine().chatController.getChatConfig().setStorageData(
-                [ChatData.STATIC_KEYS.MESSAGES_ADD_TO_GENERAL, name, ChatData.MESSAGES_ADD_TO_GENERAL_OPT.ADD],
-                state);
-
-            getEngine().chatController.rebuiltMessage();
-            getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
-        });
+        //let $one = createCheckBox(_t(name.toLowerCase(), null, 'chat_lang'), cl, function (state) {
+        //    getEngine().chatController.getChatConfig().setStorageData(
+        //        [ChatData.STATIC_KEYS.MESSAGES_ADD_TO_GENERAL, name, ChatData.MESSAGES_ADD_TO_GENERAL_OPT.ADD],
+        //        state);
+        //
+        //    getEngine().chatController.rebuiltMessage();
+        //    getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
+        //});
 
 
         let state = getEngine().chatController.getChatConfig().getMessagesAddToGeneralData(name, ChatData.MESSAGES_ADD_TO_GENERAL_OPT.ADD);
-        if (state) $one.find('.checkbox').addClass('active');
+        //if (state) $one.find('.checkbox').addClass('active');
 
-        return $one
+        const oneCheckbox = new Checkbox.default({
+                label: _t(name.toLowerCase(), null, 'chat_lang'),
+                i: name,
+                checked: state,
+                highlight: false
+            },
+            (state) => {
+                getEngine().chatController.getChatConfig().setStorageData(
+                    [ChatData.STATIC_KEYS.MESSAGES_ADD_TO_GENERAL, name, ChatData.MESSAGES_ADD_TO_GENERAL_OPT.ADD],
+                    state);
+
+                getEngine().chatController.rebuiltMessage();
+                getEngine().chatController.getChatConfig().saveInServerStorageChatConfigStorage();
+            }
+        );
+
+        let $oneCheckbox = $(oneCheckbox.getCheckbox())
+
+        $oneCheckbox.addClass(cl)
+
+        return $oneCheckbox
     };
 
     const closeWindow = () => {
+        getEngine().settings.removeUpdateSettingsTrigger(moduleData.fileName);
         wnd.remove();
     }
 

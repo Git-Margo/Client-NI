@@ -1,7 +1,7 @@
-var RajSequence = require('core/raj/rajSequence/RajSequence.js');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
+var RajSequence = require('@core/raj/rajSequence/RajSequence.js');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
 
 module.exports = function() {
 

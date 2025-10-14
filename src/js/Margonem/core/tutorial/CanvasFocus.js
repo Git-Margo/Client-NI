@@ -1,5 +1,5 @@
-var WhoIsHereGlow = require('core/whoIsHere/WhoIsHereGlow2');
-const TutorialData = require("./TutorialData");
+var WhoIsHereGlow = require('@core/whoIsHere/WhoIsHereGlow2');
+const TutorialData = require('./TutorialData');
 
 module.exports = function() {
 

@@ -1,18 +1,22 @@
 /**
  * Created by lukasz on 2014-09-25.
  */
-//var tpl = require('core/Templates');
-//var Store = require('core/Storage');
-var tpl = require('core/Templates');
-var TutorialData = require('core/tutorial/TutorialData');
-//var Store = require('core/Storage');
-let LayersData = require('core/interface/LayersData');
-let StorageFuncWindow = require('core/window/StorageFuncWindow');
-//var RajData = require('core/raj/RajData');
+//var tpl = require('@core/Templates');
+//var Store = require('@core/Storage');
+var tpl = require('@core/Templates');
+var TutorialData = require('@core/tutorial/TutorialData');
+//var Store = require('@core/Storage');
+let LayersData = require('@core/interface/LayersData');
+let StorageFuncWindow = require('@core/window/StorageFuncWindow');
+//var RajData = require('@core/raj/RajData');
 
-let WindowManageOpacity = require('core/window/WindowManageOpacity');
-let WindowManageSize = require('core/window/WindowManageSize');
-let RajWindowEventsData = require('core/raj/rajWindowEvents/RajWindowEventsData');
+let WindowManageOpacity = require('@core/window/WindowManageOpacity');
+let WindowManageSize = require('@core/window/WindowManageSize');
+let RajWindowEventsData = require('@core/raj/rajWindowEvents/RajWindowEventsData');
+let SearchComponent = require('@core/components/SearchComponent');
+const {
+    isMobileApp
+} = require('@core/HelpersTS');
 
 module.exports = function(options) {
     let moduleData = {
@@ -25,7 +29,12 @@ module.exports = function(options) {
     let attachWidgetName = null;
     let content = null;
     let collapsed = false;
+    let searchComponent = null;
     const topBoundOffset = mobileCheck() ? 30 : 0;
+
+    const SEARCH_HIDE_CL = "search-hide";
+
+    let $buttonsMenu;
 
     let windowManageOpacity;
     let windowManageSize;
@@ -38,9 +47,11 @@ module.exports = function(options) {
 
     this.initTplAndDraggable = () => {
         this.$ = this.getWindowTpl();
-        this.$.draggable({
+
+
+
+        let draggableData = {
             handle: '.header-label-positioner',
-            containment: 'body',
             scroll: false,
             drag: function(evt, ui) {
                 if (mobileCheck()) {
@@ -53,7 +64,15 @@ module.exports = function(options) {
             stop: function(e) {
                 self.stopDrag(e);
             }
-        }).css('position', 'absolute');
+        };
+
+
+        if (!mobileCheck()) {
+            draggableData.containment = 'body';
+        }
+
+        this.$.draggable(draggableData).css('position', 'absolute');
+
         options = $.extend({
             onclose: function() {
                 self.fadeAndRemove();
@@ -77,7 +96,6 @@ module.exports = function(options) {
 
     const updateMobileDrag = (ui) => {
         let $e = ui.helper;
-        let zoom = getZoom();
         let $body = $('body');
 
         let outerWidth = $e.outerWidth();
@@ -98,6 +116,10 @@ module.exports = function(options) {
     const mobileBoundsFix = (targetWidth, targetHeight, bodyWidth, bodyHeight, left, top) => {
 
         const topBoundOffsetOnMobile = 30;
+
+        if (left < 0) {
+            left = 0;
+        }
 
         if (top < topBoundOffsetOnMobile) top = topBoundOffsetOnMobile;
         if (top + targetHeight > bodyHeight) top = bodyHeight - targetHeight;
@@ -171,6 +193,9 @@ module.exports = function(options) {
 
     this.setCssVH = function() {
         if (!mobileCheck()) return;
+
+        return
+
         var name = self.$.find('.inner-content>div').attr('class');
         var selector = '.mobile-version>.game-window-positioner>.alerts-layer>.border-window>.content>.inner-content>.';
         var style = "<style>";
@@ -287,6 +312,12 @@ module.exports = function(options) {
     this.setTransparentWindow = () => {
         self.$.addClass('transparent');
         self.$.append($('<div>').addClass('border-image'));
+
+        $buttonsMenu = $('<div>').addClass('transparent-window-buttons-menu');
+        const $iconClose = $('<div>').addClass('ie-icon ie-icon-close');
+
+        self.$.append($buttonsMenu);
+        self.$.find('.close-button').html($iconClose);
     };
 
     //this.setManageOpacity = (val) => {
@@ -323,6 +354,10 @@ module.exports = function(options) {
     };
 
     this.label = function(label) {
+
+        debugger;
+        console.log('LABEL')
+
         if (label) {
             this.$.find('.decoration-label').show().find('.label').html(label);
         } else {
@@ -375,6 +410,14 @@ module.exports = function(options) {
         this.setContentPos(pos.x + 'px', pos.y + 'px');
     };
 
+    const updateSizeWindow = () => {
+        if (!windowManageSize) {
+            return
+        }
+
+        windowManageSize.updateSizeWindow();
+    }
+
     this.getPos = () => {
 
         //let storagePos = Store.get(this._nameWindow + '/pos');
@@ -416,6 +459,8 @@ module.exports = function(options) {
                 return this.getCenterPos();
             case Engine.windowsData.position.RIGHT_POSITIONING:
                 return this.getRightPos();
+            case Engine.windowsData.position.TOP_POSITIONING:
+                return getTopPos();
             default:
                 errorReport('Window.js', "getPos", 'NANANAA');
         }
@@ -437,10 +482,10 @@ module.exports = function(options) {
         return top + height > screenHeight || left + width > screenWidth;
     };
 
-    this.setWindowOnLeftTopCorner = () => {
-        this.setContentPos('0px', '0px');
-        this.saveWindowPosition();
-    };
+    //this.setWindowOnLeftTopCorner = () => {
+    //	this.setContentPos('251px', '60px');
+    //	this.saveWindowPosition();
+    //};
 
     this.checkPosIsCorrect = (posX, posY) => {
         let zoomFactor = Engine.zoomFactor == null ? 1 : Engine.zoomFactor;
@@ -521,6 +566,13 @@ module.exports = function(options) {
         }
     };
 
+    const getTopPos = () => {
+        return {
+            x: self.getCenterPosXOfWidth(),
+            y: topBoundOffset
+        }
+    };
+
     this.getCenterPosXOfWidth = () => {
         //let w = $('body').width();
         let zoomFactor = Engine.zoomFactor == null ? 1 : Engine.zoomFactor;
@@ -555,6 +607,12 @@ module.exports = function(options) {
         })
     };
 
+    this.setXPos = function(y) {
+        this.$.css({
+            left: y
+        })
+    };
+
     this.addBackdrop = ($parentLayer) => {
         this.$backdrop = $('<div/>', {
             class: 'window-backdrop'
@@ -566,15 +624,16 @@ module.exports = function(options) {
     };
 
     this.setBackdropZIndex = () => {
-        if (options.backdrop) {
+        //if (options.backdrop) {
+        if (this.$backdrop) {
             let zIndex = this.$.css('z-index');
             this.$backdrop.css('z-index', zIndex);
         }
     };
 
     this.removeBackdrop = () => {
-        if (options.backdrop && this.$backdrop) {
-
+        //if (options.backdrop && this.$backdrop) {
+        if (this.$backdrop) {
             this.$backdrop.remove();
         }
     };
@@ -597,7 +656,8 @@ module.exports = function(options) {
             this._nameWindow
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.show = () => {
@@ -770,9 +830,9 @@ module.exports = function(options) {
             //}
         }
 
-        if (options.manageSize) setManageSize(options.manageSize, options.type);
 
-        if (options.manageOpacity) { // value means default opacity
+
+        if (isset(options.manageOpacity)) { // value means default opacity
 
             //if (!options.nameWindow) 					      return console.error('manageOpacity require window name');
             if (options.type !== Engine.windowsData.type.TRANSPARENT) return console.error('[Window.js, initOptions] manageOpacity require transparent window type', this._nameWindow);
@@ -783,13 +843,150 @@ module.exports = function(options) {
             let lightModeCss = options.lightModeCss ? options.lightModeCss : null;
 
             windowManageOpacity = new WindowManageOpacity();
-            windowManageOpacity.init(this, this._nameWindow, this.$, lightModeCss);
+            windowManageOpacity.init(this, this._nameWindow, $buttonsMenu, this.$, lightModeCss);
             windowManageOpacity.setManageOpacity(options.manageOpacity);
+        }
+
+        if (isset(options.manageConfiguration)) {
+            setManageConfigurationButton(options.manageConfiguration);
+        }
+
+        if (options.manageSize) {
+            setManageSize(options.manageSize, options.type);
         }
 
         if (options.manageCollapse) {
             this.setManageCollapse(options.manageCollapse);
         }
+
+        if (options.search) {
+            initSearchInTransparentWindow();
+        }
+
+        if (isset(options.manageOpacity) || isset(options.manageConfiguration) || options.manageSize || options.manageCollapse || options.mobileMenu || isMobileApp() && searchComponent) {
+            manageHamburger();
+        }
+    };
+
+    const manageHamburger = () => {
+        //let $manageHamburgerButton = $('<div>').addClass('manage-hamburger-button');
+        //
+        //const $iconClose = $('<div>').addClass('ie-icon ie-icon-menu');
+        //$manageHamburgerButton.append($iconClose);
+
+
+        let $manageHamburgerButton = createHamburgerMenuButton('manage-hamburger-button', function(e, menu) {
+            if (windowManageOpacity) {
+                menu.push([_t('WINDOW_OPACITY_UP'), function() {
+                    windowManageOpacity.increaseOpacity()
+                }, {
+                    button: {
+                        cls: 'not-close'
+                    }
+                }])
+                //menu.push(['OPACITY_DOWN', function () {windowManageOpacity.decreaseOpacity()}])
+            }
+
+            if (options.manageConfiguration) {
+
+                menu.push([_t('WINDOW_CONFIG'), function() {
+                    if (options.manageConfiguration.fn) {
+                        options.manageConfiguration.fn(e, options.manageConfiguration)
+                    }
+                }]);
+
+            }
+
+            if (windowManageSize) {
+                menu.push([_t('SIZE_UP'), function() {
+                    windowManageSize.callNextSizeOpt()
+                }, {
+                    button: {
+                        cls: 'not-close'
+                    }
+                }]);
+                //menu.push(['SIZE_DOWN', function () {windowManageSize.callPreviousSizeOpt()}]);
+            }
+
+            if (options.manageCollapse) {
+                menu.push([_t('COLLAPSE_TOGGLE'), function() {
+                    self.collapseToggle(e, options.manageCollapse.callbackFn)
+                }, {
+                    button: {
+                        cls: 'not-close'
+                    }
+                }]);
+            }
+
+            if (isMobileApp() && searchComponent) {
+                menu.push([_t('search'), function(e) {
+                    toogleSearchInTransparentWindow()
+                }]);
+            }
+
+            if (options.mobileMenu) {
+                for (let k in options.mobileMenu) {
+                    menu.push(options.mobileMenu[k]);
+                }
+            }
+        });
+
+        //$manageHamburgerButton.addClass('manage-hamburger-button');
+
+        $buttonsMenu.prepend($manageHamburgerButton);
+
+        //$manageHamburgerButton.click(function (e) {
+        //
+        //	let menu = [];
+        //
+        //	if (windowManageOpacity) {
+        //		menu.push([_t('WINDOW_OPACITY_UP'), function () {windowManageOpacity.increaseOpacity()}, {button:{cls:'not-close'}}])
+        //		//menu.push(['OPACITY_DOWN', function () {windowManageOpacity.decreaseOpacity()}])
+        //	}
+        //
+        //	if (options.manageConfiguration) {
+        //
+        //		menu.push([_t('WINDOW_CONFIG') , function () {
+        //			if (options.manageConfiguration.fn) {
+        //				options.manageConfiguration.fn(e, options.manageConfiguration)
+        //			}
+        //		}]);
+        //
+        //	}
+        //
+        //	if (windowManageSize) {
+        //		menu.push([_t('SIZE_UP'), function () {windowManageSize.callNextSizeOpt()}, {button:{cls:'not-close'}}]);
+        //		//menu.push(['SIZE_DOWN', function () {windowManageSize.callPreviousSizeOpt()}]);
+        //	}
+        //
+        //	if (options.manageCollapse) {
+        //		menu.push([_t('COLLAPSE_TOGGLE'), function () {self.collapseToggle(e, options.manageCollapse.callbackFn)}, {button:{cls:'not-close'}}]);
+        //	}
+        //
+        //	if (searchComponent) {
+        //		menu.push([_t('search'), function (e) {toogleSearchInTransparentWindow()}]);
+        //	}
+        //
+        //	if (options.mobileMenu) {
+        //		for (let k in options.mobileMenu) {
+        //			menu.push(options.mobileMenu[k]);
+        //		}
+        //	}
+        //
+        //	Engine.interface.showPopupMenu(menu, getE(e, e));
+        //});
+    }
+
+    const setManageConfigurationButton = (configurationData) => {
+        let $manageConfigurationButton = $('<div>').addClass('manage-configuration-button settings-button').tip(_t('iconconfig'));
+        $buttonsMenu.append($manageConfigurationButton)
+
+        $manageConfigurationButton.on('click', function(e) {
+            if (configurationData.fn) {
+                configurationData.fn(e, configurationData)
+            }
+        })
+
     }
 
     const setManageSize = (manageSize, optionsType) => {
@@ -801,7 +998,7 @@ module.exports = function(options) {
         let manageSizeCallback = manageSize.callback ? manageSize.callback : null;
         windowManageSize = new WindowManageSize();
 
-        windowManageSize.init(this, this._nameWindow, content, content, manageSize.sizeArray, manageSizeCallback);
+        windowManageSize.init(this, this._nameWindow, $buttonsMenu, content, manageSize.sizeArray, manageSizeCallback);
     }
 
     this.setManageCollapse = ({
@@ -821,17 +1018,14 @@ module.exports = function(options) {
         let $btn = $('<div>', {
             class: 'collapse'
         });
-        this.$.append($btn)
+        //this.$.append($btn)
+        $buttonsMenu.append($btn)
 
-        if (isset(leftPos)) {
-            $btn.css({
-                left: leftPos
-            })
-        } else if (options.manageOpacity) {
-            $btn.css({
-                left: '2px'
-            })
-        }
+        //if (isset(leftPos)) {
+        //	$btn.css({ left: leftPos })
+        //} else if (options.manageOpacity) {
+        //	$btn.css({ left: '2px' })
+        //}
 
         return $btn;
     }
@@ -880,4 +1074,89 @@ module.exports = function(options) {
         }
         return true
     }
+
+    const getActualWindowManageSize = () => {
+        if (!windowManageSize) {
+            return null
+        }
+
+        return windowManageSize.getActualSize();
+    }
+
+    const callNextSizeOpt = (dontGoToFirst) => {
+        if (!windowManageSize) {
+            return null
+        }
+
+        return windowManageSize.callNextSizeOpt(dontGoToFirst);
+    }
+
+    const callPreviousSizeOpt = (dontGoToFirst) => {
+        if (!windowManageSize) {
+            return null
+        }
+
+        return windowManageSize.callPreviousSizeOpt(dontGoToFirst);
+    }
+
+    const toogleSearchInTransparentWindow = () => {
+        if (!isTransparent()) {
+            return
+        }
+
+        if (!searchComponent) {
+            return
+        }
+
+        if (!mobileCheck()) {
+            return;
+        }
+
+        if (this.$.hasClass(SEARCH_HIDE_CL)) {
+            this.$.removeClass(SEARCH_HIDE_CL)
+        } else {
+            this.$.addClass(SEARCH_HIDE_CL)
+        }
+
+    }
+
+    const isTransparent = () => {
+        return options.type == getEngine().windowsData.type.TRANSPARENT;
+    }
+
+    const initSearchInTransparentWindow = () => {
+
+        if (!isTransparent()) {
+            return
+        }
+
+        if (mobileCheck()) {
+            this.$.addClass(SEARCH_HIDE_CL);
+        }
+
+        let data = {
+            keyUpCallback: options.search.keyUpCallback
+        };
+
+        if (options.search.addClass) {
+            data.addClass = options.search.addClass;
+        }
+
+        searchComponent = new SearchComponent();
+        searchComponent.init(data);
+
+        content.append(searchComponent.getSearchWrapper())
+    };
+
+    const getSearchComponent = () => {
+        return searchComponent
+    };
+
+
+    this.getSearchComponent = getSearchComponent;
+    this.getActualWindowManageSize = getActualWindowManageSize;
+    this.updateSizeWindow = updateSizeWindow;
+    this.callNextSizeOpt = callNextSizeOpt;
+    this.callPreviousSizeOpt = callPreviousSizeOpt;
+    this.initSearchInTransparentWindow = initSearchInTransparentWindow;
 };

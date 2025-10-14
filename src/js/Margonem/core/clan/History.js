@@ -1,5 +1,5 @@
-//var wnd = require('core/Window');
-var tpl = require('core/Templates');
+//var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
 module.exports = function(Par) {
     var self = this;
     var content;
@@ -81,7 +81,7 @@ module.exports = function(Par) {
             Par.tLang('date_time'),
             Par.tLang('clan_action')
         ];
-        return Par.createRecords([t[0], t[1]], 'table-header');
+        return Par.createRecords([t[0], t[1]], 'table-header interface-element-table-header-1-background');
     };
 
     //this.init();

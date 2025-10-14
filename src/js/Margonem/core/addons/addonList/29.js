@@ -1,5 +1,5 @@
 const Checkbox = require('../../components/Checkbox');
-const InputMaskData = require('core/InputMaskData');
+const InputMaskData = require('@core/InputMaskData');
 
 module.exports = function() {
 
@@ -812,7 +812,7 @@ module.exports = function() {
 
         engine.interface.get$interfaceLayer().css(copyStructure(css));
         engine.interface.get$dropToDeleteWidgetLayer().css(copyStructure(css));
-        engine.widgetManager.resizeAllEmptySlotWidget();
+        //engine.widgetManager.resizeAllEmptySlotWidget();
         engine.widgetManager.resizeAllWidgetInAddons();
         engine.widgetManager.resizeAllWidgetInSettings();
         engine.widgetManager.rebuildWidgetButtons();
@@ -852,7 +852,8 @@ module.exports = function() {
         const RESOLUTION_DATA = Engine.ResolutionData;
         const engine = getEngine();
 
-        engine.widgetManager.setWidgetSize(RESOLUTION_DATA.WIDGET_SIZE_BY_RES[opt]);
+        //engine.widgetManager.setWidgetSize(RESOLUTION_DATA.WIDGET_SIZE_BY_RES[opt]);
+        engine.widgetManager.updateWidgetSizeByResolution(opt);
         engine.resolution.setResolution(opt);
     }
 
@@ -1112,12 +1113,14 @@ module.exports = function() {
             }
 
             body[data-res="${RES._920_X_555}"] {
+                /*
                 .bottom-left.main-buttons-container {
                     bottom: -11px;
                 }
                 .bottom-right.main-buttons-container {
                     bottom: -11px;
                 }
+                */
                 .main-buttons-container {
                     width: 226px
                 }
@@ -1154,12 +1157,14 @@ module.exports = function() {
 
             body[data-res="${RES._1024_X_768}"],
 			body[data-res="${RES._1173_X_555}"] {
+                /*
                 .bottom-left.main-buttons-container {
                     bottom: -8px;
                 }
                 .bottom-right.main-buttons-container {
                     bottom: -8px;
                 }
+                */
                 .main-buttons-container {
                     width: 266px
                 }

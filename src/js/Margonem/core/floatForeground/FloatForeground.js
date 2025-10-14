@@ -1,7 +1,7 @@
-var CanvasFade = require('core/canvasFade/CanvasFade.js');
-var CanvasFadeData = require('core/canvasFade/CanvasFadeData.js');
-let RajObjectInterface = require('core/raj/RajObjectInterface');
-let RajData = require('core/raj/RajData');
+var CanvasFade = require('@core/canvasFade/CanvasFade.js');
+var CanvasFadeData = require('@core/canvasFade/CanvasFadeData.js');
+let RajObjectInterface = require('@core/raj/RajObjectInterface');
+let RajData = require('@core/raj/RajData');
 
 module.exports = function() {
 
@@ -14,6 +14,7 @@ module.exports = function() {
     let floatPatternsCtx = null;
 
     let floatForegroundData = null;
+    let withCreateInstantFadeIn = false;
 
     //this.alwaysDraw             = true;
     let alwaysDraw;
@@ -52,6 +53,10 @@ module.exports = function() {
             finishAlpha: alpha
         };
 
+        if (withCreateInstantFadeIn) {
+            return
+        }
+
         canvasFade = new CanvasFade();
 
         canvasFade.init();
@@ -69,6 +74,10 @@ module.exports = function() {
         if (isset(data.color)) {
             if (isset(data.color.r) && isset(data.color.g) && isset(data.color.b)) color = data.color;
             if (isset(data.color.a)) alpha = data.color.a;
+        }
+
+        if (isset(data.withCreateInstantFadeIn)) {
+            withCreateInstantFadeIn = data.withCreateInstantFadeIn;
         }
     };
 
@@ -165,7 +174,7 @@ module.exports = function() {
 
         if (shouldUpdate) {
             let _alpha = canvasFade ? canvasFade.getFadeValue() : alpha;
-            ctx.save();
+            //ctx.save();
             ctx.globalAlpha = _alpha;
         }
 
@@ -187,7 +196,10 @@ module.exports = function() {
 
         }
 
-        if (shouldUpdate) ctx.restore();
+        if (shouldUpdate) {
+            ctx.globalAlpha = 1
+            //ctx.restore();
+        }
     };
 
     const fillHorizontalData = (ctx, clip, dataToDraw) => {

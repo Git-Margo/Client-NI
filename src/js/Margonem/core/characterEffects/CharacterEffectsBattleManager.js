@@ -1,6 +1,6 @@
-let CharacterEffectBattle = require('core/characterEffects/CharacterEffectBattle');
-let CharacterEffectsData = require('core/characterEffects/CharacterEffectsData');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let CharacterEffectBattle = require('@core/characterEffects/CharacterEffectBattle');
+let CharacterEffectsData = require('@core/characterEffects/CharacterEffectsData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 module.exports = function() {
 

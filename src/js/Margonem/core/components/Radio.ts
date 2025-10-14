@@ -3,7 +3,7 @@ import {
     setAttributes
 } from '../HelpersTS';
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 interface RadioData {
     id ? : string | number;

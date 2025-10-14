@@ -1,11 +1,12 @@
-var OutfitSelectorStore = require('core/shop/OutfitSelectorStore');
-var Tpl = require('core/Templates');
-let ItemClass = require('core/items/ItemClass');
-let CharacterData = require('core/characters/CharactersData');
-var TutorialData = require('core/tutorial/TutorialData');
+var OutfitSelectorStore = require('@core/shop/OutfitSelectorStore');
+var Tpl = require('@core/Templates');
+let ItemClass = require('@core/items/ItemClass');
+let CharacterData = require('@core/characters/CharactersData');
+var TutorialData = require('@core/tutorial/TutorialData');
 const {
     checkPersonalItems,
-    checkEnhancedItems
+    checkEnhancedItems,
+    getParsedPetData
 } = require('../HelpersTS');
 const ConfirmationQueue = require('../utils/ConfirmationQueue');
 
@@ -101,9 +102,18 @@ module.exports = function(data) {
                 for (var a in items) {
                     var item = items[a];
                     if (item.name == temp[0]) {
-                        var match = /amount=([0-9]+)/.exec(item.stat);
-                        if (match !== null && isset(match[1])) amount += parseInt(match[1]);
-                        else amount++;
+                        //var match = /amount=([0-9]+)/.exec(item.stat);
+                        // if (match !== null && isset(match[1])) amount += parseInt(match[1]);
+                        let amountStat = item.issetAmountStat();
+
+                        if (amountStat) {
+                            amount += item.getAmount();
+                        } else {
+                            amount++;
+                        }
+
+                        // if (match !== null && isset(match[1])) amount += parseInt(match[1]);
+                        // else amount++;
                     }
                 }
                 txt = (balance != 0 ? (balance > 0 ? '+' : '-') : '') + round(balance, 2) + ((-balance > amount) ? ' (!)' : '');
@@ -141,22 +151,25 @@ module.exports = function(data) {
     };
 
     this.buyItem = function(i) {
-        if (!isset(buy_items[i.id])) {
+        if (!isset(buy_items[i.offerId])) {
             var slot = parseInt(getFreeSlot());
             if (isNaN(slot)) return;
 
             var $i = Engine.tpls.createViewIcon(i.id, Engine.itemsViewData.BUY_ITEM_IN_BASKET_VIEW, Engine.itemsFetchData.NEW_BASKET_TPL.loc)[0];
             $i.data('item', i);
-            if (isset(i._cachedStats.amount)) {
-                Engine.tpls.changeItemAmount(i, $i, i.quantity);
+
+            if (i.issetAmountStat()) {
+                Engine.tpls.changeItemAmount(i, $i, i.quantity, {
+                    refreshPrice: true
+                });
             }
-            buy_items[i.id] = {
+            buy_items[i.offerId] = {
+                tplId: i.id,
                 offerId: i.offerId,
                 amount: 1,
                 price: i.pr,
                 $: $i
             };
-
 
             $i.appendTo(buy);
 
@@ -174,28 +187,42 @@ module.exports = function(data) {
                 top: 0
             });
 
-            bi_slots[slot + ''] = i.id;
+            bi_slots[slot + ''] = i.offerId;
 
             if (Engine.shop.shopType == 1) {
 
-                var st = Engine.items.parseItemStat(i.stat);
+                // var st = Engine.items.parseItemStat(i.stat);
                 var showType = null;
 
-                if (isset(st.outfit) || isset(st.outfit_selector)) {
 
-                    if (isset(st.outfit)) showType = 'outfit';
-                    if (isset(st.outfit_selector)) showType = 'outfit_selector';
+                let outfitStat = i.issetOutfitStat();
+                let outfitSelectorStat = i.issetOutfit_selectorStat();
+                let petStat = i.issetPetStat();
 
-                } else if (isset(st.pet)) showType = 'pet';
+                // if (isset(st.outfit) || isset(st.outfit_selector)) {
+                if (outfitStat || outfitSelectorStat) {
+
+                    // if (isset(st.outfit))          showType = 'outfit';
+                    // if (isset(st.outfit_selector)) showType = 'outfit_selector';
+
+                    if (outfitStat) showType = 'outfit';
+                    if (outfitSelectorStat) showType = 'outfit_selector';
+
+                    // } else if (isset(st.pet)) showType = 'pet';
+                } else if (petStat) showType = 'pet';
 
                 if (showType == 'pet') {
 
-                    let tempList = st.pet.split(',');
+                    // let tempList = st.pet.split(',');
+                    let petStat = i.getPetStat();
+                    let tempList = petStat.split(',');
 
                     let canvasCharacterWrapper = Engine.canvasCharacterWrapperManager.addCharacter({
                         drawSystem: CharacterData.drawSystem.PET,
                         path: tempList[1],
-                        actions: tempList[3]
+                        actions: tempList[3],
+                        // fullPetData	: getParsedPetData(i._cachedStats['pet'])
+                        fullPetData: petStat
                     });
 
                     let id = canvasCharacterWrapper.getId();
@@ -208,9 +235,12 @@ module.exports = function(data) {
 
                 if (showType == 'outfit') {
 
+                    let outfitStat = i.getOutfitStat();
+
                     let canvasCharacterWrapper = Engine.canvasCharacterWrapperManager.addCharacter({
                         drawSystem: CharacterData.drawSystem.PLAYER_OUTFIT,
-                        path: st.outfit.split(',')[1]
+                        // path        : st.outfit.split(',')[1]
+                        path: outfitStat.split(',')[1]
                     });
 
                     let id = canvasCharacterWrapper.getId();
@@ -233,14 +263,14 @@ module.exports = function(data) {
 
             }
         } else {
-            buy_items[i.id].amount++;
+            buy_items[i.offerId].amount++;
         }
 
-        if (buy_items[i.id].amount > 1) {
-            if (!buy_items[i.id].$.find('.amount').length) {
-                buy_items[i.id].$.append('<div class="amount"></div>');
+        if (buy_items[i.offerId].amount > 1) {
+            if (!buy_items[i.offerId].$.find('.amount').length) {
+                buy_items[i.offerId].$.append('<div class="amount"></div>');
             }
-            buy_items[i.id].$.find('.amount').html(buy_items[i.id].amount);
+            buy_items[i.offerId].$.find('.amount').html(buy_items[i.offerId].amount);
         } else {
             $i.find('.amount').remove();
         }
@@ -263,22 +293,22 @@ module.exports = function(data) {
             true
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.unbuyItem = function(i, $i, slot) {
         var c_slots = Engine.shop.getC_slots();
-        buy_items[i.id].amount--;
+        buy_items[i.offerId].amount--;
 
-        if (buy_items[i.id].amount > 1) {
-            $i.find('.amount').html(buy_items[i.id].amount);
+        if (buy_items[i.offerId].amount > 1) {
+            $i.find('.amount').html(buy_items[i.offerId].amount);
         } else {
             $i.find('.amount').remove();
         }
 
-        if (buy_items[i.id].amount <= 0) {
-            delete(buy_items[i.id]);
-            $i.remove();
+        if (buy_items[i.offerId].amount <= 0) {
+            delete(buy_items[i.offerId]);
             bi_slots[slot] = null;
 
             let id = self.getFromCanvasCharacterSlots(slot);
@@ -294,7 +324,8 @@ module.exports = function(data) {
             if (c_slots[slot]) { // remove from canvas
                 c_slots[slot].remove();
             }
-            Engine.tpls.deleteViewIcon(i.id, Engine.itemsViewData.BUY_ITEM_IN_BASKET_VIEW);
+
+            Engine.tpls.deleteViewIconByTargetEl(i.id, Engine.itemsViewData.BUY_ITEM_IN_BASKET_VIEW, $i);
         }
 
         calcPrices();
@@ -340,7 +371,8 @@ module.exports = function(data) {
                     });
                     //e.preventDefault();
                 });
-                let amount = i.haveStat('amount') ? i.getAmount() : 1;
+                //let amount = i.haveStat('amount') ? i.getAmount() : 1;
+                let amount = i.issetAmountStat() ? i.getAmount() : 1;
                 sell_items[i.id] = {
                     price: i.pr,
                     amount
@@ -394,7 +426,8 @@ module.exports = function(data) {
 
         if (isset(sell_items[i.id])) return;
 
-        if (i.stat.search('quest=') >= 0 || i.stat.search('nodesc') >= 0) {
+        // if (i.stat.search('quest=') >= 0 || i.stat.search('nodesc') >= 0) {
+        if (i.issetQuestStat() || i.issetNodescStat()) {
             _g('shop&can_sell=' + i.id, function(d) {
                 if (d.can_sell == 1) continue_sell();
             })
@@ -440,6 +473,10 @@ module.exports = function(data) {
         calcPrices();
     }, 10);
 
+    this.doCalcPrices = () => {
+        calcPrices();
+    }
+
     this.preFinalize = () => {
         const sellItems = Object.keys(sell_items);
         const confirmationQueue = new ConfirmationQueue.default();
@@ -481,9 +518,18 @@ module.exports = function(data) {
                 for (var a in items) {
                     var item = items[a];
                     if (item.name == temp[0]) {
-                        var match = /amount=([0-9]+)/.exec(item.stat);
-                        if (match !== null && isset(match[1])) amount += parseInt(match[1]);
-                        else amount++;
+                        // var match = /amount=([0-9]+)/.exec(item.stat);
+                        // if (match !== null && isset(match[1])) amount += parseInt(match[1]);
+                        // else amount++;
+
+                        let amountStat = item.getAmountStat();
+
+                        if (amountStat) {
+                            amount += item.getAmount()
+                        } else {
+                            amount++;
+                        }
+
                     }
                 }
                 if (-balance > amount) {
@@ -501,19 +547,7 @@ module.exports = function(data) {
         }
         for (var k in sell_items) sl.push(k);
 
-        _g('shop&buy=' + bl.join(';') + '&sell=' + sl.join(','), function(d) {
-            Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 18);
-            //Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 18);
-            Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 30);
-            //Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 30);
-            Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 32);
-
-            self.callCheckCanFinishExternalTutorialAcceptBasket();
-
-            if (isset(d.item)) self.clearBasket();
-
-            getEngine().shop.removeClassInHighlighst('track');
-        });
+        _g('shop&buy=' + bl.join(';') + '&sell=' + sl.join(','));
     };
 
     this.callCheckCanFinishExternalTutorialAcceptBasket = () => {
@@ -523,13 +557,19 @@ module.exports = function(data) {
             true
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.clearBasket = function(withClose) {
-        var c_slots = Engine.shop.getC_slots();
-        //buy_items = {};
         self.clearBuyItems();
+        self.clearSellItems();
+        if (Engine.shop.getData().id == 479) return;
+
+        if (!withClose) calcPrices();
+    };
+
+    const clearBuySlots = () => {
         bi_slots = {
             0: null,
             1: null,
@@ -537,20 +577,16 @@ module.exports = function(data) {
             3: null,
             4: null
         };
+    }
 
+    const clearBuyCanvas = () => {
+        var c_slots = Engine.shop.getC_slots();
         for (var i in c_slots) { // clear canvas
             if (c_slots[i]) c_slots[i].remove();
             Engine.shop.wnd.$.find('.outfit-selector-slot-' + i).remove();
             Engine.shop.wnd.$.find('.outfit-selector-arrow-' + i).remove();
         }
-
-        self.clearCanvasCharacterSlots();
-
-        self.clearSellItems();
-        if (Engine.shop.getData().id == 479) return;
-
-        if (!withClose) calcPrices();
-    };
+    }
 
     this.clearSellItems = function() {
         for (let id in sell_items) {
@@ -565,12 +601,15 @@ module.exports = function(data) {
 
     this.clearBuyItems = function() {
         for (let id in buy_items) {
-            const item = Engine.tpls.getTplByIdAndLoc(id, 'n');
-            Engine.tpls.deleteViewIcon(id, Engine.itemsViewData.BUY_ITEM_IN_BASKET_VIEW);
+            const item = Engine.tpls.getTplByIdAndLoc(buy_items[id].tplId, 'n');
+            Engine.tpls.deleteViewIconIfExist(buy_items[id].tplId, Engine.itemsViewData.BUY_ITEM_IN_BASKET_VIEW);
             item.unregisterCallback('afterUpdate', self.afterItemUpdate);
             delete buy_items[id];
         }
         $('.buy-items .item', Engine.shop.wnd.$).remove();
         buy_items = {};
+        clearBuySlots();
+        clearBuyCanvas();
+        self.clearCanvasCharacterSlots();
     }
 };

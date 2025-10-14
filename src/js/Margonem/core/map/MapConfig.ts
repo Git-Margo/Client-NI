@@ -14,11 +14,21 @@ type TMapConfig = {
     isPvpLvlAdvantageDisabled: boolean;
     isAlwaysPvpForced: boolean;
     isMakeNoobImmune: boolean;
-    isQuestFogEnabled: boolean;
+    //isQuestFogEnabled: boolean;
+    questFog: {
+        color: string | null;
+        isEnabled: boolean;
+    } | null;
     isBattlePvPQuickModeEnabled: boolean;
     respawn: string;
     pvnBattleTurnTimes: number[] | null;
     pvpBattleTurnTimes: number[] | null;
+    isWantedDisabled: boolean;
+    battlePoolTimeLimits: {
+        total: number;
+        minimum: number;
+        penalty: number;
+    } | null;
 };
 
 module.exports = class MapConfig {
@@ -45,11 +55,14 @@ module.exports = class MapConfig {
             isPvpLvlAdvantageDisabled: false,
             isAlwaysPvpForced: false,
             isMakeNoobImmune: false,
-            isQuestFogEnabled: false,
+            //isQuestFogEnabled: false,
+            questFog: null,
             isBattlePvPQuickModeEnabled: false,
             respawn: '',
             pvnBattleTurnTimes: null,
-            pvpBattleTurnTimes: null
+            pvpBattleTurnTimes: null,
+            isWantedDisabled: false,
+            battlePoolTimeLimits: null,
         };
     }
 
@@ -120,8 +133,12 @@ module.exports = class MapConfig {
         return this.#config.isMakeNoobImmune;
     }
 
-    getIsQuestFogEnabled() {
-        return this.#config.isQuestFogEnabled;
+    //getIsQuestFogEnabled() {
+    //  return this.#config.isQuestFogEnabled;
+    //}
+
+    getQuestFog() {
+        return this.#config.questFog;
     }
 
     getIsBattlePvPQuickModeEnabled() {
@@ -138,5 +155,13 @@ module.exports = class MapConfig {
 
     getPvpBattleTurnTimes() {
         return this.#config.pvpBattleTurnTimes;
+    }
+
+    getIsWantedDisabled() {
+        return this.#config.isWantedDisabled;
+    }
+
+    getBattlePoolTimeLimits() {
+        return this.#config.battlePoolTimeLimits;
     }
 };

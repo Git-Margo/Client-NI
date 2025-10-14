@@ -1,9 +1,13 @@
-//var wnd = require('core/Window');
-var tpl = require('core/Templates');
+//var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
 const {
     showProfile
-} = require("../HelpersTS");
-const OthersContextMenuData = require('core/characters/OthersContextMenuData');
+} = require('../HelpersTS');
+const OthersContextMenuData = require('@core/characters/OthersContextMenuData');
+const Tabs = require('../components/Tabs');
+const {
+    getIconClose
+} = require('@core/HelpersTS');
 module.exports = function(Par, otherClan) {
     var content;
     var attrDataTab;
@@ -11,10 +15,15 @@ module.exports = function(Par, otherClan) {
     var cards;
 
     this.initCards = function() {
+        // cards = [
+        // 	['recruit-main', 			self.updateScroll],
+        // 	['recruit-candidate', self.clickCuruitCandidate],
+        // 	['recruit-invite', 		self.clickRecruitInvite]
+        // ];
         cards = [
-            ['recruit-main', self.updateScroll],
-            ['recruit-candidate', self.clickCuruitCandidate],
-            ['recruit-invite', self.clickRecruitInvite]
+            'recruit-main',
+            'recruit-candidate',
+            'recruit-invite'
         ];
     };
 
@@ -62,10 +71,48 @@ module.exports = function(Par, otherClan) {
     };
 
     this.initMenu = function() {
-        var $menu = content.find('.clan-recruit-menu').find('.cards-header');
-        for (var i = 0; i < cards.length; i++) {
-            self.createRecruitCardMenu(cards[i], $menu);
-        }
+        // var $menu = content.find('.clan-recruit-menu').find('.cards-header');
+        // for (var i = 0; i < cards.length; i++) {
+        // 	self.createRecruitCardMenu(cards[i], $menu);
+        // }
+
+
+        let tabCards = {
+            [cards[0]]: {
+                name: Par.tLang(cards[0]),
+                initAction: () => {
+                    cardCallback(cards[0]);
+                    self.updateScroll()
+                },
+                contentTargetEl: content[0].querySelector(".section-recruit-main")
+            },
+            [cards[1]]: {
+                name: Par.tLang(cards[1]),
+                initAction: () => {
+                    cardCallback(cards[1]);
+                    self.clickCuruitCandidate()
+                },
+                contentTargetEl: content[0].querySelector(".section-recruit-candidate")
+            },
+            [cards[2]]: {
+                name: Par.tLang(cards[2]),
+                initAction: () => {
+                    cardCallback(cards[2]);
+                    self.clickRecruitInvite()
+                },
+                contentTargetEl: content[0].querySelector(".section-recruit-invite")
+            }
+        };
+
+        const tabsOptions = {
+            tabsEl: {
+                navEl: content[0].querySelector('.clan-recruit-menu')
+            }
+        };
+
+        this.tabsInstance = new Tabs.default(tabCards, tabsOptions);
+
+        this.tabsInstance.activateCard(cards[0]);
     };
 
     this.inviteToClan = function() {
@@ -93,27 +140,41 @@ module.exports = function(Par, otherClan) {
         $btn.addClass('green small');
     };
 
-    this.createRecruitCardMenu = function(obj, $menu) {
-        var name = obj[0];
-        var clb = obj[1];
-        var text = Par.tLang(name);
-        var $div = tpl.get('card').addClass('card-' + name);
-        $div.find('.label').html(text);
+    // this.createRecruitCardMenu = function (obj, $menu) {
+    // 	var name = obj[0];
+    // 	var clb = obj[1];
+    // 	var text = Par.tLang(name);
+    // 	var $div = tpl.get('card').addClass('card-' + name);
+    // 	$div.find('.label').html(text);
+    //
+    // 	$menu.append($div);
+    // 	$div.click(function () {
+    // 		if (name == 'recruit-candidate' || name == 'recruit-invite') {
+    // 			var myRank = Par.getProp('myrank');
+    // 			var bool = myRank & Math.pow(2, 3) ? 1 : 0;
+    // 			if (!bool) {
+    // 				mAlert(_t('accessDenied'));
+    // 				return;
+    // 			}
+    // 		}
+    // 		self.showSection(name);
+    // 		if (clb) clb();
+    // 	});
+    // };
 
-        $menu.append($div);
-        $div.click(function() {
-            if (name == 'recruit-candidate' || name == 'recruit-invite') {
-                var myRank = Par.getProp('myrank');
-                var bool = myRank & Math.pow(2, 3) ? 1 : 0;
-                if (!bool) {
-                    mAlert(_t('accessDenied'));
-                    return;
-                }
+    const cardCallback = (name) => {
+        if (name == 'recruit-candidate' || name == 'recruit-invite') {
+            var myRank = Par.getProp('myrank');
+            var bool = myRank & Math.pow(2, 3) ? 1 : 0;
+            if (!bool) {
+                mAlert(_t('accessDenied'));
+                return;
             }
-            self.showSection(name);
-            if (clb) clb();
-        });
-    };
+        }
+        this.tabsInstance.activateCard(name);
+        showSection(name);
+        // if (clb) clb();
+    }
 
     this.initTableHeaders = function() {
         var t0 = [
@@ -131,9 +192,9 @@ module.exports = function(Par, otherClan) {
         content.find('.recruit-invite-table-header').html(b);
     };
 
-    this.showSection = function(name) {
-        content.find('.card').removeClass('active');
-        content.find('.card-' + name).addClass('active');
+    const showSection = function(name) {
+        // content.find('.card').removeClass('active');
+        // content.find('.card-' + name).addClass('active');
         content.find('.recruit-section').removeClass('active');
         content.find('.section-' + name).addClass('active');
     };
@@ -172,7 +233,12 @@ module.exports = function(Par, otherClan) {
         //var $wrapper = $('<div>').addClass('buttons-wrapper');
         var $wrapper = tpl.get('clan-recruit-buttons-wrapper');
         var $nick = this.createNickElement(oneP);
-        var $tr = Par.createRecords([convertDateTime(oneP.send_ts, true), $nick, oneP.recruit_lvl + oneP.recruit_prof, $wrapper], 'normal-td');
+        //var $tr = Par.createRecords([convertDateTime(oneP.send_ts, true), $nick, oneP.recruit_lvl + oneP.recruit_prof, $wrapper], 'normal-td');
+
+        //let characterInfo = getCharacterInfo(null, {level: oneP.recruit_lvl, operationLevel: oneP.recruit_oplvl, prof: oneP.recruit_prof});
+        let $characterInfoElement = createCharacterInfoElement(oneP);
+
+        var $tr = Par.createRecords([convertDateTime(oneP.send_ts, true), $nick, $characterInfoElement, $wrapper], 'normal-td');
         $tr.addClass('one-applicant');
         $accept.find('.label').html(_t('accept_applicant'));
         $refuse.find('.label').html(_t('refuse_applicant'));
@@ -188,15 +254,40 @@ module.exports = function(Par, otherClan) {
         })
     };
 
+    const createCharacterInfoElement = (data) => {
+        let characterInfoData = {
+            nick: data.recruit_nick,
+            level: data.recruit_lvl,
+            operationLevel: data.recruit_oplvl,
+            prof: data.recruit_prof,
+            htmlElement: true
+        };
+
+        let $characterInfoWrapper = $('<div>').addClass('character-info-wrapper');
+        let characterInfo = getCharacterInfo(characterInfoData);
+
+        $characterInfoWrapper.html(characterInfo);
+
+        //characterInfoData.showNick = true;
+
+        addCharacterInfoTip($characterInfoWrapper, characterInfoData);
+
+        return $characterInfoWrapper;
+    }
+
     this.createOneTrInvitation = function(oneP, $table) {
         var $remove = tpl.get('button').addClass('small red');
-        var bck = tpl.get('add-bck').addClass('remove2');
-        //var $wrapper = $('<div>').addClass('buttons-wrapper');
+        const $closeIcon = getIconClose(false);
         var $wrapper = tpl.get('clan-recruit-buttons-wrapper');
         var $nick = this.createNickElement(oneP);
-        var $tr = Par.createRecords([convertDateTime(oneP.send_ts, true), $nick, oneP.recruit_lvl + oneP.recruit_prof, oneP.recruiter_nick, $wrapper], 'normal-td');
+        //var $tr = Par.createRecords([convertDateTime(oneP.send_ts, true), $nick, oneP.recruit_lvl + oneP.recruit_prof, oneP.recruiter_nick, $wrapper], 'normal-td');
+
+        //let characterInfo = getCharacterInfo(null, {level: oneP.recruit_lvl, operationLevel: oneP.recruit_oplvl, prof: oneP.recruit_prof});
+        let $characterInfoElement = createCharacterInfoElement(oneP);
+
+        var $tr = Par.createRecords([convertDateTime(oneP.send_ts, true), $nick, $characterInfoElement, oneP.recruiter_nick, $wrapper], 'normal-td');
         $tr.addClass('one-invitation');
-        $remove.append(bck);
+        $remove.append($closeIcon);
         $wrapper.append($remove);
         content.find('.section-recruit-candidate').find('.recruit-candidate-table').append($tr);
         $table.append($tr);
@@ -315,12 +406,12 @@ module.exports = function(Par, otherClan) {
     this.initTexts = function() {
         var myRank = Par.getProp('myrank');
         var bool = myRank & Math.pow(2, 3) ? 1 : 0;
-        if (bool) content.find('.clan-recruit-header-option').html(Par.tLang('header-option'));
-        content.find('.clan-recruit-header-atribute').html(Par.tLang('header-atribute'));
-        content.find('.clan-recruit-header-0').html(Par.tLang('basic_atributes'));
-        content.find('.clan-recruit-header-1').html(Par.tLang('additional_atributes'));
+        if (bool) content.find('.clan-recruit-header-option').find('.header-text').html(Par.tLang('header-option'));
+        content.find('.clan-recruit-header-atribute').find('.header-text').html(Par.tLang('header-atribute'));
+        content.find('.clan-recruit-header-0').find('.header-text').html(Par.tLang('basic_atributes'));
+        content.find('.clan-recruit-header-1').find('.header-text').html(Par.tLang('additional_atributes'));
         if (!otherClan) return;
-        content.find('.clan-recruit-header-2').html(Par.tLang('clan_skills'));
+        content.find('.clan-recruit-header-2').find('.header-text').html(Par.tLang('clan_skills'));
     };
 
     this.initAttrTab = function() {
@@ -370,5 +461,6 @@ module.exports = function(Par, otherClan) {
         content.find('.one-clan-atribute').find('.input-wrapper').css('display', display);
     };
 
+    this.cardCallback = cardCallback;
     //this.init();
 };

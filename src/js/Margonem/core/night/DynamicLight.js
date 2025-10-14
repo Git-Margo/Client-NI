@@ -1,7 +1,7 @@
-//let RajData             = require('core/raj/RajData');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let DynamicLightCommons = require('core/night/DynamicLightCommons');
-let LightData = require('core/night/LightData');
+//let RajData             = require('@core/raj/RajData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let DynamicLightCommons = require('@core/night/DynamicLightCommons');
+let LightData = require('@core/night/LightData');
 
 module.exports = function() {
 
@@ -38,7 +38,7 @@ module.exports = function() {
 
         light = dynamicLightCommons.createLight(data.d);
         onlyNight = dynamicLightCommons.getOnlyNight(data.d);
-        LightData.DYNAMIC_LIGHT_KIND.DYNAMIC_LIGHT
+
         dynamicLightCommons.setMaster(id, data.master, LightData.DYNAMIC_LIGHT_KIND.DYNAMIC_LIGHT, additionalData);
 
         //setMaster(id, data.master, additionalData);
@@ -51,8 +51,9 @@ module.exports = function() {
 
         if (!master) return;
 
-        light.setX(master.rx);
-        light.setY(master.ry);
+        // light.setX(master.rx);
+        // light.setY(master.ry);
+        light.updatePosByMaster(master);
     };
 
     const draw = (mainNightCtx, actualFrame) => {

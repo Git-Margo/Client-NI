@@ -1,8 +1,8 @@
-let CharacterEffect = require('core/characterEffects/CharacterEffect');
-let TextObject = require('core/canvasObject/TextObject');
-let TextOffset = require('core/canvasObject/TextOffset');
-let RajObjectInterface = require('core/raj/RajObjectInterface');
-let RajData = require('core/raj/RajData');
+let CharacterEffect = require('@core/characterEffects/CharacterEffect');
+let TextObject = require('@core/canvasObject/TextObject');
+let TextOffset = require('@core/canvasObject/TextOffset');
+let RajObjectInterface = require('@core/raj/RajObjectInterface');
+let RajData = require('@core/raj/RajData');
 
 let TextEffect = function() {
 
@@ -254,9 +254,9 @@ let TextEffect = function() {
         //color   = color ? ("rgb(" + color + ")") : "#ffffff"
         color = color ? (`rgb(${color.r},${color.g},${color.b})`) : "#ffffff";
 
-        ctx.save();
+        //ctx.save();
         textObject.draw(ctx, text[textIndex], left, top, height, color);
-        ctx.restore();
+        //ctx.restore();
     };
 
     this.start = start;

@@ -1,7 +1,7 @@
 /**
  * Created by Michnik on 2015-04-30.
  */
-var Updateable = require('core/Updateable');
+var Updateable = require('@core/Updateable');
 var TrackArrow = function() {
     var self = this;
     this.enabled = true;

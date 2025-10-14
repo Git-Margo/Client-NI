@@ -1,9 +1,9 @@
-const RajAreaTriggerData = require('core/raj/rajAreaTrigger/RajAreaTriggerData.js');
-const RajGetSpecificData = require('core/raj/RajGetSpecificData');
-//const RajRandomElements     = require('core/raj/RajRandomElements');
-const RajActionManager = require('core/raj/rajAction/RajActionManager');
-const RajActionData = require('core/raj/rajAction/RajActionData');
-const MapAreaCordTriggerData = require('core/map/mapAreaCordTrigger/MapAreaCordTriggerData.js');
+const RajAreaTriggerData = require('@core/raj/rajAreaTrigger/RajAreaTriggerData.js');
+const RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+//const RajRandomElements     = require('@core/raj/RajRandomElements');
+const RajActionManager = require('@core/raj/rajAction/RajActionManager');
+const RajActionData = require('@core/raj/rajAction/RajActionData');
+const MapAreaCordTriggerData = require('@core/map/mapAreaCordTrigger/MapAreaCordTriggerData.js');
 
 module.exports = function() {
 

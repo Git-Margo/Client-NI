@@ -1,27 +1,27 @@
-//var wnd = require('core/Window');
-var tpl = require('core/Templates');
-var D = require('core/clan/Diplomacy');
-var PE = require('core/clan/PlayerEdit');
-var RE = require('core/clan/RankEdit');
-var S = require('core/clan/Showcase');
-var M = require('core/clan/Members');
-var OC = require('core/clan/OtherClan');
-var OP = require('core/clan/ClanPage');
-var CEP = require('core/clan/ClanEditPage');
-var I = require('core/clan/ClanInfo');
-var T = require('core/clan/Treasury');
-var MA = require('core/clan/Manage');
-var H = require('core/clan/History');
-var CP = require('core/clan/ClanPage');
-var CO = require('core/clan/ClanOutfit');
-var CQ = require('core/clan/ClanQuests');
-var CS = require('core/clan/ClanSkills');
-var CL = require('core/clan/ClanList');
-var FP = require('core/clan/FindPanel');
-var R = require('core/clan/Recruit');
-var RO = require('core/clan/RecruitOther');
-var CA = require('core/clan/ClanAtributes');
-var CB = require('core/clan/ClanBless');
+//var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
+var D = require('@core/clan/Diplomacy');
+var PE = require('@core/clan/PlayerEdit');
+var RE = require('@core/clan/RankEdit');
+var S = require('@core/clan/Showcase');
+var M = require('@core/clan/Members');
+var OC = require('@core/clan/OtherClan');
+var OP = require('@core/clan/ClanPage');
+var CEP = require('@core/clan/ClanEditPage');
+var I = require('@core/clan/ClanInfo');
+var T = require('@core/clan/Treasury');
+var MA = require('@core/clan/Manage');
+var H = require('@core/clan/History');
+var CP = require('@core/clan/ClanPage');
+var CO = require('@core/clan/ClanOutfit');
+var CQ = require('@core/clan/ClanQuests');
+var CS = require('@core/clan/ClanSkills');
+var CL = require('@core/clan/ClanList');
+var FP = require('@core/clan/FindPanel');
+var R = require('@core/clan/Recruit');
+var RO = require('@core/clan/RecruitOther');
+var CA = require('@core/clan/ClanAtributes');
+var CB = require('@core/clan/ClanBless');
 
 module.exports = function(clan) {
     var self = this;
@@ -300,7 +300,7 @@ module.exports = function(clan) {
         var CA = self.getClanAtributs();
         var skills = self.createSkills(v);
         var attrData = CA.getMapOfBits(v.attributes, v.level, v.depo_tabs, skills, v.has_outfit);
-        var numberOfMembers = v.members.length / 5;
+        var numberOfMembers = v.members.length / 6;
         var val = [
             //v.name, v.level, v.depo_tabs, v.members2.length / 5, 'meee?', v.logo, attrData
             v.name, v.level, numberOfMembers, attrData
@@ -512,14 +512,17 @@ module.exports = function(clan) {
             content.find('.stats').css('display', 'none');
             return;
         }
-        if (isset(d.bits)) content.find('.clan-level').html(d.level).tip(this.tLang('clan_level') + ': ' + d.level);
-        if (isset(d.mlist)) content.find('.clan-member-amount').html(self.tLang('clan_amount_members') + '<span>' + (d.mlist.length / 2) + '</span>');
+        //if (isset(d.bits)) content.find('.clan-level').html(d.level).tip(this.tLang('clan_level') + ': ' +d.level);
+        if (isset(d.bits)) content.find('.clan-level').html(this.tLang('clan_level') + ': ' + d.level);
+        //if (isset(d.mlist)) content.find('.clan-member-amount').html(self.tLang('clan_amount_members') + '<span>' + (d.mlist.length / 2) + '</span>');
+        if (isset(d.mlist)) content.find('.clan-member-amount').html(self.tLang('clan_amount_members') + ": " + (d.mlist.length / 2));
         if (isset(d.attributes)) {
             var atributes = self.getProp('attributes');
             var v = (atributes >> 21) & 3;
             var str = v ? v == 1 ? _t('open_recruit') : _t('free recruitment') : _t('close_recruit');
 
-            content.find('.clan-recruit-state').html(self.tLang('rank_inviting') + '<br><span>' + str + '</span>');
+            //content.find('.clan-recruit-state').html(self.tLang('rank_inviting') + '<br><span>' + str + '</span>');
+            content.find('.clan-recruit-state').html(self.tLang('rank_inviting') + ': ' + str);
         }
     };
 
@@ -588,7 +591,8 @@ module.exports = function(clan) {
     };
 
     this.recruitClick = function() {
-        Recruit.showSection('recruit-main');
+        // Recruit.showSection('recruit-main');
+        Recruit.cardCallback('recruit-main');
         return false;
     };
 
@@ -669,27 +673,38 @@ module.exports = function(clan) {
         let online;
         let $mem = tpl.get('clan-member');
         let $info = v[1];
-        let lastVisit = escapeHTML(v[4]) + ' (' + v[5] + ', ' + v[6] + ')';
+        let lastVisit = escapeHTML(v[5]) + ' (' + v[6] + ', ' + v[7] + ')';
 
-        if (v[8] == 0) online = tpl.get('online-status').addClass('online-status green').html('online');
+        if (v[9] == 0) online = tpl.get('online-status').addClass('online-status green').html('online');
         else {
             let str =
                 '<div class="online-status">offline</div>' +
-                '<div class="time-offline" time-offline="' + v[8] + '">' +
-                calculateDiff(v[8]) +
+                '<div class="time-offline" time-offline="' + v[9] + '">' +
+                calculateDiff(v[9]) +
                 '</div>';
             online = tpl.get('online-status-wrapper').addClass('red v-item').html(str);
         }
 
         let allR = d['ranks'];
-        let rankName = allR[v[7]].name;
+        let rankName = allR[v[8]].name;
         let $rank = tpl.get('member-rank').html(rankName);
-        let url = CFG.a_opath + v[9];
+        let url = CFG.a_opath + v[10];
         let $levelAndProf = tpl.get('level-and-prof');
-        let $memberLvl = tpl.get('member-lvl').html(v[2] + v[3]);
+        //let $memberLvl    = tpl.get('member-lvl').html(v[2]+v[3]);
+
+        let characterInfoData = {
+            nick: v[1],
+            prof: v[4],
+            level: v[2],
+            operationLevel: v[3],
+            htmlElement: true
+        };
+        let $memberLvl = tpl.get('member-lvl').html(getCharacterInfo(characterInfoData));
+        $memberLvl.attr("val-to-amount-sort", characterInfoData.level)
+        addCharacterInfoTip($memberLvl, characterInfoData);
 
         $rank.tip(rankName);
-        $rank.attr('id-rank', v[7]);
+        $rank.attr('id-rank', v[8]);
         $levelAndProf.append($memberLvl);
 
         createImgStyle($mem.find('.icon-wrapper'), url);
@@ -699,7 +714,7 @@ module.exports = function(clan) {
         if (addGroup) Members.createAddToGroup($mem, v[0]);
 
         if (edit) {
-            Members.createButRankEdit($mem, v[7], v[0], v[1]);
+            Members.createButRankEdit($mem, v[8], v[0], v[1]);
         }
         return this.createRecords([$mem, $levelAndProf, $rank, online], 'normal-td big-height-td');
     };
@@ -815,6 +830,10 @@ module.exports = function(clan) {
         }
         return obj;
     };
+
+    this.getOtheClanModule = () => {
+        return OtherClan;
+    }
 
     this.getCharInf = function() {
         return charInf;

@@ -101,7 +101,7 @@ module.exports = function() {
             onEnter = false;
         });
 
-        $span.on("contextmenu", function(e, mE) {
+        $span.on("contextmenu longpress", function(e, mE) {
             if (!$(this).hasClass('linked-chat-item-tip-created')) return
             fetchItem(hid, kindLinkedItem, (itemData) => {
 

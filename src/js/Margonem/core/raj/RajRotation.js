@@ -1,4 +1,4 @@
-let FloatObjectData = require('core/floatObject/FloatObjectData');
+let FloatObjectData = require('@core/floatObject/FloatObjectData');
 
 module.exports = function() {
 

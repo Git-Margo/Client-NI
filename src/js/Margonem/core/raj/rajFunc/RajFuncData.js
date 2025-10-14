@@ -1,7 +1,8 @@
 module.exports = {
     GET_FUNC_KEY: "getFunc",
     kind: {
-        LINEAR: "linear"
+        LINEAR: "linear",
+        PARABOLA: "parabola"
     },
     defaultData: {
         outputXVarName: "x",

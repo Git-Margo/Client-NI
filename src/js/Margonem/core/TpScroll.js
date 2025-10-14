@@ -1,4 +1,4 @@
-var tpl = require('core/Templates');
+var tpl = require('@core/Templates');
 module.exports = function() {
     var self = this;
     var content;
@@ -18,7 +18,7 @@ module.exports = function() {
     };
 
     this.initWindow = function() {
-        content = tpl.get('divide-panel').addClass('tp-scroll');
+        content = tpl.get('left-grouped-list-and-right-description-window').addClass('tp-scroll');
 
         Engine.windowManager.add({
             content: content,
@@ -47,7 +47,7 @@ module.exports = function() {
     };
 
     this.initSearch = function() {
-        var $search = this.wnd.$.find('.search-item'),
+        var $search = this.wnd.$.find('.search'),
             $searchX = this.wnd.$.find('.search-x');
         $search.keyup(function() {
             var v = $(this).val();
@@ -78,7 +78,8 @@ module.exports = function() {
         for (const idMap in this.data) {
             const mapName = this.data[idMap].n;
             const $oneCity = tpl.get('divide-list-group').addClass('city-' + idMap);
-            $oneCity.find('.label').text(mapName);
+            const $label = $oneCity.find('.label');
+            $label.text(mapName);
             $oneCity.on('click', () => this.onClickEvent(idMap));
 
             cities.push($oneCity);
@@ -99,6 +100,10 @@ module.exports = function() {
             var $cityWrapper = this.wnd.$.find('.left-scroll').find('.scroll-pane');
             for (var i = 0; i < cities.length; i++) {
                 $cityWrapper.append(cities[i]);
+                const $label = cities[i].find('.label');
+                if ($label[0].scrollWidth > $label[0].clientWidth) {
+                    $label.tip($label.text());
+                }
             }
         }
     };
@@ -110,17 +115,19 @@ module.exports = function() {
         self.wnd.$.find('.right-scroll').find('.scroll-pane').append($wrapper);
 
         var $cityName = $('<div>').addClass('city-name');
-        self.wnd.$.find('.left-column-header').html(_t('loc'));
+        self.wnd.$.find('.left-column-list-label').html(_t('loc'));
         self.wnd.$.find('.right-column-header').append($cityName);
 
         var $cityBufferWrapper = $('<div>').addClass('city-buffer-wrapper');
-        var $cityBuffer = $('<div>').addClass('city-buffer');
+        var $cityBuffer = $('<div>').html(_t('city_loading')).addClass('city-buffer');
         $cityBufferWrapper.append($cityBuffer);
         self.wnd.$.find('.right-column').append($cityBufferWrapper);
 
         var $btn = tpl.get('button').addClass('set-tp-stone small green disable');
         $btn.find('.label').html(_t('set_tp'));
-        self.wnd.$.find('.bottom-part').append($btn);
+        self.wnd.$.find('.bottom-row-panel').append($btn);
+
+        this.setBackground();
 
         $btn.click(function() {
             const [x, y] = activeCoordsChoice;
@@ -130,6 +137,12 @@ module.exports = function() {
             });
         });
     };
+
+    this.setBackground = () => {
+        const backgroundEl = self.wnd.$[0].querySelector('.right-column .interface-element-middle-2-background-stretch');
+        backgroundEl.classList.remove('interface-element-middle-2-background-stretch');
+        backgroundEl.classList.add('interface-element-middle-1-background-stretch');
+    }
 
     this.cordEvents = function($cord, idMap, idTp) {
         $cord.hover(function() {

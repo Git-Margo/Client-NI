@@ -1,5 +1,5 @@
 const Templates = require('../Templates');
-const OneBuildHandheld = require('core/builds/OneBuildHandheld.js');
+const OneBuildHandheld = require('@core/builds/OneBuildHandheld.js');
 
 module.exports = function() {
 
@@ -74,7 +74,7 @@ module.exports = function() {
     };
 
     const openPanel = () => {
-        if (getEngine().hero.getLvl() < 25) {
+        if (getHeroLevel() < 25) {
             message(_t('too_low_lvl'));
             return
         }

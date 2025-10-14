@@ -1,4 +1,4 @@
-var tpl = require('core/Templates');
+var tpl = require('@core/Templates');
 module.exports = function() {
     var self = this;
     var data = null;
@@ -133,7 +133,7 @@ module.exports = function() {
             for (var k in data) {
                 if (isset(data[k].lvl_req)) {
                     var l = data[k].lvl_req;
-                    var lvl = Engine.hero.d.lvl;
+                    var lvl = getHeroLevel();
                     if (!(lvl >= l[0] && lvl <= l[1])) continue;
                 }
                 var tmp = data[k];

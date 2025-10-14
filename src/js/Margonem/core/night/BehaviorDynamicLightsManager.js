@@ -1,9 +1,9 @@
-//let BehaviorDynamicLight      = require('core/night/BehaviorDynamicLight');
-let BehaviorDynamicLight = require('core/night/BehaviorDynamicLight');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let BehaviorDynamicLightData = require('core/night/BehaviorDynamicLightData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+//let BehaviorDynamicLight      = require('@core/night/BehaviorDynamicLight');
+let BehaviorDynamicLight = require('@core/night/BehaviorDynamicLight');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let BehaviorDynamicLightData = require('@core/night/BehaviorDynamicLightData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 
 module.exports = function() {
@@ -266,6 +266,15 @@ module.exports = function() {
         return a;
     }
 
+    const refreshFilter = () => {
+        for (let id in behaviorDynamicLightList) {
+            let light = behaviorDynamicLightList[id].getLight();
+            if (light) {
+                light.updateFilterImage();
+            }
+        }
+    }
+
     this.init = init;
     this.update = update;
     this.updateData = updateData;
@@ -274,5 +283,6 @@ module.exports = function() {
     this.getBehaviorDynamicLightByNpcIdArray = getBehaviorDynamicLightByNpcIdArray;
     this.onClear = onClear;
     this.clearAndRemoveCallback = clearAndRemoveCallback;
+    this.refreshFilter = refreshFilter;
 
 };

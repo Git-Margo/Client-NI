@@ -1,5 +1,5 @@
-const MapAreaCordTrigger = require('core/map/mapAreaCordTrigger/MapAreaCordTrigger.js');
-const MapAreaCordTriggerData = require('core/map/mapAreaCordTrigger/MapAreaCordTriggerData.js');
+const MapAreaCordTrigger = require('@core/map/mapAreaCordTrigger/MapAreaCordTrigger.js');
+const MapAreaCordTriggerData = require('@core/map/mapAreaCordTrigger/MapAreaCordTriggerData.js');
 
 module.exports = function() {
 
@@ -275,7 +275,7 @@ module.exports = function() {
     }
 
     const draw = (ctx) => {
-        if (!CFG.debug) return
+        if (!getDebug(CFG.DEBUG_KEYS.SRAJ)) return
 
         let mapAreaCord = Engine.mapAreaCordTriggerManager.getMapAreaCordTriggerArray();
         let map = Engine.map;

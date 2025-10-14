@@ -2,9 +2,9 @@ import Button from './components/Button';
 import {
     isset
 } from './HelpersTS';
-const ItemState = require('core/items/ItemState');
+const ItemState = require('@core/items/ItemState');
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 type IAskAlert = {
     q: string;

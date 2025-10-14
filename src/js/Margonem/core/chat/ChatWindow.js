@@ -1,6 +1,6 @@
-var Tpl = require('core/Templates');
-var ChatData = require('core/chat/ChatData.js');
-var ServerStorageData = require('core/storage/ServerStorageData.js');
+var Tpl = require('@core/Templates');
+var ChatData = require('@core/chat/ChatData.js');
+var ServerStorageData = require('@core/storage/ServerStorageData.js');
 
 module.exports = function() {
 
@@ -95,7 +95,19 @@ module.exports = function() {
     };
 
     const setChatOverAdditionalBarPanel = (state) => {
-        var bottom = state ? 49 : 0;
+        //var bottom = state ? 49 : 0;
+        let top = null;
+        let bottom = null;
+
+        if (getEngine().interface.checkInterfaceLightMode()) {
+            top = getEngine().widgetManager.getPossibleTopValOfLeftOrRightColumn(Engine.widgetsData.pos.TOP_LEFT);
+            bottom = getEngine().widgetManager.getPossibleBottomValOfLeftColumn(state);
+        } else {
+            top = 0;
+            bottom = state ? 49 : 0;
+        }
+
+        $chatWindow.css('top', top + 'px');
         $chatWindow.css('bottom', bottom + 'px');
     };
 

@@ -1,4 +1,4 @@
-let HeroDirectionData = require('core/characters/HeroDirectionData');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
 
 
 module.exports = function() {

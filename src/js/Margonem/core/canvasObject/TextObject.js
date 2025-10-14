@@ -1,6 +1,6 @@
 module.exports = function() {
 
-    const textType = "px Arial regular";
+    const textType = "px Arimo";
 
     const draw = (ctx, text, left, top, fontHeight, fontColor, maxWidth = 200, paddingHorizontal = 10, paddingVertical = 5) => {
 
@@ -67,17 +67,16 @@ module.exports = function() {
         ctx.fillStyle = color;
         ctx.font = fontHeight + textType;
         ctx.shadowColor = "black";
-        //ctx.shadowColor   = `rgb(${r}, ${g}, ${b})`;
-        ctx.shadowBlur = 0;
         ctx.lineWidth = 2;
         ctx.shadowOffsetX = 1;
         ctx.shadowOffsetY = 1;
         ctx.strokeStyle = "black";
 
         ctx.strokeText(text, left, top);
-
-        ctx.shadowBlur = 0;
         ctx.fillText(text, left, top);
+
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
     };
 
     const getRowsData = (ctx, textToBreak, maxWidth) => {

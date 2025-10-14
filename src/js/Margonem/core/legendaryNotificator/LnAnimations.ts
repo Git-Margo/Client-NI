@@ -5,12 +5,11 @@ import {
 export default class LegendaryNotificatorAnimations {
 
     interval: any = null;
-
-    constructor() {
-        this.init();
+    confettiDefaultOptions = {
+        zIndex: 123 // don't touch it - this is closely related to css styles
     }
 
-    init() {}
+    constructor() {}
 
     animation(animationType: Animations = Animations.NONE) {
         confetti.reset();
@@ -39,6 +38,7 @@ export default class LegendaryNotificatorAnimations {
 
     confetti() {
         confetti({
+            ...this.confettiDefaultOptions,
             particleCount: 100,
             spread: 140,
             origin: {
@@ -51,6 +51,7 @@ export default class LegendaryNotificatorAnimations {
     confettiSide() {
         const animationEnd = Date.now() + (15 * 1000);
         const defaults = {
+            ...this.confettiDefaultOptions,
             particleCount: 4,
             spread: 55,
             scalar: 1.2,
@@ -85,6 +86,7 @@ export default class LegendaryNotificatorAnimations {
 
     stars() {
         const defaults = {
+            ...this.confettiDefaultOptions,
             spread: 360,
             ticks: 50,
             gravity: 0,
@@ -120,6 +122,7 @@ export default class LegendaryNotificatorAnimations {
         const duration = 15 * 1000;
         const animationEnd = Date.now() + duration;
         const defaults = {
+            ...this.confettiDefaultOptions,
             startVelocity: 30,
             spread: 360,
             ticks: 60,

@@ -5,7 +5,7 @@ function isset(x) {
     return typeof(x) != 'undefined';
 }
 
-var Templates = require('core/Templates');
+var Templates = require('@core/Templates');
 module.exports = new(function() {
     /**
      * @param options {} - object with options
@@ -173,6 +173,18 @@ module.exports = new(function() {
             return Math.abs(lastYTouch - currentY);
         };
 
+        const scrollToElement = (selector) => {
+            const $target = $(selector);
+            if ($target.length) {
+                const paneOffset = $pane.offset().top;
+                const targetOffset = $target.offset().top;
+                const scrollTop = $pane.scrollTop() + (targetOffset - paneOffset);
+
+                // setScroll($target.position().top); // relative to parent with position: relative :/
+                setScroll(scrollTop);
+            }
+        }
+
         $(this).on('mousewheel DOMMouseScroll', function(e) {
             var isFirefox = typeof InstallTrigger !== 'undefined';
             var stateScroll = isFirefox ? e.originalEvent.detail : e.originalEvent.deltaY;
@@ -190,6 +202,8 @@ module.exports = new(function() {
             updateBarPos();
         }).on('setScroll', function(ev, n) {
             setScroll(n);
+        }).on('scrollToElement', function(ev, selector) {
+            scrollToElement(selector);
         }).on('updateWhenBottom', function() {
             var scrollVisible = isVisible();
             updateCallback();

@@ -1,7 +1,7 @@
-var tpl = require('core/Templates');
-var CodeProm = require('core/CodeProm');
-var DraconiteShop = require('core/shop/DraconiteShop');
-var StaminaShop = require('core/shop/StaminaShop');
+var tpl = require('@core/Templates');
+var CodeProm = require('@core/CodeProm');
+var DraconiteShop = require('@core/shop/DraconiteShop');
+var StaminaShop = require('@core/shop/StaminaShop');
 module.exports = function() {
     var self = this;
     var content;
@@ -141,7 +141,12 @@ module.exports = function() {
                         name: 'sales',
                         txt: 20,
                         npcPhone: 190
-                    }
+                    },
+                    {
+                        name: 'stamina',
+                        txt: 2,
+                        npcPhone: 'stamina'
+                    },
                 ],
                 [{
                         name: 'potions',
@@ -248,6 +253,7 @@ module.exports = function() {
             title: this.tLang('premium_shop'),
             //nameWindow        : 'premiumWnd',
             nameWindow: Engine.windowsData.name.PREMIUM_WND,
+            widget: Engine.widgetsData.name.PREMIUM,
             objParent: this,
             nameRefInParent: 'wnd',
             onclose: () => {
@@ -256,6 +262,7 @@ module.exports = function() {
         });
 
         this.wnd.addToAlertLayer();
+        this.wnd.show();
     };
 
     this.createBottomPanel = function() {
@@ -279,7 +286,8 @@ module.exports = function() {
 
         var str = _t('buy_sl_label', null, 'shop');
         self.wnd.$.find('.currency-label').html(str);
-        self.wnd.$.find('.chest').addClass('sl');
+        //self.wnd.$.find('.chest').addClass('sl');
+        self.wnd.$.find('.chest').addClass('interface-element-chest-sl');
     };
 
     this.close = function() {

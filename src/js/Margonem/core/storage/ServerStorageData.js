@@ -11,6 +11,7 @@ module.exports = {
     ADDONS: "addons",
     HOT_WIDGET_MOBILE: "hotWidget_mobile",
     HOT_WIDGET_PC: "hotWidget_pc",
+    HOT_WIDGET_SIZE_PC: "hotWidgetSize_pc",
     WHO_IS_HERE: "whoIsHere",
     STORAGE_CONFIG: "storageConfig",
     WINDOW_DATA: "WINDOW_DATA",

@@ -1,13 +1,16 @@
-const Tpl = require('core/Templates');
+import {
+    setAttributes
+} from "@core/HelpersTS";
 
-declare const setAttributes: Function;
+const Tpl = require('@core/Templates');
 
-interface ButtonData {
+export interface ButtonData {
     text: string | HTMLElement,
     classes ? : string[],
-    action ? : (e: MouseEvent) => void,
+    action ? : (e: MouseEvent, el: HTMLElement) => void,
     tip ? : string,
     disabled ? : boolean
+    attrs ? : object,
 }
 
 export default class Button {
@@ -25,12 +28,13 @@ export default class Button {
         classes,
         action,
         tip,
-        disabled
+        disabled,
+        attrs
     }: ButtonData) {
         if (classes) this.el.classList.add(...classes);
 
         this.el.addEventListener('click', (e) => {
-            if (action) action(e);
+            if (action) action(e, this.el);
         });
 
         if (disabled) {
@@ -40,6 +44,8 @@ export default class Button {
         if (tip) {
             this.setTip(tip);
         }
+
+        if (attrs) setAttributes(this.el, attrs);
 
         this.setLabel(text);
     }

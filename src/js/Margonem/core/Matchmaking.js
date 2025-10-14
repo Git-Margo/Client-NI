@@ -1,12 +1,13 @@
-var tpl = require('core/Templates');
-//var Items = require('core/items/ItemsManager');
-//var Item = require('core/items/Item');
-var MatchmakingSummary = require('core/MatchmakingSummary');
-//var HeroEquipment = require('core/items/HeroEquipment');
-var Storage = require('core/Storage');
-const OneBuild = require('core/builds/OneBuild.js');
-const BuildsCommons = require('core/builds/BuildsCommons.js');
-//var Interface = require('core/Interface');
+var tpl = require('@core/Templates');
+//var Items = require('@core/items/ItemsManager');
+//var Item = require('@core/items/Item');
+var MatchmakingSummary = require('@core/MatchmakingSummary');
+//var HeroEquipment = require('@core/items/HeroEquipment');
+var Storage = require('@core/Storage');
+const OneBuild = require('@core/builds/OneBuild.js');
+const BuildsCommons = require('@core/builds/BuildsCommons.js');
+let Tabs = require('@core//components/Tabs');
+//var Interface = require('@core/Interface');
 
 module.exports = function() {
     var self = this;
@@ -46,6 +47,20 @@ module.exports = function() {
     //let buildList = null;
     let buildsCommons = null;
     let rewardsToGet = false;
+
+
+    const CARDS_DATA_STATS_AND_HISTORY = {
+        PROFILE: "PROFILE",
+        YOUR_STATISTICS: "YOUR_STATISTICS",
+        BATTLE_HISTORY: "BATTLE_HISTORY",
+        SEASON: "SEASON"
+    };
+
+    const CARDS_DATA_RANKING = {
+        GENERAL: "GENERAL",
+        CLAN: "CLAN",
+        FRIENDS: "FRIENDS"
+    };
 
     this.init = function() {
         initBuildsCommons();
@@ -315,36 +330,88 @@ module.exports = function() {
     };
 
     this.createRanking = function() {
-        var $wrapper = self.wnd.$.find('.matchmaking-ranking');
-        self.newCard($wrapper, self.tLang('general'), function() {
-            _g('match&a=ladder_global&page=1');
-        });
-        self.newCard($wrapper, self.tLang('clan'), function() {
-            if (Engine.hero.d.clan == 0) {
-                var $clanWnd = self.wnd.$.find('.clan-ranking-wnd');
-                self.hideBottomBar($clanWnd, true);
-            }
-            _g('match&a=ladder_clan&page=1');
-        });
-        self.newCard($wrapper, self.tLang('friends'), function() {
-            _g('match&a=ladder_friends&page=1');
-        });
+        //var $wrapper = self.wnd.$.find('.matchmaking-ranking');
+        //self.newCard($wrapper, self.tLang('general'), function () {
+        //	_g('match&a=ladder_global&page=1');
+        //});
+        //self.newCard($wrapper, self.tLang('clan'), function () {
+        //	if (Engine.hero.d.clan == 0) {
+        //		var $clanWnd = self.wnd.$.find('.clan-ranking-wnd');
+        //		self.hideBottomBar($clanWnd, true);
+        //	}
+        //	_g('match&a=ladder_clan&page=1');
+        //});
+        //self.newCard($wrapper, self.tLang('friends'), function () {
+        //	_g('match&a=ladder_friends&page=1');
+        //});
+
+        createRankingTabs();
 
         self.createBottomRankingPanel('ladder_global');
         self.createBottomRankingPanel('ladder_clan');
         self.createBottomRankingPanel('ladder_friends');
     };
 
-    this.createStatisticsDetailed = function() {
-        this.createBottomStatistickDetailed();
+    const createRankingTabs = () => {
+
+        let cards = {
+            [CARDS_DATA_RANKING.GENERAL]: {
+                name: self.tLang('general'),
+                afterShowFn: () => {
+                    callLadderGlobal();
+                },
+                contentTargetEl: self.wnd.$[0].querySelector(".general-ranking-wnd")
+            },
+            [CARDS_DATA_RANKING.CLAN]: {
+                name: self.tLang('clan'),
+                afterShowFn: () => {
+                    if (Engine.hero.d.clan == 0) {
+                        var $clanWnd = self.wnd.$.find('.clan-ranking-wnd');
+                        self.hideBottomBar($clanWnd, true);
+                    }
+                    _g('match&a=ladder_clan&page=1');
+                },
+                contentTargetEl: self.wnd.$[0].querySelector(".clan-ranking-wnd")
+            },
+            [CARDS_DATA_RANKING.FRIENDS]: {
+                name: self.tLang('friends'),
+                afterShowFn: () => {
+                    _g('match&a=ladder_friends&page=1');
+                },
+                contentTargetEl: self.wnd.$[0].querySelector(".friends-ranking-wnd")
+            }
+        };
+
+
+        const tabsOptions = {
+            tabsEl: {
+                navEl: self.wnd.$[0].querySelector('.ranking-tabs')
+            }
+        };
+
+        this.rankingTabs = new Tabs.default(cards, tabsOptions);
+
+        // showFirstCardInRanking();
     };
 
-    this.createBottomStatistickDetailed = function() {
+    const showFirstCardInRanking = () => {
+        this.rankingTabs.activateCard(CARDS_DATA_RANKING.GENERAL);
+    };
+
+    const callLadderGlobal = () => {
+        _g('match&a=ladder_global&page=1');
+    };
+
+    this.createStatisticsDetailed = function() {
+        this.createBottomStatisticsDetailed();
+    };
+
+    this.createBottomStatisticsDetailed = function() {
         var $backToMain = tpl.get('button').addClass('green small');
-        var $card = self.wnd.$.find('.stats-and-history');
         $backToMain.find('.label').html(self.tLang('back'));
         $backToMain.click(function() {
-            self.setVisibleStats($card, 1);
+            showSecondCardInStatsAndHistory();
+            hideStatisticsDetails();
             self.setGreenHeader(self.tLang('yourstatistics'));
         });
         self.wnd.$.find('.statistics-detailed-bottom-panel').find('.back-to-main').append($backToMain);
@@ -532,7 +599,7 @@ module.exports = function() {
             eqChooseInterval = null;
         }
         eqChooseInterval = setInterval(function() {
-            self.wnd.$.find('.time').html(time-- + 's');
+            self.wnd.$.find('.choose-eq-bottom-panel .time').html(time-- + 's');
             if (time < 0) {
                 clearInterval(eqChooseInterval);
                 eqChooseInterval = null;
@@ -593,15 +660,15 @@ module.exports = function() {
     		return lengthObject(obj) ? obj : null;
     	};
     */
-    this.setSkillsSets = function() {
-        for (var k in allSkillSets) {
-            var skillSet = allSkillSets[k].skill_set;
-            //var $skillSet = $('<div>').addClass('skill-set skill-set-' + skillSet);
-            var $skillSet = tpl.get('skill-set-matchmaking').addClass('skill-set-' + skillSet);
-            self.wnd.$.find('.choose-eq').find().remove('.skill-set');
-            self.wnd.$.find('.eq-' + (parseInt(k) + 1)).find('.eq-items-set').append($skillSet);
-        }
-    };
+    //this.setSkillsSets = function () {
+    //	for (var k in allSkillSets) {
+    //		var skillSet = allSkillSets[k].skill_set;
+    //		//var $skillSet = $('<div>').addClass('skill-set skill-set-' + skillSet);
+    //		var $skillSet = tpl.get('skill-set-matchmaking').addClass('skill-set-' + skillSet);
+    //		self.wnd.$.find('.choose-eq').find().remove('.skill-set');
+    //		self.wnd.$.find('.eq-' + (parseInt(k) + 1)).find('.eq-items-set').append($skillSet);
+    //	}
+    //};
 
     this.setVSPanel = function(d) {
         var $chooseEq = self.wnd.$.find('.choose-eq');
@@ -612,7 +679,9 @@ module.exports = function() {
             $wrapper: $you,
             nick: h.nick,
             icon: h.img,
-            level: h.lvl,
+            level: getHeroLevel(),
+            operationLevel: getEngine().hero.getOperationLevel(),
+            prof: getEngine().hero.getProf(),
             rating: d.rating
         });
         self.setPlayersInfo({
@@ -620,7 +689,9 @@ module.exports = function() {
             nick: getAllProfName(d.opponent_prof),
             icon: d.opponent_prof,
             level: d.opponent_lvl,
+            operationLevel: 0,
             rating: d.opponent_rating,
+            prof: d.opponent_prof,
             opponent: true
         });
     };
@@ -636,6 +707,8 @@ module.exports = function() {
         nick,
         icon,
         level,
+        operationLevel,
+        prof,
         rating,
         opponent = false
     }) {
@@ -644,7 +717,18 @@ module.exports = function() {
         if (!opponent) {
             createImgStyle($avatarWrapper, url);
             $wrapper.find('.name').text(nick);
-            $wrapper.find('.level-rating').text(level + ' lvl PR ' + rating);
+
+            let characterData = {
+                level,
+                operationLevel,
+                prof,
+                htmlElement: true
+            };
+
+            let characterInfo = getCharacterInfo(characterData)
+
+            //$wrapper.find('.level-rating').text(level + ' lvl PR ' + rating) ;
+            $wrapper.find('.level-rating').html(characterInfo + ' PR ' + rating);
         } else {
             this.setOpponentCharacterIcon($avatarWrapper, icon);
             $wrapper.find('.name').text(_t('opponent', null, 'matchmaking'));
@@ -655,11 +739,13 @@ module.exports = function() {
     this.createMainWndMatchmaking = function() {
         var $wrapper = self.wnd.$.find('.matchmaking-menu');
         this.createOneTile($wrapper, 'statistick', false, false, self.tLang('statistics'), function() {
-            var $card = self.wnd.$.find('.stats-and-history');
-            self.setGreenHeader(self.tLang('progress'));
+            //var $card = self.wnd.$.find('.stats-and-history');
+            //self.setGreenHeader(self.tLang('progress'));
             self.showMainWnd('.stats-and-history');
-            self.setVisibleStats($card, 0);
-            _g('match&a=profile');
+            //self.setVisibleStats($card, 0);
+            showFirstCardInStatsAndHistory();
+            callProfileRequest();
+            //_g('match&a=profile');
             //_g('match&a=statistics');
         });
         var queue = this.createOneTile($wrapper, 'queue', false, false, self.tLang('lookforfight'), function() {
@@ -672,10 +758,12 @@ module.exports = function() {
         queue.append($matches);
         this.createOneTile($wrapper, 'history', false, false, self.tLang('ranking'), function() {
             var $card = self.wnd.$.find('.matchmaking-ranking');
-            self.setGreenHeader(self.tLang('generalranking'));
+            //self.setGreenHeader(self.tLang('generalranking'));
             self.showMainWnd('.matchmaking-ranking');
-            self.setVisibleStats($card, 0);
-            _g('match&a=ladder_global&page=1')
+            //self.setVisibleStats($card, 0);
+            //_g('match&a=ladder_global&page=1')
+            showFirstCardInRanking();
+            callLadderGlobal();
         });
         var $goToTakeReward = tpl.get('button').addClass('green small');
 
@@ -687,41 +775,105 @@ module.exports = function() {
             var outfitExist = self.wnd.$.find('.season-reward-main').find('.your-outfits').children().length > 0;
             if (outfitExist) self.blockTakeRewardButtonAndClearCheckbox();
         });
-        this.createBottomMainWndMatchmaking();
+        //this.createBottomMainWndMatchmaking();
     };
 
-    this.createBottomMainWndMatchmaking = function() {
-        var $checkbox = tpl.get('one-checkbox');
-        self.wnd.$.find('.turn-on-off-tutorial').append($checkbox);
-        $checkbox.find('.label').html(_t('dont_show', null, 'matchmaking-tutorial'));
-        $checkbox.click(function() {
-            var $check = $(this).find('.checkbox').toggleClass('active');
-            var active = $check.hasClass('active');
-            Storage.set('MM_Tutorial/status', active);
-        })
-    };
+    //this.createBottomMainWndMatchmaking = function () {
+    //	var $checkbox = tpl.get('one-checkbox');
+    //	self.wnd.$.find('.turn-on-off-tutorial').append($checkbox);
+    //	$checkbox.find('.label').html(_t('dont_show', null, 'matchmaking-tutorial'));
+    //	$checkbox.click(function () {
+    //		var $check = $(this).find('.checkbox').toggleClass('active');
+    //		var active = $check.hasClass('active');
+    //		Storage.set('MM_Tutorial/status', active);
+    //	})
+    //};
 
     this.createStatsAndHistory = function() {
-        var $wrapper = self.wnd.$.find('.stats-and-history');
-        self.newCard($wrapper, self.tLang('progress'), function() {
-            _g('match&a=profile');
-            Engine.tpls.deleteMessItemsByLoc('d');
-        });
-        self.newCard($wrapper, self.tLang('yourstatistics'), function() {
-            _g('match&a=statistics')
-        });
-        self.newCard($wrapper, self.tLang('battlehistory'), function() {
-            _g('match&a=history&page=1');
-        });
-        self.newCard($wrapper, self.tLang('season'), function() {
+        //var $wrapper = self.wnd.$.find('.stats-and-history');
+        //self.newCard($wrapper, self.tLang('progress'), function () {
+        //	_g('match&a=profile');
+        //	Engine.tpls.deleteMessItemsByLoc('d');
+        //});
+        //self.newCard($wrapper, self.tLang('yourstatistics'), function () {
+        //	_g('match&a=statistics')
+        //});
+        //self.newCard($wrapper, self.tLang('battlehistory'), function () {
+        //	_g('match&a=history&page=1');
+        //});
+        //self.newCard($wrapper, self.tLang('season'), function () {
+        //
+        //	_g('match&a=season');
+        //});
 
-            _g('match&a=season');
-        });
+        createStatsAndHistoryTabs();
+
         self.createBottomProgressPanel();
         self.createBottomHistoryPanel();
         self.createBottomStatsPanel();
         self.createBottomSeasonPanel();
 
+    };
+
+    const createStatsAndHistoryTabs = () => {
+
+        let cards = {
+            [CARDS_DATA_STATS_AND_HISTORY.PROFILE]: {
+                name: self.tLang('progress'),
+                afterShowFn: () => {
+                    callProfileRequest();
+                    Engine.tpls.deleteMessItemsByLoc('d');
+                    hideStatisticsDetails();
+                },
+                contentTargetEl: self.wnd.$[0].querySelector(".progress-wnd")
+            },
+            [CARDS_DATA_STATS_AND_HISTORY.YOUR_STATISTICS]: {
+                name: self.tLang('yourstatistics'),
+                afterShowFn: () => {
+                    _g('match&a=statistics')
+                    hideStatisticsDetails();
+                },
+                contentTargetEl: self.wnd.$[0].querySelector(".stats-wnd")
+            },
+            [CARDS_DATA_STATS_AND_HISTORY.BATTLE_HISTORY]: {
+                name: self.tLang('battlehistory'),
+                afterShowFn: () => {
+                    _g('match&a=history&page=1');
+                    hideStatisticsDetails();
+                },
+                contentTargetEl: self.wnd.$[0].querySelector(".history-wnd")
+            },
+            [CARDS_DATA_STATS_AND_HISTORY.SEASON]: {
+                name: self.tLang('season'),
+                afterShowFn: () => {
+                    _g('match&a=season');
+                    hideStatisticsDetails();
+                },
+                contentTargetEl: self.wnd.$[0].querySelector(".season-wnd")
+            }
+        };
+
+
+        const tabsOptions = {
+            tabsEl: {
+                navEl: self.wnd.$[0].querySelector('.stats-and-history-tabs')
+            }
+        };
+
+        this.statsAndHistoryTabs = new Tabs.default(cards, tabsOptions);
+        // showFirstCardInStatsAndHistory();
+    };
+
+    const showFirstCardInStatsAndHistory = () => {
+        this.statsAndHistoryTabs.activateCard(CARDS_DATA_STATS_AND_HISTORY.PROFILE);
+    };
+
+    const showSecondCardInStatsAndHistory = () => {
+        this.statsAndHistoryTabs.activateCard(CARDS_DATA_STATS_AND_HISTORY.YOUR_STATISTICS);
+    };
+
+    const callProfileRequest = () => {
+        _g('match&a=profile');
     };
 
     this.createBottomSeasonPanel = function() {
@@ -733,22 +885,22 @@ module.exports = function() {
         self.wnd.$.find('.season-bottom-panel').find('.back-to-main').append($backToMain);
     };
 
-    this.newCard = function($par, label, clb) {
-        var $card = tpl.get('card');
-        //var $card = $('<div>').addClass('card');
-        //var $label = $('<span>').addClass('label').html(label);
-        $card.find('.label').html(label);
-        $par.find('.cards-header').append($card);
-        //$card.append($label);
-        $card.click(function() {
-            var index = $(this).index();
-            var overlayExistInMenu = $par.find('.matchmaking-tutorial-overlay').length > 0;
-            if (overlayExistInMenu) index--;
-            self.setVisibleStats($par, index);
-            self.wnd.$.find('.edit-header-label').html(label);
-            if (clb) clb();
-        });
-    };
+    //this.newCard = function ($par, label, clb) {
+    //	var $card = tpl.get('card');
+    //	//var $card = $('<div>').addClass('card');
+    //	//var $label = $('<span>').addClass('label').html(label);
+    //	$card.find('.label').html(label);
+    //	$par.find('.cards-header').append($card);
+    //	//$card.append($label);
+    //	$card.click(function () {
+    //		var index = $(this).index();
+    //		var overlayExistInMenu = $par.find('.matchmaking-tutorial-overlay').length > 0;
+    //		if (overlayExistInMenu) index--;
+    //		self.setVisibleStats($par, index);
+    //		self.wnd.$.find('.edit-header-label').html(label);
+    //		if (clb) clb();
+    //	});
+    //};
 
     this.setVisibleStats = function($parent, index) {
         var $allC = $parent.find('.card').removeClass('active');
@@ -756,6 +908,15 @@ module.exports = function() {
         $allC.eq(index).addClass('active');
         $allS.eq(index).addClass('active');
     };
+
+    const showStatisticsDetails = () => {
+        self.wnd.$.find('.stats-and-history').find('.section').removeClass('active');
+        self.wnd.$.find('.statistics-detailed-wnd').addClass('active');
+    }
+
+    const hideStatisticsDetails = () => {
+        self.wnd.$.find('.statistics-detailed-wnd').removeClass('active');
+    }
 
     this.createChooseEq = function() {
         //var $wrapper = self.wnd.$.find('.choose-eq');
@@ -1091,13 +1252,14 @@ module.exports = function() {
         $fight.click(function() {
             //self.showMainWnd('.wait-for-opponent');
             //self.hidePanel();
+            clearInterval(eqChooseInterval);
             _g('match&a=prepared');
         });
         self.wnd.$.find('.choose-eq-bottom-panel').find('.fight-button').append($fight);
     };
 
     this.showMatchmakingMenu = function(refreshStats = true) {
-        if (!endSeazonRewardsExist) Engine.matchmakingTutorial.setTutorialById(0);
+        //if (!endSeazonRewardsExist) Engine.matchmakingTutorial.setTutorialById(0);
         if (refreshStats) _g('match&a=main');
 
         if (self.isBlockedShowMatchmakingMenu()) {
@@ -1129,13 +1291,14 @@ module.exports = function() {
     };
 
     this.updateHistory = function(data) {
-        Engine.matchmakingTutorial.setTutorialById(3);
+        //Engine.matchmakingTutorial.setTutorialById(3);
         var oldDate;
         var rowspanEl;
         var sameDayRowsCounter = 0;
         this.updatehistoryPageInfo(data.cur_page, data.max_page);
         var $table = self.wnd.$.find('.history-table').empty();
         self.createHeaderOfHistoryTable($table);
+
         for (var pos in data.positions) {
             var $record;
             var rec = data.positions[pos];
@@ -1157,13 +1320,27 @@ module.exports = function() {
             } else $record = self.createHistoryRecord(rec, startTs);
 
             $table.append($record);
+            const $nick = $record.find('.character-info-nick');
+            setTipWhenNameToLong($nick, rec.opponent_nick);
         }
         if (lengthObject(data.positions) > 0) rowspanEl.attr('rowspan', sameDayRowsCounter);
     };
 
     this.createHistoryRecord = function(rec, startTs, newDate) {
         var $result = self.getResult(rec.result);
-        var profAndLvl = getAllProfName(rec.opponent_prof) + ' ' + rec.opponent_lvl + ' lvl';
+        //var profAndLvl = getAllProfName(rec.opponent_prof) + ' ' + rec.opponent_lvl + ' lvl';
+
+        let characterData = {
+            showNick: true,
+            level: rec.opponent_lvl,
+            operationLevel: rec.opponent_oplvl,
+            nick: rec.opponent_nick,
+            prof: rec.opponent_prof,
+            htmlElement: true
+        }
+
+        let profAndLvl = getCharacterInfo(characterData);
+
         var ratingDelta = rec.rating_delta;
         var battleTime = rec.end_ts - startTs;
         var time = self.getHourStr(startTs);
@@ -1195,7 +1372,7 @@ module.exports = function() {
         $table.append(self.createRecords(
             [
                 self.tLang('result'),
-                self.tLang('prof-and-lvl'),
+                self.tLang('opponentData'),
                 self.cellWithSmallInfo('PR', self.tLang('rank-points')),
                 self.tLang('battleTime'),
                 self.tLang('time'),
@@ -1243,14 +1420,29 @@ module.exports = function() {
     };
 
     this.updateProgressPanel = function(v) {
-        Engine.matchmakingTutorial.setTutorialById(1);
+        //Engine.matchmakingTutorial.setTutorialById(1);
         this.createRewardItems(v);
 
         var $progressWnd = self.wnd.$.find('.progress-wnd');
 
         var url = CFG.a_opath + Engine.hero.d.img;
 
-        $progressWnd.find('.char-info').text(`${Engine.hero.d.nick} (${Engine.hero.d.lvl}${Engine.hero.d.prof})`);
+        let hero = Engine.hero;
+
+        let characterData = {
+            showNick: true,
+            nick: hero.getNick(),
+            level: getHeroLevel(),
+            prof: hero.getProf(),
+            operationLevel: hero.getOperationLevel(),
+            htmlElement: true
+        };
+
+        let characterInfo = getCharacterInfo(characterData);
+
+
+        //$progressWnd.find('.char-info').text(`${Engine.hero.d.nick} (${getHeroLevel()}${Engine.hero.d.prof})`);
+        $progressWnd.find('.char-info').html(characterInfo);
 
         createImgStyle($progressWnd.find('.outfit-wrapper'), url);
 
@@ -1265,7 +1457,7 @@ module.exports = function() {
     };
 
     this.updateSeasonPanel = function(v) {
-        Engine.matchmakingTutorial.setTutorialById(4);
+        //Engine.matchmakingTutorial.setTutorialById(4);
         self.updateRewardsInfo(v);
         self.createSeasonReward(v);
     };
@@ -1325,6 +1517,7 @@ module.exports = function() {
                 $wrapper.append(itemWrapper);
             }
             $wrapper.prepend($place);
+            $wrapper.prepend($("<div>").addClass("interface-element-item-slot-grid-stretch"));
 
             //self.wnd.$.find('.season-wnd').find('.reward-wrapper').append($wrapper);
             self.wnd.$.find('.season-wnd').find('.reward-wrapper').find('.scroll-pane').append($wrapper);
@@ -1339,7 +1532,8 @@ module.exports = function() {
         $season.find('.reward-header').addClass('active');
         $season.find('.winners-header').addClass('active');
         $season.find('.winners-wrapper').addClass('active');
-        $season.find('.middle-wood').addClass('active');
+        //$season.find('.middle-wood').addClass('active');
+        $season.find('.interface-element-vertical-wood').addClass('active');
         $('.reward-wrapper', self.wnd.$).trigger('update');
     };
 
@@ -1457,19 +1651,19 @@ module.exports = function() {
 
         switch (kind) {
             case 'friends':
-                Engine.matchmakingTutorial.setTutorialById(7);
+                //Engine.matchmakingTutorial.setTutorialById(7);
                 var noFriend = data.cur_page == 1 && lengthObject(data['positions']) == 0;
                 var $friendRankingWnd = self.wnd.$.find('.friends-ranking-wnd');
                 self.hideBottomBar($friendRankingWnd, noFriend);
                 break;
             case 'clan':
-                Engine.matchmakingTutorial.setTutorialById(6);
+                //Engine.matchmakingTutorial.setTutorialById(6);
                 var noClan = data.cur_page == 1 && lengthObject(data['positions']) == 0;
                 var $clanWnd = self.wnd.$.find('.clan-ranking-wnd');
                 self.hideBottomBar($clanWnd, noClan);
                 break;
             case 'global':
-                Engine.matchmakingTutorial.setTutorialById(5);
+                //Engine.matchmakingTutorial.setTutorialById(5);
                 break;
         }
 
@@ -1478,10 +1672,23 @@ module.exports = function() {
         for (var k in data['positions']) {
             var rec = data['positions'][k];
             count++;
+
+            let characterData = {
+                showNick: true,
+                nick: rec.nick,
+                level: rec.lvl,
+                prof: rec.prof,
+                operationLevel: rec.oplvl,
+                htmlElement: true
+            };
+
+            let characterInfo = getCharacterInfo(characterData);
+
             var $rec = self.createRecords(
                 [
                     rec.position + '.',
-                    rec.nick + ` (${rec.lvl}${rec.prof})`,
+                    //rec.nick + ` (${rec.lvl}${rec.prof})`,
+                    characterInfo,
                     rec.rating,
                     rec.wins_ratio + '%',
                     rec.wins + '/' + rec.losses + '/' + rec.draws
@@ -1530,7 +1737,7 @@ module.exports = function() {
     };
 
     this.updateStatistics = function(data) {
-        Engine.matchmakingTutorial.setTutorialById(2);
+        //Engine.matchmakingTutorial.setTutorialById(2);
         var $table = self.wnd.$.find('.stats-table').empty();
         var avgWinsRatio = 0;
         var sumWins = 0;
@@ -1573,6 +1780,8 @@ module.exports = function() {
             }
 
             $table.append($record);
+            const $nick = $record.find('.character-info-nick');
+            setTipWhenNameToLong($nick, charName);
             $record.addClass('hover-tr')
             self.detailsClick(rec.playerId, $record);
         }
@@ -1596,7 +1805,21 @@ module.exports = function() {
         }, {
             'background-size': '400% 800%'
         });
-        $firstCell.find('.info').html('<b>' + charName + '</b>' + " <i>(" + rec.lvl + rec.prof + ")</i>");
+
+
+        let characterData = {
+            showNick: true,
+            nick: charName,
+            level: rec.lvl,
+            prof: rec.prof,
+            operationLevel: rec.oplvl,
+            htmlElement: true
+        };
+
+        let characterInfo = getCharacterInfo(characterData);
+
+        //$firstCell.find('.info').html('<b>' + charName + '</b>' + " <i>(" + rec.lvl + rec.prof + ")</i>");
+        $firstCell.find('.info').html(characterInfo);
         return $firstCell;
     };
 
@@ -1671,7 +1894,8 @@ module.exports = function() {
         //if (count != 0) avgWinsRatio = Math.round(avgWinsRatio / count);
 
         self.createHeaderOfStatisticsDetailed($table, data.all.wins_ratio, sumWins, sumLosses, sumDraws);
-        self.setVisibleStats($card, 4);
+        //self.setVisibleStats($card, 4);
+        showStatisticsDetails();
         self.setGreenHeader(self.tLang('additionalstatistics'));
         self.wnd.$.find('.stats-and-history').find('.card').eq(1).addClass('active')
     };

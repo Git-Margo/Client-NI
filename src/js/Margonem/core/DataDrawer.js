@@ -1,6 +1,6 @@
-let TextObject = require('core/canvasObject/TextObject');
-let TextOffset = require('core/canvasObject/TextOffset');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let TextObject = require('@core/canvasObject/TextObject');
+let TextOffset = require('@core/canvasObject/TextOffset');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 module.exports = function() {
 
@@ -16,7 +16,7 @@ module.exports = function() {
     const moduleData = {
         fileName: "DataDrawer.js"
     };
-    const textType = "px Arial regular";
+    const textType = "px Arimo";
 
     const init = (_master) => {
         initTextObject();
@@ -42,7 +42,16 @@ module.exports = function() {
 
     const getOrder = () => {
         //return 500 + additionalOrder;
-        return getEngine().renderer.getHighestOrderWithoutSort();
+
+        let renderer = getEngine().renderer
+
+        if (Engine.nightController.getNightOpacity() == 1) {
+            return renderer.getFullBlackNightDataDrawerWithoutSort();
+        } else {
+            return renderer.getHighestOrderWithoutSort();
+        }
+
+        //return getEngine().renderer.getHighestOrderWithoutSort();
     };
 
     const setMaster = (_master) => {
@@ -184,7 +193,9 @@ module.exports = function() {
         const nick = master.getNick();
         const kind = master.getKind();
         const prof = master.getProf();
+        const canvasObjectType = master.getCanvasObjectType();
         const level = getLevel();
+        const operationLevel = master.getOperationLevel ? master.getOperationLevel() : 0;
 
         const drawNick = handHeldMiniMapController.getDataDrawerNickOfKindByName(kind);
         const drawProfAndLevel = handHeldMiniMapController.getDataDrawerProfAndLevelOfKindByName(kind);
@@ -192,18 +203,25 @@ module.exports = function() {
         ctx.font = fontSize + textType;
 
         if (!drawNick && drawProfAndLevel) {
-            return createDataDrawerOnlyLevel(ctx, level, prof, maxWidthBorder);
+            return createDataDrawerOnlyLevel(ctx, canvasObjectType, level, operationLevel, prof, maxWidthBorder);
         }
 
         if (drawNick && !drawProfAndLevel) {
             return createDataDrawerOnlyNick(ctx, nick, maxWidthBorder);
         }
 
-        return createFullDataDrawer(ctx, nick, level, prof, maxWidthBorder)
+        return createFullDataDrawer(ctx, nick, canvasObjectType, level, operationLevel, prof, maxWidthBorder)
     };
 
-    const createDataDrawerOnlyLevel = (ctx, level, prof, maxWidthBorder) => {
-        let txt = `(${level}${prof ? prof : ''})`;
+    const createDataDrawerOnlyLevel = (ctx, canvasObjectType, level, operationLevel, prof, maxWidthBorder) => {
+        //let txt         = `(${level}${prof ? prof : ''})`;
+        //let txt = getCharacterInfo({
+        //    level 			: level,
+        //    prof 			: prof,
+        //    operationLevel 	: operationLevel
+        //});
+
+        let txt = getCharacterInfoText(canvasObjectType, level, operationLevel, prof);
         let measureText = getMeasureTextWidthAndHeight(ctx, txt);
 
         return {
@@ -243,7 +261,25 @@ module.exports = function() {
         };
     };
 
-    const createFullDataDrawer = (ctx, nick, level, prof, maxWidthBorder) => {
+    const getCharacterInfoText = (canvasObjectType, level, operationLevel, prof) => {
+
+        switch (canvasObjectType) {
+            case CanvasObjectTypeData.HERO:
+            case CanvasObjectTypeData.OTHER:
+                return getCharacterInfo({
+                    level: level,
+                    prof: prof,
+                    operationLevel: operationLevel
+                });
+                break;
+            case CanvasObjectTypeData.NPC:
+                return "(" + level + (prof ? prof : '') + ")";
+                break;
+        }
+
+    };
+
+    const createFullDataDrawer = (ctx, nick, canvasObjectType, level, operationLevel, prof, maxWidthBorder) => {
         let widthOnlyNick = null;
         let txt = nick;
         let tempText = txt;
@@ -255,8 +291,17 @@ module.exports = function() {
         if (txt[txt.length - 1] == " ") txt = txt.slice(0, -1);
 
         if (level) {
+            //let characterInfo = getCharacterInfo({
+            //    level 			: level,
+            //    prof 			: prof,
+            //    operationLevel 	: operationLevel
+            //});
+
+            let characterInfo = getCharacterInfoText(canvasObjectType, level, operationLevel, prof);
+
             widthOnlyNick = Math.ceil(ctx.measureText(txt).width);
-            txt += ` (${level}${prof ? prof : ''})`
+            //txt             += ` (${level}${prof ? prof : ''})`
+            txt += " " + characterInfo;
         }
 
         let width = Math.ceil(ctx.measureText(txt).width);

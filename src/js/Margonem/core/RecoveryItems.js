@@ -1,5 +1,5 @@
-var tpl = require('core/Templates');
-var DraconiteShop = require('core/shop/DraconiteShop');
+var tpl = require('@core/Templates');
+var DraconiteShop = require('@core/shop/DraconiteShop');
 module.exports = function() {
     var self = this;
     var content;
@@ -67,9 +67,16 @@ module.exports = function() {
 
     this.initHeader = function() {
         var w = this.wnd.$;
-        w.find('.info-1').html(_t('item_recover_header'));
-        w.find('.info-2').html(_t('item_recover_info2', null, 'recover'));
-        w.find('.text-1').html(_t('item_recover_info1', null, 'recover'));
+        //w.find('.info-1').html(_t('item_recover_header'));
+        //w.find('.info-2').html(_t('item_recover_info2', null, 'recover'));
+        //w.find('.text-1').html(_t('item_recover_info1', null, 'recover') + "<br>" + _t('item_recover_info2', null, 'recover'));
+        w.find('.text-1').html(_t('item_recover_info2', null, 'recover') + "<br>" + _t('item_recover_info1', null, 'recover'));
+
+        let $imgWrapper = $('<div>').addClass('img-wrapper');
+        let $icon = $('<div>').addClass('sl-graphics');
+
+        $imgWrapper.append($icon);
+        w.find('.text-1').append($imgWrapper)
     };
 
     this.createList = function(data) {
@@ -118,7 +125,12 @@ module.exports = function() {
             'destroy',
             'action'
         ];
-        var $tr = $('<tr>').addClass('table-header');
+        //var $tr = $('<tr>').addClass('table-header');
+        let $tr = $('<tr>');
+
+        $tr.addClass('table-header table-header-tr');
+        //$tr.addClass('interface-element-table-header-1-background');
+
         for (var i = 0; i < t.length; i++) {
             var $td = $('<td>').html(_t(t[i], null, 'recover'));
             $tr.append($td);
@@ -195,7 +207,7 @@ module.exports = function() {
             let nE2 = e2.find('.item').data('time');
             return nE2 - nE1;
         });
-        let $table = $('<table>').addClass('recovery-items-table');
+        let $table = $('<table>').addClass('recovery-items-table interface-element-table-3');
 
         for (let i = 0; i < sortTable.length; i++) {
             $table.append(sortTable[i]);

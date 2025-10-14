@@ -1,38 +1,39 @@
-export {};
+import {
+    isset
+} from "@core/HelpersTS";
 
-declare const _g: any;
-declare const _t: any;
-declare const siblings: any;
-declare const Engine: any;
-declare const isset: any;
+const Tpl = require('@core/Templates');
 
-const Tpl = require('core/Templates');
-
-interface Card {
+export interface Card {
     name: string;
     initAction ? : () => void;
     disabled ? : boolean;
     disabledTip ? : string;
     requireLvl ? : number;
+    tabEl ? : HTMLElement;
+    contentTargetEl ? : HTMLElement,
     afterShowFn ? : () => void;
 }
 
-interface Cards {
+export interface Cards {
     [name: string]: Card;
 }
 
-type TabElements = {
-    navEl: HTMLElement;
-    contentsEl: HTMLElement;
-};
-
 type TabOptions = {
-    tabsEl: TabElements | HTMLElement;
+    tabsEl: {
+        navEl ? : HTMLElement;
+        contentsEl: HTMLElement;
+    }
 };
 
-function isTabElements(obj: any): obj is TabElements {
-    return obj.navEl !== undefined;
+type TabElements = {
+    tab: HTMLElement;
+    content ? : HTMLElement;
 }
+
+type TabElementList = {
+    [key: string]: TabElements
+};
 
 const defaultOptions = {};
 
@@ -40,10 +41,13 @@ export default class Tabs {
     // public el: HTMLElement;
     public navEl!: HTMLElement;
     public contentsEl!: HTMLElement;
-    public opened: boolean = false;
+    public currentTab: string | null;
     private options: TabOptions;
+    private tabElementList: TabElementList;
 
     constructor(private cards: Cards, options: TabOptions) {
+        this.currentTab = null;
+        this.tabElementList = {};
         this.options = {
             ...defaultOptions,
             ...options
@@ -53,18 +57,15 @@ export default class Tabs {
     }
 
     createContent() {
-        if (isTabElements(this.options.tabsEl)) {
+        // if (isTabElements(this.options.tabsEl)) {
+        if (this.options.tabsEl.navEl) {
             this.navEl = this.options.tabsEl.navEl;
-            this.contentsEl = this.options.tabsEl.contentsEl;
-        } else {
-            this.navEl = document.createElement('div');
-            this.contentsEl = document.createElement('div');
-            this.options.tabsEl.appendChild(this.navEl);
-            this.options.tabsEl.appendChild(this.contentsEl);
+            this.navEl.classList.add('tabs-nav');
         }
-
-        this.navEl.classList.add('tabs-nav');
-        this.contentsEl.classList.add('tabs-contents');
+        if (this.options.tabsEl.contentsEl) {
+            this.contentsEl = this.options.tabsEl.contentsEl;
+            this.contentsEl.classList.add('tabs-contents');
+        }
     }
 
     createCards() {
@@ -74,11 +75,15 @@ export default class Tabs {
     }
 
     createOneCard(slug: string, cardData: Card) {
-        const $cardTab = Tpl.get('card')[0],
-            $label = $cardTab.querySelector('.label');
-
-        $cardTab.classList.add(`${slug}-tab`);
-        $label.innerHTML = cardData.name;
+        let $cardTab, $cardContent, $label;
+        if (this.options.tabsEl.navEl) {
+            $cardTab = Tpl.get('card')[0],
+                $label = $cardTab.querySelector('.label');
+            $cardTab.classList.add(`${slug}-tab`);
+            $label.innerHTML = cardData.name;
+        } else {
+            $cardTab = cardData.tabEl;
+        }
 
         if (isset(cardData.disabled) && cardData.disabled) {
             $cardTab.classList.add(`disabled`);
@@ -87,10 +92,24 @@ export default class Tabs {
             }
         }
 
-        this.navEl.appendChild($cardTab);
-        let $cardContent = document.createElement('div');
-        $cardContent.classList.add(`${slug}-content`);
-        this.contentsEl.appendChild($cardContent);
+        if (this.options.tabsEl.navEl) this.navEl.appendChild($cardTab);
+
+        if (cardData.contentTargetEl) {
+            $cardContent = cardData.contentTargetEl as HTMLElement;
+        } else {
+            if (this.contentsEl) {
+                $cardContent = document.createElement('div') as HTMLElement;
+                this.contentsEl.appendChild($cardContent);
+            }
+        }
+
+        if ($cardContent) {
+            this.addToTabElementList(slug, $cardTab, $cardContent);
+            $cardContent.classList.add(`${slug}-content`);
+            $cardContent.classList.add(`tabs-content-option`);
+        } else {
+            this.addToTabElementList(slug, $cardTab);
+        }
 
         $cardTab.addEventListener('click', () => {
             if ($cardTab.classList.contains('disabled')) return;
@@ -99,23 +118,68 @@ export default class Tabs {
                 cardData.initAction();
             } else {
                 this.activateCard(slug);
-                if (cardData.afterShowFn) cardData.afterShowFn();
             }
         });
     }
 
+    setCurrentTab(slug: string) {
+        this.currentTab = slug
+    }
+
+    getCurrentTab() {
+        return this.currentTab
+    }
+
+    callAfterShowFn(slug: string) {
+        let cardData = this.cards[slug];
+        if (cardData.afterShowFn) cardData.afterShowFn();
+    }
+
     activateCard(slug: string) {
-        const $cardTab = this.navEl.querySelector(`.${slug}-tab`) as HTMLElement;
-        const $cardContent = this.contentsEl.querySelector(`.${slug}-content`) as HTMLElement;
+        if (this.currentTab === slug) return;
 
+        this.setCurrentTab(slug)
+        this.addActiveForCurrentTab(slug);
+        this.removeActiveForOtherTabs(slug);
+        this.callAfterShowFn(slug);
+    }
+
+    addActiveForCurrentTab(slug: string) {
+        const $cardTab = this.getCard(slug);
+        const $cardContent = this.getCardContent(slug);
         $cardTab.classList.add('active');
-        $cardContent.classList.add('active');
+        $cardContent?.classList.add('active');
+    }
 
-        const $siblingsTab = siblings($cardTab);
-        const $siblingsContent = siblings($cardContent);
+    removeActiveForOtherTabs(currentSlug: string) {
+        const otherSlugs = Object.keys(this.tabElementList).filter(slug => slug !== currentSlug);
 
-        $siblingsTab.forEach((el: HTMLElement) => el.classList.remove('active'));
-        $siblingsContent.forEach((el: HTMLElement) => el.classList.remove('active'));
+        otherSlugs.forEach(slug => {
+            const tabElement = this.tabElementList[slug];
+            tabElement.tab.classList.remove('active');
+            tabElement.content?.classList.remove('active');
+        });
+    }
+
+    addToTabElementList(slug: string, tab: HTMLElement, content ? : HTMLElement) {
+        if (content !== undefined) {
+            this.tabElementList[slug] = {
+                tab,
+                content
+            };
+        } else {
+            this.tabElementList[slug] = {
+                tab
+            };
+        }
+    }
+
+    private getCard(slug: string) {
+        return this.tabElementList[slug].tab;
+    }
+
+    private getCardContent(slug: string) {
+        return this.tabElementList[slug].content;
     }
 
     checkRequires() {
@@ -123,8 +187,8 @@ export default class Tabs {
             const cardData = this.cards[card];
             if (isset(cardData.disabled) && cardData.disabled) continue;
 
-            const $cardTab = this.navEl.querySelector(`.${card}-tab`) as HTMLElement;
-            if (isset(cardData.requireLvl) && cardData.requireLvl && this.getEngine().hero.d.lvl < cardData.requireLvl) {
+            const $cardTab = this.getCard(card);
+            if (isset(cardData.requireLvl) && cardData.requireLvl && this.getEngine().hero.getLevel() < cardData.requireLvl) {
                 $cardTab.classList.add(`disabled`);
                 $($cardTab).tip(this.tLang('need__lvl', 'default', {
                     '%val%': cardData.requireLvl
@@ -134,6 +198,31 @@ export default class Tabs {
                 $($cardTab).tip('');
             }
         }
+    }
+
+    getFirstAvailableCard() {
+        for (const card in this.cards) {
+            const cardData = this.cards[card];
+            if (isset(cardData.disabled) && cardData.disabled) continue;
+            if (this.checkOneCardRequires(card)) return card;
+        }
+    }
+
+    canCardOpen(type: string) {
+        const availableCard = this.getFirstAvailableCard();
+        if (!this.checkOneCardRequires(type) && availableCard) {
+            const cardData = this.cards[availableCard];
+            if (cardData.initAction) {
+                cardData.initAction();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    checkOneCardRequires(cardName: string) {
+        const cardData = this.cards[cardName];
+        return !(isset(cardData.requireLvl) && cardData.requireLvl && this.getEngine().hero.getLevel() < cardData.requireLvl);
     }
 
     getEngine() {

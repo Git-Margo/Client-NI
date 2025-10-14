@@ -1,8 +1,8 @@
 let Templates = require('../Templates');
-let AuctionData = require('core/auction/AuctionData');
-let Storage = require('core/Storage');
-let ProfData = require('core/characters/ProfData');
-const InputMaskData = require('core/InputMaskData');
+let AuctionData = require('@core/auction/AuctionData');
+let Storage = require('@core/Storage');
+let ProfData = require('@core/characters/ProfData');
+const InputMaskData = require('@core/InputMaskData');
 
 module.exports = function() {
 
@@ -255,7 +255,7 @@ module.exports = function() {
             '|' + esc(o[filterKeys.MIN_PRICE]) +
             '|' + esc(o[filterKeys.MAX_PRICE]) +
             '|' + o[filterKeys.AUCTION_TYPE] +
-            '|' + tabType +
+            '|' + auctions.convertKindToTab(tabType) +
             '|' + auctionMode +
             '|' + page +
             '|' + esc(o[filterKeys.NAME_ITEM]);

@@ -1,4 +1,4 @@
-var ServerStorageData = require('core/storage/ServerStorageData');
+var ServerStorageData = require('@core/storage/ServerStorageData');
 module.exports = function() {
 
 
@@ -239,7 +239,8 @@ module.exports = function() {
 
     const clearAllData = () => {
         _g('config&clear=1', function() {
-            location.reload();
+            //location.reload();
+            pageReload();
         });
     };
 

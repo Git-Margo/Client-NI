@@ -2,13 +2,15 @@ import {
     isset,
     setAttributes
 } from '../HelpersTS';
+const Tpl = require('@core/Templates');
 
-const Tpl = require('core/Templates');
-
-interface CheckboxData {
-    id ? : string | number;
+export interface BaseCheckboxData {
     name: string;
-    value: string | number;
+}
+
+export interface OptionalCheckboxData {
+    value ? : string | number;
+    id ? : string | number;
     label ? : string | HTMLLabelElement;
     checked ? : boolean;
     attrs ? : object;
@@ -17,15 +19,21 @@ interface CheckboxData {
     tip ? : string;
 }
 
+export interface CheckboxData extends BaseCheckboxData, OptionalCheckboxData {}
+
 export default class Checkbox {
     el: HTMLElement;
+    private inputEl: HTMLInputElement;
+    private labelEl: HTMLLabelElement;
 
-    constructor(checkboxData: CheckboxData, private onSelected: Function | null) {
+    constructor(checkboxData: CheckboxData, private onSelected: (state: boolean) => void) {
         this.el = Tpl.get('checkbox-custom')[0] as HTMLElement;
+        this.inputEl = this.el.querySelector('input') as HTMLInputElement;
+        this.labelEl = this.el.querySelector('label') as HTMLLabelElement;
         this.createCheckbox(checkboxData);
     }
 
-    createCheckbox({
+    private createCheckbox({
         id,
         name,
         value,
@@ -36,33 +44,28 @@ export default class Checkbox {
         highlight = true,
         tip
     }: CheckboxData) {
-        const inputEl = this.el.querySelector('input') as HTMLInputElement,
-            labelEl = this.el.querySelector('label') as HTMLLabelElement;
-
         this.el.classList.add('c-checkbox');
+        this.labelEl.classList.add('c-checkbox__label');
+        if (highlight) this.labelEl.classList.add('c-checkbox__label--highlight');
 
-        labelEl.classList.add('c-checkbox__label');
-        if (highlight) labelEl.classList.add('c-checkbox__label--highlight');
-
-        inputEl.addEventListener('change', (e) => {
-            if (this.onSelected) {
-                const state = this.getChecked();
-                this.onSelected(state);
-            }
+        this.inputEl.addEventListener('change', () => {
+            this.onSelected?.(this.getChecked());
         });
 
         if (!isset(id) && isset(i)) {
             id = `${name}_${i}`;
         }
 
-        setAttributes(inputEl, {
+        setAttributes(this.inputEl, {
             id,
             name,
-            value
+            ...(value && {
+                value
+            })
         });
 
-        if (isset(checked) && checked) {
-            inputEl.checked = true;
+        if (checked) {
+            this.inputEl.checked = true;
         }
 
         if (label) {
@@ -70,13 +73,10 @@ export default class Checkbox {
         } else {
             this.el.classList.add('checkbox-custom--alone');
         }
+
         if (tip) this.setTip(tip);
-
-        if (id) labelEl.setAttribute('for', id.toString());
-
-        if (attrs && typeof attrs === 'object') {
-            setAttributes(this.el, attrs);
-        }
+        if (id) this.labelEl.setAttribute('for', id.toString());
+        if (attrs) setAttributes(this.el, attrs);
     }
 
     setTip(value: string) {
@@ -84,13 +84,11 @@ export default class Checkbox {
     }
 
     setLabel(label: string | HTMLElement) {
-        const labelEl = this.el.querySelector < HTMLLabelElement > ('label') !;
-        if (typeof label === 'object') { // if html
-            labelEl.appendChild(label);
-        } else { // string
-            labelEl.innerHTML = label;
+        if (typeof label === 'object') {
+            this.labelEl.appendChild(label);
+        } else {
+            this.labelEl.innerHTML = label;
         }
-
     }
 
     getCheckbox() {
@@ -98,12 +96,18 @@ export default class Checkbox {
     }
 
     getChecked() {
-        const inputEl = this.el.querySelector('input') as HTMLInputElement;
-        return inputEl.checked;
+        return this.inputEl.checked;
     }
 
     setChecked(state: boolean) {
-        const inputEl = this.el.querySelector('input') as HTMLInputElement;
-        inputEl.checked = state;
+        this.inputEl.checked = state;
+    }
+
+    toggleChecked(state ? : boolean) {
+        this.inputEl.checked = state !== undefined ? state : !this.inputEl.checked;
+    }
+
+    getValue(): string | number {
+        return this.inputEl.value;
     }
 }

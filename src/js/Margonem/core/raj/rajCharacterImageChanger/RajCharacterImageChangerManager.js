@@ -1,11 +1,11 @@
-const CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-const RajCharacterImageGraphic = require('core/raj/rajCharacterImageChanger/RajCharacterImageGraphic');
-const RajCharacterImageChangerData = require('core/raj/rajCharacterImageChanger/RajCharacterImageChangerData');
-const RajActionData = require('core/raj/rajAction/RajActionData');
-//const FloatObjectData               = require('core/floatObject/FloatObjectData');
-const RajMapEventsData = require('core/raj/rajMapEvents/RajMapEventsData');
-const RajActionManager = require('core/raj/rajAction/RajActionManager');
-//const RajGetSpecificData            = require('core/raj/RajGetSpecificData');
+const CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+const RajCharacterImageGraphic = require('@core/raj/rajCharacterImageChanger/RajCharacterImageGraphic');
+const RajCharacterImageChangerData = require('@core/raj/rajCharacterImageChanger/RajCharacterImageChangerData');
+const RajActionData = require('@core/raj/rajAction/RajActionData');
+//const FloatObjectData               = require('@core/floatObject/FloatObjectData');
+const RajMapEventsData = require('@core/raj/rajMapEvents/RajMapEventsData');
+const RajActionManager = require('@core/raj/rajAction/RajActionManager');
+//const RajGetSpecificData            = require('@core/raj/RajGetSpecificData');
 
 module.exports = function() {
 
@@ -305,6 +305,14 @@ module.exports = function() {
         //    y: npc.getY()
         //};
 
+        if (!npc) {
+            npc = getEngine().npcs.getDeleteNpc(npcId);
+
+            if (!npc) {
+                return;
+            }
+        }
+
 
         for (let characterImageChangerId in allActionsSpecificEventOfNpc) {
             createAllRajCharacterImageGraphics(characterImageChangerId, npc, eventName, additionalData);
@@ -470,6 +478,10 @@ module.exports = function() {
         return characterImageGraphicsList[id];
     };
 
+    const getAllCharacterImageGraphic = (id) => {
+        return characterImageGraphicsList;
+    };
+
     const removeFromCharacterImageGraphicList = (id) => {
         delete characterImageGraphicsList[id];
     };
@@ -514,4 +526,5 @@ module.exports = function() {
     this.checkHideObject = checkHideObject;
     this.update = update;
     this.onClear = onClear;
+    this.getAllCharacterImageGraphic = getAllCharacterImageGraphic;
 };

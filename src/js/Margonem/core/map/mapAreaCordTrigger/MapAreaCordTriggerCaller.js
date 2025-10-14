@@ -1,4 +1,4 @@
-const MapAreaCordTriggerData = require('core/map/mapAreaCordTrigger/MapAreaCordTriggerData.js');
+const MapAreaCordTriggerData = require('@core/map/mapAreaCordTrigger/MapAreaCordTriggerData.js');
 
 module.exports = function() {
 

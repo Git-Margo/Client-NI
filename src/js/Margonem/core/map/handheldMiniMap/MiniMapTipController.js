@@ -1,5 +1,5 @@
-let MiniMapCanvasTip = require('core/map/handheldMiniMap/MiniMapCanvasTip');
-let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
+let MiniMapCanvasTip = require('@core/map/handheldMiniMap/MiniMapCanvasTip');
+let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
 
 module.exports = function() {
 

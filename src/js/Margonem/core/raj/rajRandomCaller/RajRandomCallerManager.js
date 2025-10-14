@@ -1,4 +1,4 @@
-//var RajRandomCaller = require('core/raj/rajRandomCaller/RajRandomCaller.js');
+//var RajRandomCaller = require('@core/raj/rajRandomCaller/RajRandomCaller.js');
 
 module.exports = function() {
 

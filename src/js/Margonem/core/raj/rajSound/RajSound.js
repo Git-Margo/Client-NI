@@ -1,4 +1,4 @@
-let RajSoundData = require('core/raj/rajSound/RajSoundData.js');
+let RajSoundData = require('@core/raj/rajSound/RajSoundData.js');
 
 module.exports = function() {
 

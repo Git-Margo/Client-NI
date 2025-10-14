@@ -1,10 +1,10 @@
-//var RajEventsData = require('core/raj/RajEventsData');
-//let RajData                 = require('core/raj/RajData');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let RajBattleEventsData = require('core/raj/rajBattleEvents/RajBattleEventsData');
+//var RajEventsData = require('@core/raj/RajEventsData');
+//let RajData                 = require('@core/raj/RajData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let RajBattleEventsData = require('@core/raj/rajBattleEvents/RajBattleEventsData');
 
 module.exports = function() {
 
@@ -214,7 +214,7 @@ module.exports = function() {
         if (!warrior.npc) return false;
 
         let _originalId = warrior.getOriginalId();
-        let externalProperties = Engine.npcs.getExternalProperties(_originalId);
+        let externalProperties = Engine.npcs.getSraj(_originalId);
 
         if (externalProperties == null) return false;
 

@@ -8,6 +8,10 @@ module.exports = {
         NUMBER_EQUAL: 'n==',
         STRING_EQUAL: 's=='
     },
+    ON_FINISH_TYPE_CONNECTOR: {
+        "AND": "AND",
+        "OR": "OR"
+    },
     ON_FINISH_TYPE: {
         REQUIRE: "require",
         ABSOLUTE_FINISH: "absoluteFinish",

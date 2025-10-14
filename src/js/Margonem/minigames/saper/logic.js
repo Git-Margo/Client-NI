@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-// var Window = require('core/Window');
+// var Window = require('@core/Window');
 module.exports = function(loaderInstance) {
     this.initData = null;
     this.name = 'saper';
@@ -107,10 +107,17 @@ module.exports = function(loaderInstance) {
         this.init();
     };
 
-    this.endGame = function() {
+    const onClear = () => {
         clearInterval(self.remainintTimeInterval);
         this.wnd.fadeAndRemove();
         Engine.lock.remove('minigames');
+    }
+
+    this.endGame = function() {
+        // clearInterval(self.remainintTimeInterval);
+        // this.wnd.fadeAndRemove();
+        // Engine.lock.remove('minigames');
+        onClear();
         this.l.endGame();
     };
     this.parseMessage = function(msg) {

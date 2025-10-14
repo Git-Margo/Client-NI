@@ -1,4 +1,4 @@
-let WraithObject = require('core/wraith/WraithObject');
+let WraithObject = require('@core/wraith/WraithObject');
 
 
 module.exports = function() {

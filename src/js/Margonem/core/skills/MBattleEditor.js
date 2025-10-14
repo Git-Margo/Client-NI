@@ -1,7 +1,10 @@
 /**
  * Created by Michnik on 2015-09-24.
  */
-var Tpl = require('core/Templates');
+var Tpl = require('@core/Templates');
+const {
+    getIconClose
+} = require('@core/HelpersTS');
 module.exports = function($content, Parent) {
     var self = this;
     var skillsLimit = 0;
@@ -9,7 +12,7 @@ module.exports = function($content, Parent) {
     var repeat = 0;
     var current = 0;
     var cost;
-    var SkillsData = require('core/skills/SkillsData');
+    var SkillsData = require('@core/skills/SkillsData');
 
     this.init = function() {
         self.changeScrollWrapperPos(76);
@@ -94,7 +97,7 @@ module.exports = function($content, Parent) {
         }
 
         Parent.wnd.$.find('.skills-points-description').html(_t('mbattle'));
-        Parent.wnd.$.find('.skills-points').html('');
+        Parent.wnd.$.find('.skills-points').addClass('d-none');
         $innerContent.find('.clear-btn').html($clear);
         $innerContent.find('.skills-list').html($list);
         $innerContent.find('.save-btn').html($save);
@@ -164,11 +167,12 @@ module.exports = function($content, Parent) {
 
     this.saveAndClose = function() {
         //self.save();
-        self.changeScrollWrapperPos(42);
         Parent.removeEditor(() => {
+            self.changeScrollWrapperPos(42);
             Parent.wnd.$.find('.MB-wrapper').css('display', 'block');
             Parent.wnd.$.find('.skills-points-description').html(_t('skills_points_description', null, 'skills'));
             Parent.wnd.$.find('.edit-header-label').text(_t('clickSkills'));
+            Parent.wnd.$.find('.right-column').find('.skills-points').removeClass('d-none');
         });
     };
 
@@ -201,7 +205,8 @@ module.exports = function($content, Parent) {
 
         self.addBck($btn1, 'up');
         self.addBck($btn2, 'down');
-        self.addBck($btn3, 'remove');
+        // self.addBck($btn3, 'remove');
+        $btn3.append(getIconClose(false));
         $singleRow.find('.up-arrow').append($btn1);
         $singleRow.find('.down-arrow').append($btn2);
         $singleRow.find('.remove-cross').append($btn3);
@@ -221,7 +226,7 @@ module.exports = function($content, Parent) {
     this.addBck = function($but, cl) {
         $but.append($('<div>').addClass('add-bck ' + cl));
         var $label = $but.find('.label').html(0);
-        $label.css('visibility', 'hidden');
+        $label.css('display', 'none');
     };
 
     this.setCheckboxCallback = function() {
@@ -319,6 +324,11 @@ module.exports = function($content, Parent) {
         });
     };
 
+    this.manageRepeatButton = function() {
+        if (current > 0) $content.find('.checkbox-wrapper').removeClass('disabled');
+        else $content.find('.checkbox-wrapper').addClass('disabled');
+    }
+
     this.updateEditor = function(v) {
         skillsLimit = v.max;
         list = v.list;
@@ -328,6 +338,7 @@ module.exports = function($content, Parent) {
         this.fillRightColumn();
         this.updateList();
         this.hideArrows();
+        this.manageRepeatButton();
         $('.scroll-wrapper', $content).trigger('update'); //.trigger('');
     };
 };

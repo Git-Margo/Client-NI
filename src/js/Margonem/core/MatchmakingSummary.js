@@ -1,6 +1,6 @@
-var tpl = require('core/Templates');
-//var Interface = require('core/Interface');
-//var HeroEquipment = require('core/items/HeroEquipment');
+var tpl = require('@core/Templates');
+//var Interface = require('@core/Interface');
+//var HeroEquipment = require('@core/items/HeroEquipment');
 
 module.exports = function() {
     var content;
@@ -145,7 +145,8 @@ module.exports = function() {
         var data = {
             result: self.getResult(v.result),
             name: Engine.hero.d.nick,
-            lvl: Engine.hero.d.lvl,
+            lvl: getHeroLevel(),
+            operationLevel: getEngine().hero.getOperationLevel(),
             prof: Engine.hero.d.prof,
             pr: v.rating,
             icon: Engine.hero.d.img
@@ -155,6 +156,7 @@ module.exports = function() {
             result: self.getResult(v.result, true),
             name: self.tLang('opponent'),
             lvl: v.opponent_lvl,
+            operationLevel: v.opponent_oplvl,
             prof: v.opponent_prof,
             pr: v.opponent_rating,
             icon: v.opponent_icon
@@ -362,8 +364,24 @@ module.exports = function() {
     this.updateOutfit = function(side, data) {
         var $wrapper = self.wnd.$.find('.' + side + '-side');
         var url = CFG.a_opath + data.icon;
+
+        let characterData = {
+            //showNick 		: true,
+            //nick 			: data.name,
+            level: data.lvl,
+            operationLevel: data.operationLevel,
+            prof: data.prof,
+            htmlElement: true
+        };
+
+        let characterInfo = getCharacterInfo(characterData);
+
+
         $wrapper.find('.' + side + '-result').html(_t(data.result + '_p', null, 'matchmaking')).removeClass('win lose').addClass(data.result);
-        $wrapper.find('.' + side + '-name-and-level').html(data.name + ' (' + data.lvl + data.prof + ')');
+        //$wrapper.find('.' + side + '-name-and-level').html(data.name + ' (' + data.lvl + data.prof + ')');
+        //$wrapper.find('.' + side + '-name').html(data.name);
+        cutTextAndAddTip($wrapper.find('.' + side + '-name'), data.name, 1);
+        $wrapper.find('.' + side + '-level-and-prof').html(characterInfo);
         $wrapper.find('.' + side + '-pr').html(data.pr + ' PR').removeClass('win lose').addClass(data.result);
 
         const $outfitWrapper = self.wnd.$.find('.' + side + '-outfit-wrapper').find('.out-icon');

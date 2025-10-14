@@ -1,5 +1,5 @@
-var Tpl = require('core/Templates');
-//var wnd = require('core/Window');
+var Tpl = require('@core/Templates');
+//var wnd = require('@core/Window');
 
 module.exports = function() {
 
@@ -165,12 +165,13 @@ module.exports = function() {
 
     this.createOneQuestObserve = (id, replaceWithExist) => {
         let data = Engine.quests.getQuestData(id);
-        let $oneObserve = Tpl.get('one-quest-observe').addClass('quest-observe-' + id);
-        $oneObserve.find('.title').html(data.title);
-        $oneObserve.find('.quest-content').html(data.content.clone());
+        let $oneObserve = Tpl.get('one-observe').addClass('quest-observe-' + id);
+        $oneObserve.find('.one-observe__debug').html(id);
+        $oneObserve.find('.one-observe__title').html(data.title);
+        $oneObserve.find('.one-observe__content').html(data.content.clone());
 
 
-        $oneObserve.find('.delete-observe-btn').click(function() {
+        $oneObserve.find('.one-observe__remove-btn').click(function() {
             Engine.quests.removeObserve(id);
         }).tip(_t('detach_from_observe'));
 

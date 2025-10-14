@@ -1,6 +1,6 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let CharacterTimer = require('core/interfaceTimer/CharacterTimer.js');
-let TownTimer = require('core/interfaceTimer/TownTimer.js');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let CharacterTimer = require('@core/interfaceTimer/CharacterTimer.js');
+let TownTimer = require('@core/interfaceTimer/TownTimer.js');
 
 
 module.exports = function() {

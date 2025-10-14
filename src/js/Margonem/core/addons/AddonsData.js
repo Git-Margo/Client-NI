@@ -119,18 +119,6 @@ let o = {
         image: "/img/gui/addons-icons.png|-500 -3",
         options: 1
     },
-    20: {
-        pl: {
-            name: "Filtruj Åup",
-            description: "Dodatek pozwala na zdefiniowanie wÅasnych reguÅ, ktÃ³re wykorzystywane sÄ przy podziale ÅupÃ³w."
-        },
-        en: {
-            name: "Loot Filter",
-            description: "This add-on allows you to define your own rules that are used when splitting the loot."
-        },
-        image: "/img/gui/addons-icons.png|-531 -3",
-        options: 1
-    },
     21: {
         pl: {
             name: "PodÅwietlanie grup potworÃ³w",

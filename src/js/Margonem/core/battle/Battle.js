@@ -1,29 +1,31 @@
 /**
  * Created by Michnik on 2015-12-29.
  */
-var Tpl = require('core/Templates');
-let ProfData = require('core/characters/ProfData');
-var Warriors = require('core/battle/Warriors');
-var MSG = require('core/battle/BattleMessages');
-// var Storage = require('core/Storage');
-var StorageFuncBattle = require('core/battle/StorageFuncBattle');
-var tpl = require('core/Templates');
-var SkillBattleMenu = require('core/battle/SkillBattleMenu');
-var ScaleBattle = require('core/battle/ScaleBattle');
-var SkillTip = require('core/skills/SkillTip');
-var SkillsData = require('core/skills/SkillsData');
-let BattleEffectsController = require('core/battle/battleEffects/BattleEffectsController');
-const BattleNight = require('core/battle/BattleNight');
-var TutorialData = require('core/tutorial/TutorialData');
-const ItemData = require('core/items/data/ItemData');
-// var TutorialData = require('core/tutorial/TutorialData');
-const BattlePredictionHelpWindow = require('core/battle/BattlePredictionHelpWindow');
+var Tpl = require('@core/Templates');
+let ProfData = require('@core/characters/ProfData');
+var Warriors = require('@core/battle/Warriors');
+var MSG = require('@core/battle/BattleMessages');
+// var Storage = require('@core/Storage');
+var StorageFuncBattle = require('@core/battle/StorageFuncBattle');
+var tpl = require('@core/Templates');
+var SkillBattleMenu = require('@core/battle/SkillBattleMenu');
+var ScaleBattle = require('@core/battle/ScaleBattle');
+var SkillTip = require('@core/skills/SkillTip');
+var SkillsData = require('@core/skills/SkillsData');
+let BattleEffectsController = require('@core/battle/battleEffects/BattleEffectsController');
+const BattleNight = require('@core/battle/BattleNight');
+var TutorialData = require('@core/tutorial/TutorialData');
+const ItemData = require('@core/items/data/ItemData');
+// var TutorialData = require('@core/tutorial/TutorialData');
+const BattlePredictionHelpWindow = require('@core/battle/BattlePredictionHelpWindow');
+const Storage = require('@core/Storage');
+
 
 module.exports = function() {
 
     var self = this;
     var is_init_fight, teamIDs, start_move, warriorsKind, lastTimeMove; //simple vars
-    var $timeProgressBar, $timeProgressBarWrapper, $timeWrapper, $timeSeconds, $battleController, $battleSkills, $addBattleSkills, $battleArea; //$
+    var $timeProgressBar, $timeProgressBarWrapper, $timeWrapper, $timeSeconds, $poolTimer, $battleController, $battleSkillsClassicMode, $battleSkillsLightMode, $addBattleSkills, $battleArea; //$
     var autoFightAfter = false;
     var BattleMessages; //obj
     var battleSkills, flist1, flist2, selectedWarriors; //arrays
@@ -38,6 +40,8 @@ module.exports = function() {
     var comboPoints = null;
     var yourTurnTimeout = null;
     var intervalMove = null;
+    let intervalPoolTime = null;
+    let poolTimeHasExist = false;
     var $predictionScrollbar = null;
     var turnList = null;
 
@@ -55,7 +59,9 @@ module.exports = function() {
     let battleAreaData = {
         width: 0,
         height: 0,
-        scale: 0
+        scale: 0,
+        left: 0,
+        top: 0
     }
 
     let actualStateSize = null;
@@ -67,7 +73,7 @@ module.exports = function() {
 
     let battleControllerSize = [{
             name: SMALL_SIZE,
-            height: 82
+            height: 78
         },
         {
             name: NORMAL_SIZE,
@@ -195,6 +201,14 @@ module.exports = function() {
 
     this.isNormalAttackId = (id) => {
         return id == SkillsData.specificSkills.NORMAL_ATTACK_ID;
+    }
+
+    const getEnergyBarLightMode = () => {
+        return $battleController.find('.energy-battle-bar-light-mode')
+    }
+
+    const getManaBarLightMode = () => {
+        return $battleController.find('.mana-battle-bar-light-mode')
     }
 
     this.changeIconRegToTextReg = (text) => {
@@ -344,7 +358,9 @@ module.exports = function() {
         }
         if (data.skills_disabled) self.setSkillsDisabled(data.skills_disabled)
         if (isset(data.myteam)) self.myteam = data.myteam;
-
+        if (isset(data.poolTime) && isset(data.poolTime.left)) {
+            this.setIntervalPoolTime(data.poolTime.left);
+        }
         if (isset(data.start_move)) {
             start_move = data.start_move;
 
@@ -352,7 +368,8 @@ module.exports = function() {
                 Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 7);
                 //Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.EN, 7);
             }
-
+        } else {
+            this.clearIntervalPoolTime();
         }
 
         if (isset(data.move)) {
@@ -436,12 +453,24 @@ module.exports = function() {
                 BattleMessages.reload(flist1Join, flist2Join);
             }
             //self.battleEffectsController.updateFromBattleMessage(data.m)
+            //averageTimeTestTool.setStartAverage('battleLog');
+            let $battleMessageWrapper = $('<div>');
             for (var i in data.m) {
-                BattleMessages.battleMsg(data.m[i], !is_init_fight, data.m, i);
+                BattleMessages.battleMsg(data.m[i], !is_init_fight, data.m, i, $battleMessageWrapper);
             }
+
+            BattleMessages.addToLogLogContent($battleMessageWrapper);
+            BattleMessages.updateScroll();
+            //averageTimeTestTool.setEndAverage('battleLog');
+            //averageTimeTestTool.countAverage();
             self.onResize();
             if (self.selectedWarriorID) self.infoUpdate();
         }
+
+        if (isset(data.w)) {
+            updateDrawOrNoSkillsAnimation(data.w)
+        }
+
         if (isset(data.turns_warriors)) {
             self.turnPredictionUpdateAnimation(data.turns_warriors);
         }
@@ -560,6 +589,12 @@ module.exports = function() {
                     turnItemName.classList.add('turn-prediction__name--red');
                     break;
             }
+            if (isset(warrior.poolTime) && isset(warrior.poolTime.left)) {
+                const remainingTime = _t('remaining-time', {
+                    '%val%': warrior.poolTime.left
+                }, 'battle');
+                $(turnItem).tip(`${warrior.name}: ${remainingTime}`)
+            }
             turnItemName.innerHTML = parseContentBB(warrior.name);
             this.createAvatar(turnItemAv, warrior.icon, warrior.npc);
             battlePredictionHelpWindow.appendWarrior(turnItem, warrior.icon, warrior.npc);
@@ -660,6 +695,10 @@ module.exports = function() {
 
     this.getBattleController = function() {
         return $battleController;
+    };
+
+    this.isBattleControllerShow = function() {
+        return $battleController.is(':visible');
     };
 
     this.getComboPoints = function() {
@@ -772,7 +811,9 @@ module.exports = function() {
             // if loot exist and go to another battle, item move to inventory automatically and close loot window
             // using allInit to prevent auto-close loot window if it's active and the user refreshes the page (on init4) or we are dead (reload from engine).
         }
-        if (isset(data.init) && data.init) self.callCheckCanFinishExternalTutorialStartBattle();
+        if (isset(data.init) && data.init) {
+            self.callCheckCanFinishExternalTutorialStartBattle();
+        }
         self.update(data);
         if (firstUpdate) {
 
@@ -788,7 +829,9 @@ module.exports = function() {
             self.newTurn(data.current);
             self.showPanelActionsButs();
             $predictionScrollbar.trigger('scrollTop');
-            if (data.auto == "1") self.callCheckCanFinishExternalTutorialHeroEndBattle();
+            if (data.auto == "1") {
+                self.callCheckCanFinishExternalTutorialHeroEndBattle();
+            }
         }
     };
 
@@ -836,6 +879,14 @@ module.exports = function() {
         return a.join(seperator)
     };
 
+    const updateDrawOrNoSkillsAnimation = (data) => {
+
+        for (let idWarrior in data) {
+            this.warriorsList[idWarrior].updateDrawOrNoSkillsAnimation();
+        }
+
+    };
+
     this.updateWarriors = function(data) {
         if (!teamIDs['1'].length) {
             for (var i in data) {
@@ -847,9 +898,19 @@ module.exports = function() {
                     id: i,
                     name: data[i].name,
                     lvl: data[i].lvl,
+                    operationLevel: data[i].oplvl,
                     prof: data[i].prof,
-                    str: data[i].name + '(' + data[i].lvl + data[i].prof + ')'
+                    //str   			: data[i].name + '(' + data[i].lvl + data[i].prof + ')'
                 };
+
+                o.str = getCharacterInfo({
+                    showNick: true,
+                    nick: o.name,
+                    level: o.lvl,
+                    operationLevel: o.operationLevel,
+                    prof: o.prof,
+                    //htmlElement		: true
+                })
 
                 if (data[i].team != 2) flist1.push(o);
                 else flist2.push(o);
@@ -864,6 +925,7 @@ module.exports = function() {
                 '%grp1%': flist1Join,
                 '%grp2%': flist2Join
             }));
+            BattleMessages.updateScroll();
             battlePredictionHelpWindow.show();
         }
         var test = data;
@@ -874,6 +936,7 @@ module.exports = function() {
             var warriorData = test[j];
             self.warriors.update(warriorData, self.isAuto);
         }
+        self.warriors.afterUpdate();
 
         var lines = self.warriors.getLines();
         self.warriors.resetStartSideLines();
@@ -923,7 +986,7 @@ module.exports = function() {
         if (!yourMove) return;
         yourTurnTimeout = setTimeout(function() {
             var sm = Engine.soundManager;
-            if (!sm.getStateSoundNotifById(7)) sm.createNotifSound(8);
+            if (sm.getStateSoundNotifById(7)) sm.createNotifSound(8);
         }, 5000)
     };
 
@@ -940,6 +1003,8 @@ module.exports = function() {
             self.canLeaveBattle = true;
             self.clearYourTurnTimeout();
             self.clearIntervalMove();
+            self.clearIntervalPoolTime();
+            if (poolTimeHasExist) this.updatePoolTime(0);
             //API.callEvent("show_close_battle");
             API.callEvent(Engine.apiData.SHOW_CLOSE_BATTLE);
             if (self.isAuto) return;
@@ -954,6 +1019,37 @@ module.exports = function() {
 
     this.setEndBattle = () => {
         this.endBattle = true;
+    };
+
+    this.clearIntervalPoolTime = () => {
+        if (intervalPoolTime != null) {
+            clearInterval(intervalPoolTime);
+        }
+    };
+
+    this.setIntervalPoolTime = (maxTime) => {
+        poolTimeHasExist = true;
+        let counter = maxTime;
+
+        this.clearIntervalPoolTime();
+        this.updatePoolTime(counter); // first update
+
+        intervalPoolTime = setInterval(() => {
+            counter--;
+            if (counter === -1) {
+                this.clearIntervalPoolTime();
+                return;
+            }
+            this.updatePoolTime(counter); // update by 1 sec
+        }, 1000)
+    };
+
+    this.updatePoolTime = (time) => {
+        if (this.isAuto) {
+            return false;
+        }
+        if ($poolTimer.css('display') === 'none') $poolTimer.css('display', 'block');
+        $poolTimer.text((this.endBattleForMe ? 0 : time) + 's');
     };
 
     this.clearIntervalMove = () => {
@@ -979,7 +1075,6 @@ module.exports = function() {
     };
 
     this.updateMoveTime = (time) => {
-        const sec = _t('sec', null, 'battle');
         if (self.isAuto) {
             if ($timeProgressBarWrapper.hasClass('too-close')) {
                 $timeProgressBarWrapper.removeClass('too-close');
@@ -999,7 +1094,7 @@ module.exports = function() {
             setPercentProgressBar($timeProgressBar, value);
         }
 
-        $timeSeconds.html((self.endBattleForMe ? 0 : time) + ' ' + sec);
+        $timeSeconds.html((self.endBattleForMe ? 0 : time) + 's');
         if (time <= 5 && !self.endBattleForMe && yourMove && !autoFightAfter) {
             if (!$timeProgressBarWrapper.hasClass('too-close')) {
                 $timeProgressBarWrapper.addClass('too-close');
@@ -1064,21 +1159,24 @@ module.exports = function() {
             _t('close_logs', null, 'battle'),
             _t('surrender', null, 'battle'),
             _t('cancel', null, 'buttons'),
-            _t('cancel_quick_battle', null, 'battle')
+            _t('cancel_quick_battle', null, 'battle'),
+            _t('show_widgets')
         ];
 
         var $wrapper = $battleController.find('.buttons-wrapper');
         const cancelQuickBattleBtnTxt = addSkillBarVisible ? t[7] : t[8];
 
         $battleController.find('.surrender').click(() => {
-            _g('fight&a=surrender');
+            //_g('fight&a=surrender');
+            surrenderFunc();
         }).tip(_t('surrender', null, 'battle'));
 
         self.createButton($wrapper, t[0], 'auto-fight-btn small', this.canAutoFight);
         self.createButton($wrapper, cancelQuickBattleBtnTxt, 'auto-fight-cancel-btn small', this.canAutoFightCancel);
         self.createButton($wrapper, t[1], 'copy-battle-logs small', function() {
-            BattleMessages.copyForumLog();
-            mAlert(_t('copyToClipboard', null, 'battle'));
+            //BattleMessages.copyForumLog();
+            //mAlert(_t('copyToClipboard', null, 'battle'));
+            copyBattleLog();
         });
         self.createButton($wrapper, t[4], 'close-battle-ground small', function() {
             self.canLeave();
@@ -1089,6 +1187,25 @@ module.exports = function() {
         self.createButton($wrapper, t[2], 'change-target-btn small', function() {
             self.selectWarrior(true);
         });
+
+        self.createButton($wrapper, t[9], 'change-widget-visibility-light-mode small', function() {
+            //let state = Storage.easyGet("WIDGET_VISIBILITY_IN_BATTLE");
+
+            //let state = StorageFuncBattle.getWidgetVisibleInBattleState();
+            //
+            //if (state === null) {
+            //	state = false
+            //} else {
+            //	state = !state
+            //}
+            //
+            ////Storage.easySet(state, "WIDGET_VISIBILITY_IN_BATTLE");
+            //StorageFuncBattle.setWidgetVisibleInBattleState(state);
+            //
+            //showHideWidget(true);
+            changeWidgetVisibilityLightMode();
+        });
+
         $battleController.find('.toggle-battle').click(self.toggleBattlePanel);
         $battleController.find('.attach-battle-log-help-window').click(function() {
             BattleMessages.toggleAttachBattleLogHelpWindow();
@@ -1098,6 +1215,29 @@ module.exports = function() {
         });
     };
 
+    const surrenderFunc = () => {
+        _g('fight&a=surrender');
+    }
+
+    const copyBattleLog = () => {
+        BattleMessages.copyForumLog();
+        mAlert(_t('copyToClipboard', null, 'battle'));
+    }
+
+    const changeWidgetVisibilityLightMode = () => {
+        let state = StorageFuncBattle.getWidgetVisibleInBattleState();
+
+        if (state === null) {
+            state = false
+        } else {
+            state = !state
+        }
+
+        //Storage.easySet(state, "WIDGET_VISIBILITY_IN_BATTLE");
+        StorageFuncBattle.setWidgetVisibleInBattleState(state);
+
+        showHideWidget(true);
+    }
 
     this.showPanelActionsButs = function() {
         var s = self.canLeaveBattle;
@@ -1106,7 +1246,8 @@ module.exports = function() {
         var visible = bool ? '' : 'none';
         var revertVisible = bool ? 'none' : '';
         var $surrender = $battleController.find('.surrender');
-        if (!Engine.worldConfig.getHardcore() && !self.endBattleForMe) {
+        //if (!Engine.worldConfig.getHardcore() && !self.endBattleForMe) {
+        if (showSurrender()) {
             $surrender.css('display', 'inline-block');
         }
         $battleController.find('.change-target-btn').css('display', visible);
@@ -1116,6 +1257,10 @@ module.exports = function() {
         $battleController.find('.close-battle-ground').css('display', revertVisible);
         if (s) $battleController.find('.close-battle-logs').css('display', 'none');
     };
+
+    const showSurrender = () => {
+        return !Engine.worldConfig.getHardcore() && !self.endBattleForMe
+    }
 
     this.setVisibleAutofight = function(state) {
         var visible = state && !self.endBattleForMe && !self.canLeaveBattle ? '' : 'none';
@@ -1494,8 +1639,8 @@ module.exports = function() {
             TutorialData.ON_FINISH_TYPE.REQUIRE,
             skillId
         );
-
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
     };
 
     this.callCheckCanFinishExternalTutorialHeroEndBattle = () => {
@@ -1505,8 +1650,8 @@ module.exports = function() {
             TutorialData.ON_FINISH_TYPE.ABSOLUTE_FINISH,
             true
         );
-
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
     };
 
     this.callCheckCanFinishExternalTutorialHeroLeaveBattleButtonOrHotkey = () => {
@@ -1515,8 +1660,8 @@ module.exports = function() {
             TutorialData.ON_FINISH_TYPE.REQUIRE,
             true
         );
-
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
     };
 
     this.callCheckCanFinishExternalTutorialCloseBattleWindow = () => {
@@ -1525,8 +1670,8 @@ module.exports = function() {
             TutorialData.ON_FINISH_TYPE.ABSOLUTE_FINISH,
             true
         );
-
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
     };
 
     this.callCheckCanFinishExternalTutorialStartBattle = () => {
@@ -1535,8 +1680,8 @@ module.exports = function() {
             TutorialData.ON_FINISH_TYPE.ABSOLUTE_FINISH,
             true
         );
-
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
     };
 
     this.setSkillTip = function($skill, name, cost, skillID) {
@@ -1689,7 +1834,61 @@ module.exports = function() {
         $skill.find('.type').html(cost.slice(0, -1));
     };
 
+    const getBattleSkills = () => {
+        if (getEngine().interface.getInterfaceLightMode()) {
+            return $battleSkillsLightMode;
+        } else {
+            return $battleSkillsClassicMode;
+        }
+    }
+
+    const initHamburgerButton = () => {
+        if (!mobileCheck()) {
+            return;
+        }
+
+        let $hamburger = createHamburgerMenuButton('battle-hamburger-light-mode', function(e, menu) {
+
+            menu.push([_t('attach-battle-log-help-window'), function(e) {
+                BattleMessages.toggleAttachBattleLogHelpWindow();
+            }]);
+            menu.push([_t('attach-battle-prediction-help-window'), function(e) {
+                battlePredictionHelpWindow.toggleAttach();
+            }]);
+            menu.push([_t('SIZE_UP'), function(e) {
+                self.toggleBattlePanel()
+            }, {
+                button: {
+                    cls: 'not-close'
+                }
+            }]);
+            menu.push([_t('copy-battle-logs', null, 'battle'), function(e) {
+                copyBattleLog();
+            }]);
+
+            if (self.isBattleShow()) {
+                menu.push([_t('show_widgets'), function(e) {
+                    changeWidgetVisibilityLightMode();
+                }]);
+            }
+
+            if (showSurrender()) {
+                menu.push([_t('surrender', null, 'battle'), function(e) {
+                    surrenderFunc();
+                }, {
+                    button: {
+                        cls: 'menu-item--red'
+                    }
+                }]);
+            }
+        });
+
+        $battleController.find('.battle-content').append($hamburger);
+    };
+
     this.addToHotSlot = function($skill, id, request, place) {
+        let $battleSkills = getBattleSkills();
+
         $battleSkills.add($addBattleSkills).find('[slot=' + place + ']').append($skill);
         var newPlace = place; //place  > 3 ? 7 - place + 4 : place;
         if (place > 7) return;
@@ -1742,10 +1941,15 @@ module.exports = function() {
             $skill = self.getSkill(sk.name, request, sk.cost, i, disabled ? require : false);
             self.addToHotSlot($skill, i, request, sk.hotSlot);
         }
-        if (!Engine.dead) $battleSkills.css('display', 'block');
+        if (!Engine.dead) {
+            let $battleSkills = getBattleSkills();
+            $battleSkills.css('display', 'block');
+        }
     };
 
     this.removeHotSkills = function() {
+        let $battleSkills = getBattleSkills();
+
         if (!$battleSkills) return; //quick fight problem
         self.showedSkills = null;
         $battleSkills.add($addBattleSkills).find('.battle-skill').remove();
@@ -1753,14 +1957,17 @@ module.exports = function() {
 
     this.initBattleController = function() {
         $battleController = Tpl.get('battle-controller');
-        $battleSkills = Engine.interface.get$interfaceLayer().find('.skill-usable-slots');
+        $battleSkillsClassicMode = Engine.interface.get$interfaceLayer().find('.skill-usable-slots');
+        $battleSkillsLightMode = $battleController.find('.skill-usable-slots-light-mode');
         $addBattleSkills = $battleController.find('.skill-usable-add-slots');
         $timeWrapper = $battleController.find('.time');
         $timeSeconds = $battleController.find('.seconds');
+        $poolTimer = $battleController.find('.pool-timer');
         $timeProgressBarWrapper = $battleController.find('.time-progress-bar');
         $timeProgressBar = $battleController.find('.time-inner');
         self.addControlButtons();
         self.initProgressBars();
+        initHamburgerButton();
         Engine.interface.get$interfaceLayer().find('.bottom.positioner').prepend($battleController);
         Engine.hotKeys.replaceAutoAndChangeBtnsNames();
         Engine.hotKeys.replaceCloseFightBtnsNames();
@@ -1771,8 +1978,12 @@ module.exports = function() {
     const updateBattleAreaPosition = () => {
         if (getEngine().battle.zoomMode) return;
 
-        let margin = isAdditionalSkillsVisible() ? 0 : 15;
+        let margin = (isAdditionalSkillsVisible() || getEngine().interface.checkInterfaceLightMode()) ? 0 : 15;
         let battleControllerHeight = $battleController.height();
+
+        if (Engine.interface.getInterfaceLightMode()) {
+            battleControllerHeight += 60; // todo: fix InterfaceLightMode
+        }
 
         $battleArea.css('bottom', battleControllerHeight - margin);
 
@@ -1948,7 +2159,7 @@ module.exports = function() {
         var hero = self.warriorsList[Engine.hero.d.id];
         markWarrior = id;
 
-        if (e && e.type == 'contextmenu' && w.hpp > 0) {
+        if (e && (e.type === 'contextmenu' || e.type === 'longpress') && w.hpp > 0) {
             //if (hero == w) _g("fight&a=move");
             //else if (w.team != this.myteam) _g("fight&a=strike&id=" + id);
             self.skillBattleMenu.showMenuSkills(e, w, battleSkills);
@@ -1978,6 +2189,7 @@ module.exports = function() {
     this.setDisabledSkills = function(w) {
         var hero = self.warriorsList[Engine.hero.d.id];
         var toofar = !(w.y - hero.y < 2);
+        let $battleSkills = getBattleSkills();
 
         var type = 1; // type : 0-self, 1-friend, 2-enemy
         if (w == hero) type = 0;
@@ -2022,6 +2234,7 @@ module.exports = function() {
     };
 
     this.getSkillObjFromBars = function(i) {
+        let $battleSkills = getBattleSkills();
         var obj = $battleSkills.add($addBattleSkills).find('.icon-' + i);
         return obj.parent();
     };
@@ -2267,10 +2480,15 @@ module.exports = function() {
         $battleController.css('display', 'none');
     };
 
-    this.close = function(data) {
+    this.close = function(data, closeDuringInitOne) {
         Engine.lock.remove('battle');
         Engine.interface.heroElements.showElements('game');
-        self.battleNight.onClear();
+
+
+        if (!closeDuringInitOne) {
+            self.battleNight.onClear();
+        }
+
         self.battleEffectsController.clearAllEffects();
         BattleMessages.close();
         battlePredictionHelpWindow.hide();
@@ -2288,6 +2506,7 @@ module.exports = function() {
         self.endBattleForMe = true;
         self.canLeaveBattle = true;
         if ($battleController) $battleController.removeClass('active');
+        $poolTimer.css('display', 'none');
         self.$.find('.warrior').remove();
         self.$.css('display', 'none');
         //API.callEvent('close_battle');
@@ -2302,12 +2521,47 @@ module.exports = function() {
         self.callCheckCanFinishExternalTutorialHeroLeaveBattleButtonOrHotkey();
 
         self.callCheckCanFinishExternalTutorialCloseBattleWindow(); // RajData.event.BATTLE.ON_START_FIGHT_WITH_NPC
-        //if (data.auto == '1' && self.checkIsOptWithAutoCloseBattleWindow()) self.callCheckCanFinishExternalTutorialCloseBattleWindow();		// RajData.event.BATTLE.ON_DIE_NPC
-        if (data.auto == '1' && getEngine().settingsOptions.isAutoCloseBattleOn()) self.callCheckCanFinishExternalTutorialCloseBattleWindow(); // RajData.event.BATTLE.ON_DIE_NPC
+
+        if (data.auto == '1' && getEngine().settingsOptions.isAutoCloseBattleOn()) {
+            self.callCheckCanFinishExternalTutorialCloseBattleWindow(); // RajData.event.BATTLE.ON_DIE_NPC
+        }
+
+        showHideWidget(false);
     };
+
+    const showHideWidget = (battlePanelVisible) => {
+        if (!getEngine().interface.getInterfaceLightMode()) {
+            return
+        }
+
+        //let state = Storage.easyGet("WIDGET_VISIBILITY_IN_BATTLE");
+        let state = StorageFuncBattle.getWidgetVisibleInBattleState();
+
+        if (state === null) {
+            state = true
+        }
+
+        if (!battlePanelVisible) {
+            state = true;
+        }
+
+        const POS = Engine.widgetsData.pos;
+        const widgetManger = getEngine().widgetManager;
+        const a = [
+            POS.TOP_RIGHT,
+            POS.BOTTOM_RIGHT_ADDITIONAL,
+            POS.BOTTOM_RIGHT,
+            POS.TOP_LEFT,
+            POS.BOTTOM_LEFT_ADDITIONAL,
+            POS.BOTTOM_LEFT
+        ];
+
+        widgetManger.setVisibilityWidgetsByBars(a, state);
+    }
 
     this.showBattlePanel = function() {
         //API.callEvent('open_battle_window');
+        //Engine.lock.remove('heroAttack');
         API.callEvent(Engine.apiData.OPEN_BATTLE_WINDOW);
         Engine.lock.add('battle');
         self.initVariable();
@@ -2322,6 +2576,8 @@ module.exports = function() {
         self.$.css('display', 'block');
         $('body').addClass('in-battle');
         if (self.isAuto) self.show = true;
+
+        showHideWidget(true);
     };
 
     //this.checkIsOptWithAutoCloseBattleWindow = () => {
@@ -2362,6 +2618,10 @@ module.exports = function() {
     const updateBattleAreaData = () => {
         battleAreaData.width = $battleArea.width()
         battleAreaData.height = $battleArea.height()
+
+        let position = $battleArea.position();
+        battleAreaData.left = position.left;
+        battleAreaData.top = position.top;
         //battleAreaData.scale 	= $battleArea.scale()
 
         //console.log(battleAreaData.css('transition'));
@@ -2378,6 +2638,14 @@ module.exports = function() {
 
     const getBattleScale = () => {
         return battleAreaData.width;
+    };
+
+    const getBattleLeft = () => {
+        return battleAreaData.left;
+    };
+
+    const getBattleTop = () => {
+        return battleAreaData.top;
     };
 
     const updateAutofightCancelBtn = () => {
@@ -2449,10 +2717,15 @@ module.exports = function() {
         }]);
     };
 
+
     this.onResize = () => {
+        if ($battleController && this.isBattleControllerShow()) {
+            if (this.checkBattleControllerIsTooBig()) this.setPanelState(VERY_BIG_SIZE)
+            let index = this.getIndexByNameIBattleControllerSize(actualStateSize);
+            this.manageShowMore(index);
+        }
+
         if (!this.getShow()) return;
-
-
 
         updateBattleAreaData();
 
@@ -2461,13 +2734,6 @@ module.exports = function() {
         if (this.battleEffectsController) this.battleEffectsController.getBattleBackgroundTintAction().onResize();
 
         this.warriors.updatePositions();
-
-        if ($battleController && this.checkBattleControllerIsTooBig()) this.setPanelState(VERY_BIG_SIZE)
-
-        if ($battleController) {
-            let index = this.getIndexByNameIBattleControllerSize(actualStateSize);
-            this.manageShowMore(index);
-        }
 
         this.battleNight.rebuildBattleNight();
         Engine.characterEffectsBattleManager.onResize();
@@ -2534,10 +2800,14 @@ module.exports = function() {
     this.hideInterfaceItems = function() {
         //$('.bottom-panel>.slots').css('display', 'none');
         //$('.skill-usable-slots').css('display', 'block');
+
+        let $battleSkills = getBattleSkills();
+
         Engine.interface.get$interfaceLayer().find('.bottom-panel>.slots').css('display', 'none');
-        Engine.interface.get$interfaceLayer().find('.skill-usable-slots').css('display', 'block');
+        //Engine.interface.get$interfaceLayer().find('.skill-usable-slots').css('display', 'block');
+        $battleSkills.css('display', 'block');
         $battleController.find('.skill-usable-add-slots').css('display', 'block');
-        if (Engine.hero.lvl > 299) {
+        if (getHeroLevel() > 299) {
             $('.end-game-overlay').removeClass('end-game-overlay');
         }
     };
@@ -2545,8 +2815,12 @@ module.exports = function() {
     this.showInterfaceItems = function() {
         //$('.bottom-panel>.slots').css('display', 'block');
         //$('.skill-usable-slots').css('display', 'none');
+
+        let $battleSkills = getBattleSkills();
+
         Engine.interface.get$interfaceLayer().find('.bottom-panel>.slots').css('display', 'block');
-        Engine.interface.get$interfaceLayer().find('.skill-usable-slots').css('display', 'none');
+        //Engine.interface.get$interfaceLayer().find('.skill-usable-slots').css('display', 'none');
+        $battleSkills.css('display', 'none');
         $battleController.find('.skill-usable-add-slots').css('display', 'none');
         Engine.interface.heroElements.checkAndSetEndGamePanel();
     };
@@ -2672,5 +2946,10 @@ module.exports = function() {
     }
 
     //this.init();
+
+    this.getBattleLeft = getBattleLeft;
+    this.getBattleTop = getBattleTop;
+    this.getEnergyBarLightMode = getEnergyBarLightMode;
+    this.getManaBarLightMode = getManaBarLightMode;
 
 };

@@ -1,6 +1,6 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 

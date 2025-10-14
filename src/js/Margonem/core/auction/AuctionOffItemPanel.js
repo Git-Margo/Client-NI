@@ -1,12 +1,13 @@
 let Templates = require('../Templates');
-let AuctionData = require('core/auction/AuctionData');
-let Item = require('core/items/Item');
-const InputMaskData = require('core/InputMaskData');
-const ConfirmationQueue = require("../utils/ConfirmationQueue");
-const ItemClass = require("../items/ItemClass");
+let AuctionData = require('@core/auction/AuctionData');
+let Item = require('@core/items/Item');
+const InputMaskData = require('@core/InputMaskData');
+const ConfirmationQueue = require('../utils/ConfirmationQueue');
+const ItemClass = require('../items/ItemClass');
 const {
     Rarities
-} = require("../items/ItemRarity");
+} = require('../items/ItemRarity');
+const Checkbox = require('@core/components/Checkbox');
 
 module.exports = function() {
 
@@ -15,6 +16,7 @@ module.exports = function() {
     let content = null;
     let auctionOffItem = null;
     let wnd = null;
+    let featuredCheckBox = null;
 
     const init = (_$auctionContent) => {
         // $auctionContent = _$auctionContent;
@@ -96,12 +98,26 @@ module.exports = function() {
     const createSpecialFeatureCheckbox = () => {
 
         let txt = getCheckboxText(false);
-        let $oneCheckbox = createCheckBox(txt, '', () => {
+        //let $oneCheckbox = createCheckBox(txt, '', () => {
+        //
+        //    updateCheckbox();
+        //    manageVisibleElements(true);
+        //});
 
-            updateCheckbox();
-            manageVisibleElements(true);
-        });
-        content.find('.special-offer').append($oneCheckbox);
+        featuredCheckBox = new Checkbox.default({
+                label: txt,
+                i: 'auction',
+                checked: false,
+                highlight: false
+            },
+            (state) => {
+                updateCheckbox();
+                manageVisibleElements(true);
+            }
+        );
+
+
+        content.find('.special-offer').append($(featuredCheckBox.getCheckbox()));
     };
 
     const updateCheckbox = () => {
@@ -113,12 +129,14 @@ module.exports = function() {
     const updateCheckBoxLabel = (active) => {
         let txt = getCheckboxText(active);
 
-        content.find('.special-offer').find('.one-checkbox').find('.label').html(txt);
+        //content.find('.special-offer').find('.one-checkbox').find('.label').html(txt);
+        //content.find('.special-offer').find('.checkbox-custom').find('.c-checkbox__label').html(txt);
+        featuredCheckBox.setLabel(txt)
     };
 
     const manageVisibleElements = (forceDurationChange = false) => {
         let isAuctionOffItem = checkAuctionOffItem();
-        let isSoulbound = isAuctionOffItem && auctionOffItem.checkSoulbound();
+        let isSoulbound = isAuctionOffItem && auctionOffItem.issetSoulboundStat();
         let active = getIsFeatured()
 
         if (isAuctionOffItem) {
@@ -247,10 +265,17 @@ module.exports = function() {
     }
 
     const isTooLowPriceForLegendItem = (auctionOffItem, data) => {
+        console.log('HERE')
+
+        // return isset(data.buy_out) && data.buy_out >=500 && data.buy_out <= 100000000 &&
+        //     ItemClass.isEquipCl(auctionOffItem.cl) &&
+        //     isset(auctionOffItem._cachedStats['lvl']) && auctionOffItem._cachedStats['lvl'] > 20 &&
+        //     isset(auctionOffItem._cachedStats['rarity']) && auctionOffItem._cachedStats['rarity'] === Rarities.LEGENDARY;
+
         return isset(data.buy_out) && data.buy_out >= 500 && data.buy_out <= 100000000 &&
             ItemClass.isEquipCl(auctionOffItem.cl) &&
-            isset(auctionOffItem._cachedStats['lvl']) && auctionOffItem._cachedStats['lvl'] > 20 &&
-            isset(auctionOffItem._cachedStats['rarity']) && auctionOffItem._cachedStats['rarity'] === Rarities.LEGENDARY;
+            auctionOffItem.issetLvlStat() && auctionOffItem.getLvlStat() > 20 &&
+            auctionOffItem.issetRarityStat() && auctionOffItem.getRarityStat() === Rarities.LEGENDARY;
     }
 
     const sendRequestToCreateAuction = (itemId, data) => {
@@ -315,12 +340,15 @@ module.exports = function() {
     };
 
     const getIsFeatured = () => {
-        return content.find('.special-offer').find('.checkbox.active').length ? 1 : 0;
+        //return content.find('.special-offer').find('.checkbox.active').length ? 1 : 0;
+        return featuredCheckBox.getChecked() ? 1 : 0;
     };
 
     const setIsFeatured = (state) => {
-        let $ch = content.find('.special-offer').find('.checkbox.active');
-        state ? $ch.addClass('active') : $ch.removeClass('active');
+        //let $ch = content.find('.special-offer').find('.checkbox.active');
+        //state ? $ch.addClass('active') : $ch.removeClass('active');
+
+        featuredCheckBox.getChecked(state);
     };
 
     const getDataFromInputsToAuctionOffItem = () => {
@@ -332,7 +360,7 @@ module.exports = function() {
 
         let arg = {};
 
-        if (auctionOffItem.checkSoulbound()) {
+        if (auctionOffItem.issetSoulboundStat()) {
             if (additionGoldPayment !== null) {
                 let price = parsePrice(removeSpaces(additionGoldPayment));
                 if (!checkParsePriceValueIsCorrect(price)) return null;
@@ -424,7 +452,7 @@ module.exports = function() {
     const putAuctionOffItem = (itemData) => {
 
         if (!checkIsItem(itemData)) return; // ??? need?
-        if (itemData.checkPermbound()) return;
+        if (itemData.issetPermboundStat()) return;
         if (checkSoulbondIsBlocked(itemData)) return;
 
         removeAuctionOffItem();
@@ -460,7 +488,7 @@ module.exports = function() {
     };
 
     const checkSoulbondIsBlocked = (itemData) => {
-        if (!itemData.checkSoulbound()) return false;
+        if (!itemData.issetSoulboundStat()) return false;
 
         //let soulboundVal = valueBoundItem(itemData);
         let soulboundVal = itemData.getUnbindCost();
@@ -499,7 +527,7 @@ module.exports = function() {
     };
 
     const getAuctionCostByPatern = (itemData) => {
-        let lvl = itemData.getLvl();
+        let lvl = itemData.getLvlStat();
 
         if (!lvl) lvl = 10;
 

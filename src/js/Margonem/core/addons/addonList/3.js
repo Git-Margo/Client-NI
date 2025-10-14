@@ -15,28 +15,32 @@ module.exports = function() {
     }
 
     function updateTimeInItemAndView(item, now) {
-        let val = geValToUpdateTime(item._cachedStats, now);
+        let val = geValToUpdateTime(item, now);
 
         if (val != null) updateTime(item, val);
     }
 
-    function geValToUpdateTime(cachedStats, now) {
-        if (isset(cachedStats.timelimit)) {
+    function geValToUpdateTime(item, now) {
+        //if (isset(cachedStats.timelimit)) {
+        if (item.issetTimelimitStat()) {
 
-            let s = cachedStats.timelimit.split(",");
+            //let s 		= cachedStats.timelimit.split(",");
+            let s = item.getTimelimitStat().split(",");
             let diff = 0;
 
             if (s.length >= 2) diff = Math.ceil((parseInt(s[1]) - now) / 60);
 
             return diff;
 
-        } else if (isset(cachedStats.ttl)) return cachedStats.ttl;
+            //} else if (isset(cachedStats.ttl)) return cachedStats.ttl;
+        } else if (item.issetTtlStat()) return item.getTtlStat();
 
         return null;
     }
 
     function isCooldownItem(item) {
-        return isset(item._cachedStats.timelimit) || (isset(item._cachedStats.ttl) && item.st > 0 && item.st != 9)
+        //return isset(item._cachedStats.timelimit) || (isset(item._cachedStats.ttl) && item.st > 0 && item.st != 9)
+        return item.issetTimelimitStat() || (item.issetTtlStat() && item.st > 0 && item.st != 9)
     }
 
     function addToAll_Tps(a) {

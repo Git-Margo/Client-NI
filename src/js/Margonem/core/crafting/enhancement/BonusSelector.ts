@@ -2,7 +2,7 @@ import {
     createTransVal
 } from '../../HelpersTS';
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 declare const setAttributes: Function;
 declare const createButton: Function;

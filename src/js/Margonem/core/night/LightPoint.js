@@ -1,5 +1,5 @@
-let FloatObjectData = require('core/floatObject/FloatObjectData');
-let KindOrderObject = require('core/raj/kindOrderObject/KindOrderObject');
+let FloatObjectData = require('@core/floatObject/FloatObjectData');
+let KindOrderObject = require('@core/raj/kindOrderObject/KindOrderObject');
 
 module.exports = function() {
 
@@ -59,13 +59,18 @@ module.exports = function() {
     };
 
     const prepareLightImage = () => {
+
+
         lightImage.width = r * 2;
         lightImage.height = r * 2;
+
+        let _ctx = lightImage.getContext('2d');
+
+        getEngine().canvasFilter.updateFilterWithoutPath(_ctx);
 
         let left = r;
         let top = r;
 
-        let _ctx = lightImage.getContext('2d');
         let grd = _ctx.createRadialGradient(left, top, 0, left, top, r);
 
         grd.addColorStop(0, data.stop0);
@@ -145,10 +150,19 @@ module.exports = function() {
         let top;
 
         if (realXYPos) {
-            left = x + offsetX;
-            top = y + offsetY;
+            let battle = getEngine().battle;
+            let positionLeft = battle.getBattleLeft() / Engine.zoomFactor;
+            let positionTop = battle.getBattleTop() / Engine.zoomFactor;
+
+            //left    = positionLeft + x + offsetX + halfTileSize;
+            left = positionLeft + x + offsetX;
+            top = positionTop + y + offsetY - halfTileSize;
+
+            //todo: without master
+            //left    = x + offsetX;
+            //top     = y + offsetY;
         } else {
-            left = x * tileSize + tileSize / 2 + offsetX - Engine.map.offset[0] - mapShift[0];
+            left = x * tileSize + halfTileSize + offsetX - Engine.map.offset[0] - mapShift[0];
             top = y * tileSize + halfTileSize + offsetY - Engine.map.offset[1] - mapShift[1];
         }
 
@@ -227,15 +241,45 @@ module.exports = function() {
         alwaysDraw = _alwaysDraw
     };
 
+    const getWidth = () => {
+        return lightImage.width
+    }
+
+    const getHeight = () => {
+        return lightImage.height
+    }
+
+    const updatePosByMaster = (master) => {
+        if (realXYPos) {
+            setX(master.xPos);
+            setY(master.yPos);
+        } else {
+            setX(master.rx);
+            setY(master.ry);
+        }
+    }
+
+    const updatePos = (xPos, yPos) => {
+        setX(xPos);
+        setY(yPos);
+    }
+
+    const updateFilterImage = () => {
+        setRedrawLightImage(true);
+    }
+
     this.getAlwaysDraw = getAlwaysDraw;
     this.setAlwaysDraw = setAlwaysDraw;
-
+    this.updatePosByMaster = updatePosByMaster;
+    this.updatePos = updatePos;
     this.getOrder = getOrder;
     this.draw = draw;
     this.init = init;
     this.setCover = setCover;
-    this.setX = setX;
-    this.setY = setY;
+    // this.setX                   = setX;
+    // this.setY                   = setY;
+    // this.getWidth               = getWidth;
+    // this.getHeight              = getHeight;
     this.setR = setR;
     this.getR = getR;
     this.setXMoveNoise = setXMoveNoise;
@@ -243,4 +287,5 @@ module.exports = function() {
     this.getColorLightData = getColorLightData;
     this.setColorLightData = setColorLightData;
     this.refreshColorLightStop = refreshColorLightStop;
+    this.updateFilterImage = updateFilterImage;
 }

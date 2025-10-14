@@ -1,4 +1,4 @@
-var EmotionsData = require('core/emotions/EmotionsData');
+var EmotionsData = require('@core/emotions/EmotionsData');
 module.exports = function() {
 
     let OnSelfGif = EmotionsData.ACTION.ON_SELF;
@@ -37,9 +37,14 @@ module.exports = function() {
             position: 'bottom',
             timeout: 800
         },
-        [EmotionsData.NAME.AGGRESSIVE]: {
+        [EmotionsData.NAME.AGGRESSIVE_1]: {
             action: OnSelfGif,
             filename: 'angry-demon.gif',
+            offset: [0, 0]
+        },
+        [EmotionsData.NAME.AGGRESSIVE_2]: {
+            action: OnSelfGif,
+            filename: 'berserk.gif',
             offset: [0, 0]
         },
         [EmotionsData.NAME.WALKOVER]: {

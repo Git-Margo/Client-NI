@@ -1,6 +1,10 @@
 /**
  * Created by lukasz on 2014-09-30.
  */
+import {
+    decodeHtmlEntities,
+    getAllProfName
+} from './HelpersTS';
 
 var _tMessagesQueue = [];
 var _tQueueTimeout = null;
@@ -176,6 +180,10 @@ function getNewValAfterModify(val, modify, jsonFromFunc) {
             });
         case 'GET_CURRENCY':
             return getCurrency(val);
+        case 'GET_SEX':
+            return getSex(val);
+        case 'GET_PROF':
+            return getProfession(val);
         case 'GET_JSON_SWITCH':
             return getJsonSwitch(val, jsonFromFunc);
         case 'ARRAY_PARAM':
@@ -221,10 +229,48 @@ function getCurrency(arrayVal) {
     });
 }
 
+function getProfession(arrayVal) {
+    return arrayParams(arrayVal, (val) => {
+        let data = val.split('=');
+
+        if (data.length !== 2) {
+            errorReport('Translations.js', 'getProfession', 'Incorrect profession data', val);
+            return '';
+        }
+        let profChar = data[1];
+
+        return getAllProfName(profChar);
+    });
+}
+
+function getSex(arrayVal) {
+    return arrayParams(arrayVal, (val) => {
+        let data = val.split('=');
+
+        if (data.length !== 2) {
+            errorReport('Translations.js', 'getSex', 'Incorrect sex data', val);
+            return '';
+        }
+        let sexChar = data[1];
+
+        switch (sexChar) {
+            case 'm':
+                return _t('male');
+            case 'f':
+                return _t('female');
+            default:
+                errorReport('Translations.js', 'getSex', 'Incorrect sex data', val);
+                return '';
+        }
+    });
+}
+
 function getCurrencyTextByChar(char) {
     switch (char) {
+        case 'gold':
         case 'z':
             return _t('cost_gold');
+        case 'credits':
         case 's':
             return _t('sl');
 
@@ -310,7 +356,7 @@ window._t = function(name, parameters, category) {
             //	ret = ret.replace(new RegExp(i, 'g'), parameters[i]);
             //}
         }
-        return ret;
+        return decodeHtmlEntities(ret);
     }
     var alreadySend = false;
     for (var i = 0; i < _tMessagesQueue.length; i++) {
@@ -343,7 +389,7 @@ window._t2 = function(name, parameters, category) {
             //	ret = ret.replace(new RegExp(i, 'g'), '<span class="damage">' + parameters[i] + '</span>');
             //}
         }
-        return ret;
+        return decodeHtmlEntities(ret);
     }
     var alreadySend = false;
     for (var i = 0; i < _tMessagesQueue.length; i++) {

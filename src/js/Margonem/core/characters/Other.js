@@ -1,24 +1,24 @@
 /**
  * Created by lukasz on 12.09.14.
  */
-var Character = require('core/characters/Character');
-var SocietyData = require('core/society/SocietyData');
-var Pet = require('core/Pet');
-//var WantedController = require('core/wanted/WantedController');
-var Chat = require('core/Chat');
-var ShowEq = require('core/showEq/ShowEq');
-var ColorMark = require('core/ColorMark');
-var WhoIsHereGlow = require('core/whoIsHere/WhoIsHereGlow2');
-//var FollowGlow = require('core/glow/FollowGlow');
-var FollowController = require('core/FollowController');
-var EmotionsData = require('core/emotions/EmotionsData');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
+var Character = require('@core/characters/Character');
+var SocietyData = require('@core/society/SocietyData');
+var Pet = require('@core/Pet');
+var WantedController = require('@core/wanted/WantedController');
+//var Chat = require('@core/Chat');
+var ShowEq = require('@core/showEq/ShowEq');
+var ColorMark = require('@core/ColorMark');
+var WhoIsHereGlow = require('@core/whoIsHere/WhoIsHereGlow2');
+//var FollowGlow = require('@core/glow/FollowGlow');
+var FollowController = require('@core/FollowController');
+var EmotionsData = require('@core/emotions/EmotionsData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
 const {
     showProfile
 } = require('../HelpersTS');
-const OthersContextMenuData = require('core/characters/OthersContextMenuData');
-const CharacterAura = require('core/CharacterAura');
+const OthersContextMenuData = require('@core/characters/OthersContextMenuData');
+const CharacterAura = require('@core/CharacterAura');
 
 var Other = function() {
     var self = this;
@@ -227,9 +227,40 @@ var Other = function() {
         }
     }
 
+    const updateIcon = () => {
+        let path = getPath();
+
+        self.setPlaceHolderIcon();
+        self.setStaticAnimation(!isSettingsOptionsInterfaceAnimationOn());
+        Engine.imgLoader.onload(path, {
+                speed: true,
+                externalSource: cdnUrl
+            },
+            (i, f) => {
+                this.beforeOnload(f, i);
+            },
+            (i) => {
+                updateFilterImage();
+                this.afterLoadImage();
+            },
+            () => {
+                self.fetchError();
+            }
+        );
+    }
+
     this.afterUpdate = function(val, oldData) {
-        if (isset(val.icon) && !isset(val.pet) && isset(this.pet)) this.deletePet();
-        if (isset(this.d.del)) return this.delete();
+        if (isset(val.icon)) {
+            updateIcon();
+        }
+
+        if (isset(val.icon) && !isset(val.pet) && isset(this.pet)) {
+            this.deletePet();
+        }
+
+        if (isset(this.d.del)) {
+            return this.delete();
+        }
 
         updateDataMatchmakingChampion(val);
 
@@ -304,15 +335,15 @@ var Other = function() {
     this.createStrTip = function() {
         var tip = '';
         if (self.rights) {
-            var rank = -1;
+            let rank;
             if (self.rights & 1) rank = 0;
             else if (self.rights & 16) rank = 1;
             else if (self.rights & 2) rank = 2;
             else if (self.rights & 4) rank = 4;
+            else if (self.rights & 8) rank = 5;
             else rank = 3;
 
-            //tip += '<div class="rank"><div class="con">' + ranks[rank] + '</div></div>';
-            tip += '<div class="rank">' + ranks[rank] + '</div>';
+            if (isset(ranks[rank]) && ranks[rank] !== '') tip += '<div class="rank">' + ranks[rank] + '</div>';
         }
         if (isset(self.d.guest) && parseInt(self.d.guest)) tip += '<div class="rank">' + _t('deputy') + '</div>';
 
@@ -374,10 +405,21 @@ var Other = function() {
     };
 
     this.setTipHeader = function(o) {
-        var prof = isset(self.d.prof) ? self.d.prof : '';
-        var lvl = o.d.lvl == 0 ? '' : '(' + o.d.lvl + prof + ')';
-        var nick = '<div class="nick">' + o.nick + ' ' + lvl + '</div>';
-        return '<div class="info-wrapper">' + nick + '</div>';
+        //var prof = isset(self.d.prof) ? self.d.prof : '';
+        //var lvl = o.getLevel() == 0 ? '' : '(' + (o.getLevel ? o.getLevel() : o.lvl) + prof + ')';
+        //var nick = '<div class="nick">' + o.nick + ' ' + lvl + '</div>';
+
+        let charData = {
+            showNick: true,
+            nick: this.getNick(),
+            level: this.getLevel(),
+            prof: this.getProf(),
+            operationLevel: this.getOperationLevel()
+        };
+
+
+        let info = getCharacterInfo(charData);
+        return '<div class="info-wrapper"><div class="nick">' + info + '</div></div>';
     };
 
     this.getOrder = function() {
@@ -453,7 +495,7 @@ var Other = function() {
                 });
             }
         ]);
-        if (hero.d.lvl > 29) {
+        if (getHeroLevel() > 29) {
             menu.push([
                 _t('kiss', null, 'menu'),
                 function() {
@@ -521,7 +563,9 @@ var Other = function() {
         self.addDebugOptionMenu(menu);
 
         if (menu.length) {
-            Engine.interface.showPopupMenu(menu, e, true);
+            Engine.interface.showPopupMenu(menu, e, {
+                onMap: true
+            });
             return true;
         }
         return false
@@ -534,7 +578,7 @@ var Other = function() {
         //return true;
 
         getEngine().others.createOtherContextMenu(e, {
-            lvl: self.getLvl(),
+            lvl: self.getLevel(),
             prof: self.getProf(),
             nick: self.getNick(),
             charId: self.getId(),
@@ -677,6 +721,11 @@ var Other = function() {
         self.updateCollider();
     };
 
+    const updateFilterImage = () => {
+        let path = getPath();
+        this.sprite = getEngine().canvasFilter.updateFilter(path, this.sprite, true);
+    }
+
     this.afterLoadImage = () => {
         this.imgLoaded = true;
         this.setOnloadProperImg(true)
@@ -717,6 +766,14 @@ var Other = function() {
         return this.d.lvl;
     }
 
+    this.getOperationLevel = () => {
+        if (!this.d.oplvl) {
+            return 0;
+        }
+
+        return this.d.oplvl
+    }
+
     this.getRelation = () => {
         return this.d.relation;
     };
@@ -725,34 +782,39 @@ var Other = function() {
         return this.d.account;
     };
 
+    const getPath = () => {
+        //return CFG.r_opath + fixSrc(v);
+        return CFG.r_opath + fixSrc(this.getImg());
+    }
+
+
     this.onUpdate = new(function() {
         this.icon = function(val, old) {
-            let path = CFG.r_opath + fixSrc(val);
-
-            self.setPlaceHolderIcon();
-            //self.setStaticAnimation(Engine.opt(8));
-            self.setStaticAnimation(!isSettingsOptionsInterfaceAnimationOn());
-            //Gif.fetch(path, true, function (f) {
-            //	self.afterFetch(val, f);
-            //}, function () {
-            //	self.fetchError();
-            //});
-
-            //console.log('other', path)
-            Engine.imgLoader.onload(path, {
-                    speed: true,
-                    externalSource: cdnUrl
-                },
-                (i, f) => {
-                    this.beforeOnload(f, i);
-                },
-                (i) => {
-                    this.afterLoadImage();
-                },
-                () => {
-                    self.fetchError();
-                }
-            );
+            //let path = CFG.r_opath + fixSrc(val);
+            //let path = getPath(val);
+            //
+            //self.setPlaceHolderIcon();
+            ////self.setStaticAnimation(Engine.opt(8));
+            //self.setStaticAnimation(!isSettingsOptionsInterfaceAnimationOn());
+            //	//Gif.fetch(path, true, function (f) {
+            //	//	self.afterFetch(val, f);
+            //	//}, function () {
+            //	//	self.fetchError();
+            //	//});
+            //
+            ////console.log('other', path)
+            //Engine.imgLoader.onload(path, {speed: true, externalSource: cdnUrl},
+            //	(i, f) => {
+            //		this.beforeOnload(f, i);
+            //	},
+            //	(i) => {
+            //		updateFilterImage(val);
+            //		this.afterLoadImage();
+            //	},
+            //	() => {
+            //		self.fetchError();
+            //	}
+            //);
         };
 
         this.x = function(v) {
@@ -826,6 +888,7 @@ var Other = function() {
         return this.ry;
     };
 
+    this.updateFilterImage = updateFilterImage;
     this.getLevel = getLevel;
     this.getKind = getKind;
     this.firstAfterUpdate = firstAfterUpdate;

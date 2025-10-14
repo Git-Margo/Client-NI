@@ -1,7 +1,7 @@
 /**
  * Created by Michnik on 2015-07-07.
  */
-var Tpl = require('core/Templates');
+var Tpl = require('@core/Templates');
 module.exports = function() {
     var self = this;
 
@@ -89,7 +89,7 @@ module.exports = function() {
                 $containerYours.push($row2);
                 $containerYours.push($row3);
 
-                $row.append($('<td>').html(strRent).attr('rowspan', 3).css('color', 'blue'));
+                $row.append($('<td>').html(strRent).attr('rowspan', 3));
 
                 $row.append($('<td>').append($('<div/>', {
                     class: 'default rent menu',
@@ -103,8 +103,11 @@ module.exports = function() {
                 var keyPrice = v[i + 2] * 0.1;
                 var $input = $('<input/>').val(1).attr({
                     'id': 'rokey' + v[i],
-                    'type': 'number'
+                    min: 1,
+                    max: 10,
+                    maxLength: 2
                 }).addClass('default');
+                setOnlyPositiveNumberInInput($input);
                 self.inputFocusOut($input, keyPrice, $row2);
 
                 $row.append($('<td>').append($('<div/>', {
@@ -122,7 +125,6 @@ module.exports = function() {
                 $row3.append($('<td>').append($('<div/>', {
                     html: self.getButton(v[i], 'keysrm_opt', self.deleteKeys)
                 })));
-
             } else if (v[i + 3] == 0) { // free room
                 $containerToRent.push($row);
                 $row
@@ -220,6 +222,10 @@ module.exports = function() {
         var pl = amount > 4 ? 3 : amount > 1 ? 2 : 1;
 
         if (checkInputValIsEmptyProcedure(amount)) return;
+        if (Number(amount) < 1 || Number(amount) > 10) {
+            mAlert(self.tLang('duplicate_key_bad_value'));
+            return;
+        }
 
         mAlert(self.tLang('duplicate_key_confirm' + pl + ' %amount% %gold%', {
                 '%amount%': amount,

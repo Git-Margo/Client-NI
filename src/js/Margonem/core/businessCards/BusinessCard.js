@@ -4,6 +4,7 @@ module.exports = function() {
     let icon = null;
     let id = null;
     let lvl = null;
+    let operationLevel = null;
     let nick = null;
     let prof = null;
     let sex = null;
@@ -18,6 +19,7 @@ module.exports = function() {
         if (isset(data.icon)) icon = data.icon;
         if (isset(data.id)) id = data.id;
         if (isset(data.lvl)) lvl = data.lvl;
+        if (isset(data.oplvl)) operationLevel = data.oplvl;
         if (isset(data.nick)) nick = data.nick;
         if (isset(data.prof)) prof = data.prof;
         if (isset(data.sex)) sex = data.sex;
@@ -35,6 +37,9 @@ module.exports = function() {
     };
     this.getLvl = () => {
         return lvl
+    };
+    this.getOperationLevel = () => {
+        return operationLevel
     };
     this.getNick = () => {
         return nick

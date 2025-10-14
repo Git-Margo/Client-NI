@@ -1,7 +1,10 @@
-var tpl = require('core/Templates');
-//var Chat = require('core/Chat');
-//var Interface = require('core/Interface');
-let SocietyData = require('core/society/SocietyData');
+var tpl = require('@core/Templates');
+//var Chat = require('@core/Chat');
+//var Interface = require('@core/Interface');
+let SocietyData = require('@core/society/SocietyData');
+const {
+    getIconClose
+} = require('@core/HelpersTS');
 module.exports = function() {
     var self = this;
 
@@ -16,20 +19,21 @@ module.exports = function() {
     };
 
     this.setImgLevelProf = function(d, kind) {
-        self.img = kind == SocietyData.KIND.WANTED ? d[8] : d[2];
+        self.img = kind == SocietyData.KIND.WANTED ? d[9] : d[2];
         self.level = kind == SocietyData.KIND.WANTED ? d[6] : d[3];
-        self.prof = kind == SocietyData.KIND.WANTED ? d[7] : d[4];
+        self.operationLevel = kind == SocietyData.KIND.WANTED ? d[7] : d[4];
+        self.prof = kind == SocietyData.KIND.WANTED ? d[8] : d[5];
     };
 
     this.setCityPosOnlineAgo = function(d) {
         if (self.kind == SocietyData.KIND.FRIEND) {
-            self.city = d[5];
+            self.city = d[6];
             self.pos = {
-                x: d[6],
-                y: d[7]
+                x: d[7],
+                y: d[8]
             };
-            self.online = d[8];
-            self.ago = parseInt(d[9]);
+            self.online = d[9];
+            self.ago = parseInt(d[10]);
         }
 
         if (self.kind == SocietyData.KIND.WANTED) {
@@ -41,7 +45,7 @@ module.exports = function() {
             self.online = SocietyData.STATE.ONLINE;
         }
 
-        if (self.kind == SocietyData.KIND.ENEMY) self.ago = parseInt(d[5]);
+        if (self.kind == SocietyData.KIND.ENEMY) self.ago = parseInt(d[6]);
     };
 
     this.newElement = function($c) {
@@ -74,7 +78,18 @@ module.exports = function() {
 
     this.createProfAndLevel = function() {
         var $level = self.$.find('.lvl');
-        $level.html(self.level + self.prof);
+        //$level.html(self.level + self.prof);
+
+        let characterData = {
+            nick: this.nick,
+            level: this.level,
+            operationLevel: this.operationLevel,
+            prof: this.prof,
+            htmlElement: true
+        };
+
+        $level.html(getCharacterInfo(characterData));
+        addCharacterInfoTip($level, characterData);
     };
 
     this.createOnline = function() {
@@ -163,11 +178,10 @@ module.exports = function() {
     this.createRemoveButton = function() {
         if (self.kind == 'w') return;
         var $x = tpl.get('button').addClass('small');
-        var $butttons = self.$.find('.action-buttons');
-        //var $img = $('<div>').addClass('bck remove');
-        var $img = tpl.get('add-bck').addClass('remove');
-        $x.append($img);
-        $butttons.append($x);
+        var $buttons = self.$.find('.action-buttons');
+        const $closeIcon = getIconClose(false);
+        $x.append($closeIcon);
+        $buttons.append($x);
         $x.click(function() {
             mAlert(_t('delete ' + self.kind + ' %person%', {
                 '%person%': self.nick

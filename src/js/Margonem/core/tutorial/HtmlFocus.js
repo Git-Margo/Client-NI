@@ -1,4 +1,4 @@
-var Storage = require('core/Storage');
+var Storage = require('@core/Storage');
 
 module.exports = function() {
 
@@ -40,7 +40,8 @@ module.exports = function() {
         if (Engine.zoomFactor != null) return normalVal / (Engine.zoomFactor / 1);
         if (!mobileCheck()) return normalVal;
 
-        let zoomFactor = Storage.get('ZoomFactor');
+        //let zoomFactor = Storage.get('ZoomFactor');
+        let zoomFactor = getEngine.interface.getZoomFactorFromStorage();
         if (zoomFactor != null) return normalVal / (zoomFactor / 1);
 
         return normalVal;
@@ -139,7 +140,7 @@ module.exports = function() {
     };
 
     this.mouseDown = (e) => {
-        console.log('mouseDown1', e.target, this.collideWithMask(e));
+        //console.log('mouseDown1', e.target, this.collideWithMask(e));
         this.manageCanvasPointerEvents(e);
     };
 

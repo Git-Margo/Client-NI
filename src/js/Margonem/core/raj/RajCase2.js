@@ -1,5 +1,5 @@
-let RajDataCase = require('core/raj/RajCaseData');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
+let RajDataCase = require('@core/raj/RajCaseData');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
 
 
 module.exports = function() {
@@ -332,7 +332,7 @@ module.exports = function() {
 
     const getResultFromOperationArray = (operationArray, list) => {
         let operationStr = operationArray.join("");
-        devConsoleLog(["rajCase", operationStr, list]);
+        //devConsoleLog(["rajCase", operationStr, list]);
         let result = eval(operationStr);
 
         if (result === true || result === false) return result;

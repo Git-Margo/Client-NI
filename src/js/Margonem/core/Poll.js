@@ -1,5 +1,5 @@
-const tpl = require('core/Templates');
-const Storage = require('core/Storage');
+const tpl = require('@core/Templates');
+const Storage = require('@core/Storage');
 module.exports = function() {
     let content;
     let formEl;

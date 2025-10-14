@@ -1,4 +1,4 @@
-const RajRandomData = require('core/raj/rajRandom/RajRandomData.js');
+const RajRandomData = require('@core/raj/rajRandom/RajRandomData.js');
 
 module.exports = function() {
 

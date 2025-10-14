@@ -1,8 +1,11 @@
-var tpl = require('core/Templates');
-//var OutfitStore = require('core/shop/OutfitStore');
-//var PetStore = require('core/shop/PetStore');
-let CharacterData = require('core/characters/CharactersData');
-let PetActions = require('core/PetActions');
+var tpl = require('@core/Templates');
+//var OutfitStore = require('@core/shop/OutfitStore');
+//var PetStore = require('@core/shop/PetStore');
+let CharacterData = require('@core/characters/CharactersData');
+let PetActions = require('@core/PetActions');
+const {
+    getParsedPetData
+} = require('./HelpersTS');
 
 module.exports = function() {
 
@@ -44,19 +47,21 @@ module.exports = function() {
         switch (kind) {
             case CharacterData.drawSystem.PLAYER_OUTFIT:
 
-                tempList = i._cachedStats['outfit'].split(',');
+                //tempList  = i._cachedStats['outfit'].split(',');
+                tempList = i.getOutfitStat().split(',');
                 name = i.name;
 
                 canvasCharacterWrapper = Engine.canvasCharacterWrapperManager.addCharacter({
                     drawSystem: CharacterData.drawSystem.PLAYER_OUTFIT,
-                    path: tempList[1]
+                    path: tempList[1],
                 });
 
                 this.wnd.$.find('.info-icon').tip(_t('action_info_outfit'))
                 break;
             case CharacterData.drawSystem.PET:
 
-                tempList = i._cachedStats['pet'].split(',');
+                //tempList  			= i._cachedStats['pet'].split(',');
+                tempList = i.getPetStat().split(',');
                 name = tempList[0];
                 let path = tempList[1]
                 let actionAmount = petActions.checkActionsAmount(path)
@@ -66,7 +71,9 @@ module.exports = function() {
                 canvasCharacterWrapper = Engine.canvasCharacterWrapperManager.addCharacter({
                     drawSystem: CharacterData.drawSystem.PET,
                     path: path,
-                    actions: actions
+                    actions: actions,
+                    //fullPetData	: getParsedPetData(i._cachedStats['pet'])
+                    fullPetData: getParsedPetData(i.getPetStat())
                 });
 
                 this.wnd.$.find('.info-icon').tip(_t('action_info', null, 'pet'))

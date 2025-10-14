@@ -1,8 +1,8 @@
-var TextCodeMessageParser = require('core/codeMessage/TextCodeMessageParser');
-var ViewCodeMessageParser = require('core/codeMessage/ViewCodeMessageParser');
-var CallCodeMessageParser = require('core/codeMessage/CallCodeMessageParser');
-var CodeMessageData = require('core/codeMessage/CodeMessageData');
-var ChatData = require('core/chat/ChatData');
+var TextCodeMessageParser = require('@core/codeMessage/TextCodeMessageParser');
+var ViewCodeMessageParser = require('@core/codeMessage/ViewCodeMessageParser');
+var CallCodeMessageParser = require('@core/codeMessage/CallCodeMessageParser');
+var CodeMessageData = require('@core/codeMessage/CodeMessageData');
+var ChatData = require('@core/chat/ChatData');
 
 module.exports = function() {
 

@@ -1,5 +1,6 @@
 let Templates = require('../Templates');
-let AuctionData = require('core/auction/AuctionData');
+let AuctionData = require('@core/auction/AuctionData');
+const Tabs = require('../components/Tabs');
 
 module.exports = function() {
 
@@ -66,8 +67,15 @@ module.exports = function() {
     };
 
     const setMyAuctionOffTabAction = () => {
-        Engine.auctions.getAuctionCards().clickCard(1, null);
-        setCardAction(AuctionData.KIND_MY_AUCTION.MY_AUCTION_OFF);
+        // Engine.auctions.getAuctionCards().clickCard(1, null);
+
+        const MY_AUCTION_OFF = AuctionData.KIND_MY_AUCTION.MY_AUCTION_OFF;
+        // const CARD_NAME = getCardName(MY_AUCTION_OFF);
+
+        this.tabsInstance.activateCard(MY_AUCTION_OFF);
+        updateScroll();
+
+        setCardAction(MY_AUCTION_OFF);
     }
 
     const manageVisibleElements = () => {
@@ -253,6 +261,7 @@ module.exports = function() {
             ]
         );
 
+        $offer.addClass('table-header-tr');
 
         return $offer
     };
@@ -267,34 +276,83 @@ module.exports = function() {
         });
     };
 
+    // const getCardName = (actualKindOfAuction) => {
+    //     // return AuctionData.PREFIX_CARD + actualKindOfAuction;
+    //     return actualKindOfAuction;
+    // }
+
     const initCards = () => {
-        let con = content.find('.cards-header');
-        let str1 = _t('tab_others_auctions', null, 'auction'); //"Aukcje Graczy";
-        let str2 = _t('tab_my', null, 'auction'); //"Twoje Aukcje";
-        let str3 = _t('tab_observed', null, 'auction'); //"Obserwowane";
-        let str4 = _t('tab_au_catmybids', null, 'auction'); //"Licytowane";
+        // let con   = content.find('.cards-header');
+        // let str1  = _t('tab_others_auctions', null, 'auction'); //"Aukcje Graczy";
+        // let str2  = _t('tab_my', null, 'auction'); //"Twoje Aukcje";
+        // let str3  = _t('tab_observed', null, 'auction'); //"Obserwowane";
+        // let str4  = _t('tab_au_catmybids', null, 'auction'); //"Licytowane";
 
-        let auctionCards = Engine.auctions.getAuctionCards();
+        // let auctionCards = Engine.auctions.getAuctionCards();
 
-        auctionCards.newCard(con, str1, function() {
-            setCardAction(AuctionData.KIND_OTHERS_AUCTION.ALL_AUCTION)
-        });
-        auctionCards.newCard(con, str2, function() {
-            setCardAction(AuctionData.KIND_MY_AUCTION.MY_AUCTION_OFF)
-        });
+        // auctionCards.newCard(con, str1, function () {
+        //     setCardAction(AuctionData.KIND_OTHERS_AUCTION.ALL_AUCTION)
+        // } );
+        // auctionCards.newCard(con, str2, function () {
+        //     setCardAction(AuctionData.KIND_MY_AUCTION.MY_AUCTION_OFF)
+        // });
+        //
+        // auctionCards.newCard(con, str3, function () {
+        //     setCardAction(AuctionData.KIND_MY_AUCTION.MY_WATCH)
+        // });
+        //
+        // auctionCards.newCard(con, str4, function () {
+        //     setCardAction(AuctionData.KIND_MY_AUCTION.MY_BID)
+        // });
 
-        auctionCards.newCard(con, str3, function() {
-            setCardAction(AuctionData.KIND_MY_AUCTION.MY_WATCH)
-        });
+        // const SETTINGS_DATA = {
+        //     GENERAL 	: "GENERAL",
+        //     CONTROLS 	: "CONTROLS",
+        //     MUSIC   	: "MUSIC"
+        // };
 
-        auctionCards.newCard(con, str4, function() {
-            setCardAction(AuctionData.KIND_MY_AUCTION.MY_BID)
-        });
+        let ALL_AUCTION = AuctionData.KIND_OTHERS_AUCTION.ALL_AUCTION
+        let MY_AUCTION_OFF = AuctionData.KIND_MY_AUCTION.MY_AUCTION_OFF
+        let MY_WATCH = AuctionData.KIND_MY_AUCTION.MY_WATCH
+        let MY_BID = AuctionData.KIND_MY_AUCTION.MY_BID
+
+
+        let cards = {
+            [ALL_AUCTION]: {
+                name: _t('tab_others_auctions', null, 'auction'),
+                afterShowFn: () => setCardAction(ALL_AUCTION)
+            },
+            [MY_AUCTION_OFF]: {
+                name: _t('tab_my', null, 'auction'),
+                afterShowFn: () => setCardAction(MY_AUCTION_OFF)
+            },
+            [MY_WATCH]: {
+                name: _t('tab_observed', null, 'auction'),
+                afterShowFn: () => setCardAction(MY_WATCH)
+            },
+            [MY_BID]: {
+                name: _t('tab_au_catmybids', null, 'auction'),
+                afterShowFn: () => setCardAction(MY_BID)
+            },
+        };
+
+        const tabsOptions = {
+            tabsEl: {
+                navEl: content[0].querySelector('.cards-header-wrapper')
+            }
+        };
+
+        this.tabsInstance = new Tabs.default(cards, tabsOptions);
+
+        // this.tabsInstance.activateCard(SETTINGS_DATA.GENERAL);
+        // this.tabsInstance.callAfterShowFn(SETTINGS_DATA.GENERAL);
+
 
         setFirstCard();
     };
 
     const setCardAction = (_actualKindOfAuction) => {
+        updateScroll();
         setCard(_actualKindOfAuction);
         manageVisibleElements();
         //Engine.auctions.getAuctionRequest().firstPageOfMainAuctionRequest();
@@ -304,8 +362,13 @@ module.exports = function() {
     };
 
     const setFirstCard = () => {
-        Engine.auctions.getAuctionCards().clickCard(0, null);
-        setCard(AuctionData.KIND_OTHERS_AUCTION.ALL_AUCTION);
+
+        const ALL_AUCTION = AuctionData.KIND_OTHERS_AUCTION.ALL_AUCTION
+
+        this.tabsInstance.activateCard(ALL_AUCTION);
+        Engine.auctions.getAuctionWindow().updateScroll();
+        // Engine.auctions.getAuctionCards().clickCard(0, null);
+        setCard(ALL_AUCTION);
         manageVisibleElements();
     };
 

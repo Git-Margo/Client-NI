@@ -1,8 +1,8 @@
-const Checkbox = require('core/components/Checkbox');
+const Checkbox = require('@core/components/Checkbox');
 var tpl = require('../Templates');
-let ProfData = require('core/characters/ProfData');
-var ItemState = require('core/items/ItemState');
-var TutorialData = require('core/tutorial/TutorialData');
+let ProfData = require('@core/characters/ProfData');
+var ItemState = require('@core/items/ItemState');
+var TutorialData = require('@core/tutorial/TutorialData');
 const Slider = require('../components/Slider');
 module.exports = function() {
 
@@ -252,7 +252,7 @@ module.exports = function() {
         let resultItemId = data.recived[0][0];
         let resultItem = this.items[resultItemId];
 
-        let $one = tpl.get('one-item-on-divide-list').addClass('crafting-recipe-in-list ' + (amount ? 'enabled' : 'disabled'));
+        let $one = tpl.get('one-item-on-divide-list').addClass('crafting-recipe-in-list ' + (amount ? 'enabled' : ''));
         let amountStr = amount > 0 ? ' (' + amount + ')' : '';
 
         $one.addClass('offer-id-' + data.id);
@@ -268,10 +268,17 @@ module.exports = function() {
         let reqp = 'all';
         let typeItem = 'all';
         let cls = ['unique', 'heroic', 'legendary'];
-        let stats = Engine.items.parseItemStat(itemData.stat);
+        // let stats     = Engine.items.parseItemStat(itemData.stat);
 
-        if (isset(stats.lvl)) $recipe.attr('lvl', stats.lvl);
-        if (isset(stats.reqp)) reqp = stats.reqp;
+        // if (isset(stats.lvl)) $recipe.attr('lvl', stats.lvl);
+        // if (isset(stats.reqp)) reqp = stats.reqp;
+
+        if (itemData.issetLvlStat()) {
+            $recipe.attr('lvl', itemData.getLvlStat());
+        }
+        if (itemData.issetReqpStat()) {
+            reqp = itemData.getReqpStat();
+        }
 
         for (var i = 0; i < cls.length; i++) { // @ToDo - remove this loop after rarity changes
             if (itemData.itemTypeName === cls[i]) typeItem = cls[i];
@@ -303,8 +310,8 @@ module.exports = function() {
             TutorialData.ON_FINISH_TYPE.REQUIRE,
             idBarterOffer
         );
-
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        Engine.rajController.parseObject(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
     };
 
     this.createOffer = (data) => {
@@ -394,10 +401,10 @@ module.exports = function() {
     this.sliderUpdate = (value) => {
         usesAmount = value;
     }
-
+    ``
     this.markChooseOffer = () => {
-        let cl = 'mark-offer';
-        this.wnd.$.find('.' + cl).removeClass(cl);
+        let cl = 'active';
+        this.wnd.$.find('.one-item-on-divide-list.' + cl).removeClass(cl);
         this.wnd.$.find('.affectedId-id-' + this.showAffectedOfferId).addClass(cl);
     };
 
@@ -446,6 +453,9 @@ module.exports = function() {
                 return useVal + '/' + data.limit.max + br + this.tLang('on_week');
             case 3:
                 return useVal + '/' + data.limit.max + br + this.tLang('on_month');
+            case 4:
+                const dayOrDays = data.limit.limitPeriodDays > 1 ? this.tLang('days') : this.tLang('day')
+                return useVal + '/' + data.limit.max + this.tLang('on') + data.limit.limitPeriodDays + br + dayOrDays;
             default:
                 console.error('[Barter.js, returnLimitStr] BAD LIMIT PERIOD', data.limit.period);
                 return '';
@@ -506,8 +516,8 @@ module.exports = function() {
             TutorialData.ON_FINISH_TYPE.REQUIRE,
             idBarterOffer
         );
-
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        Engine.rajController.parseObject(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
     };
 
     this.setCostInData = (data, dataAlert) => {
@@ -724,15 +734,16 @@ module.exports = function() {
             let item = this.items[id];
             let $icon = this.createViewItem(item);
             let $reagent = tpl.get('crafting-reagent');
-            let $itemSlot = $reagent.find('.item-slot');
-            let amountItem = item.haveStat('amount');
+            let $itemSlot = $reagent.find('.item-reagent');
+            //let amountItem  = item.haveStat('amount');
+            let amountItem = item.issetAmountStat();
 
             let have = 0;
             let owned = 0;
 
             let itemType = item.getItemType();
 
-            $icon.addClass('pattern-item');
+            $icon.addClass('pattern-item disabled');
 
             if (amountItem) need = need * item.getAmount();
 
@@ -789,7 +800,7 @@ module.exports = function() {
 
     this.createCostReagent = (nameCurrency, need, have, cl, itemTpl) => {
         let $reagent = tpl.get('crafting-reagent');
-        let $itemSlot = $reagent.find('.item-slot');
+        let $itemSlot = $reagent.find('.item-reagent');
 
         let $icon;
         let currency;
@@ -832,10 +843,9 @@ module.exports = function() {
     };
 
     this.setBarterItem = (itemData, $itemSlot) => {
-        let id = itemData.id;
         let tplId = itemData.tpl;
-        let $icon2 = Engine.items.createViewIcon(id, Engine.itemsViewData.BARTER_REAGENT_ITEM_VIEW)[0];
-        let amountItem = itemData.haveStat('amount');
+        //let amountItem      = itemData.haveStat('amount');
+        let amountItem = itemData.issetAmountStat()
         let fillAllItems = $itemSlot;
 
 
@@ -843,7 +853,7 @@ module.exports = function() {
 
         let $reagentWrapper = $itemSlot.closest('.reagent-wrapper');
 
-        $itemSlot.append($icon2);
+        $itemSlot.find('.pattern-item').removeClass('disabled');
 
         let have = this.getHaveReagentsList(tplId);
 
@@ -905,7 +915,9 @@ module.exports = function() {
 
     this.findOneReagent = (tplId, _missIdItemsArrays) => {
         let hItems = Engine.heroEquipment.getHItems();
-        let confusing = ['upg', 'soulbound', 'lowreq', 'opis2', 'timelimit_upgs', 'lvlupgs', 'recovered'];
+        // let confusing         = ['upg', 'soulbound', 'lowreq', 'opis2', 'timelimit_upgs', 'lvlupgs', 'recovered'];
+        const itemStatsData = Engine.itemStatsData;
+        let confusing = [itemStatsData.upg, itemStatsData.soulbound, itemStatsData.lowreq, itemStatsData.timelimit_upgs, itemStatsData.lvlupgs, itemStatsData.recovered];
         let tmpConfuseItem = null;
         let tmpConfuseAmount = null;
         let missIdItemsArrays = _missIdItemsArrays ? _missIdItemsArrays : [];
@@ -918,9 +930,11 @@ module.exports = function() {
             if (ItemState.isEquippedSt(item.st)) continue;
             if (missIdItemsArrays.includes(id)) continue;
             if (item.tpl != tplId) continue;
-            if (item.haveStat('expires') && item.checkExpires()) continue;
+            //if (item.haveStat('expires') && item.checkExpires())  continue;
+            if (item.issetExpiresStat() && item.checkExpires()) continue;
 
-            let confuseStatsAmount = this.getAmountOfConfuseStats(confusing, item._cachedStats);
+            // let confuseStatsAmount = this.getAmountOfConfuseStats(confusing, item._cachedStats);
+            let confuseStatsAmount = this.getAmountOfConfuseStats(confusing, item);
             if (confuseStatsAmount) {
 
                 if (tmpConfuseAmount == null || tmpConfuseAmount > confuseStatsAmount) {
@@ -942,11 +956,15 @@ module.exports = function() {
         return null;
     };
 
-    this.getAmountOfConfuseStats = (confuseStatsArray, itemStatsObject) => {
+    // this.getAmountOfConfuseStats = (confuseStatsArray, itemStatsObject) => {
+    this.getAmountOfConfuseStats = (confuseStatsArray, item) => {
         let confuseStatsAmount = 0;
         for (let i = 0; i < confuseStatsArray.length; i++) {
             let oneStat = confuseStatsArray[i];
-            if (itemStatsObject.hasOwnProperty(oneStat)) confuseStatsAmount++;
+            // if (itemStatsObject.hasOwnProperty(oneStat)) confuseStatsAmount++;
+            if (item.issetItemStat(oneStat)) {
+                confuseStatsAmount++;
+            }
         }
         return confuseStatsAmount;
     };
@@ -1127,7 +1145,8 @@ module.exports = function() {
             true
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger);
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
 

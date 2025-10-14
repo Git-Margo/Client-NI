@@ -1,4 +1,4 @@
-var CanvasFadeData = require('core/canvasFade/CanvasFadeData');
+var CanvasFadeData = require('@core/canvasFade/CanvasFadeData');
 
 module.exports = function() {
 

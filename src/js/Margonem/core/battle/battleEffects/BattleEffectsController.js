@@ -1,8 +1,8 @@
-let BattleBackgroundTintAction = require('core/battle/battleEffects/screen/BattleBackgroundTintAction');
-let BattleEarthQuakeAction = require('core/battle/battleEffects/screen/BattleEarthQuakeAction');
-let BattleWarriorsActionController = require('core/battle/battleEffects/BattleWarriorsActionController');
-let BFD = require('core/battle/battleEffects/BattleEffectsData');
-var SoundData = require('core/sound/SoundData');
+let BattleBackgroundTintAction = require('@core/battle/battleEffects/screen/BattleBackgroundTintAction');
+let BattleEarthQuakeAction = require('@core/battle/battleEffects/screen/BattleEarthQuakeAction');
+let BattleWarriorsActionController = require('@core/battle/battleEffects/BattleWarriorsActionController');
+let BFD = require('@core/battle/battleEffects/BattleEffectsData');
+var SoundData = require('@core/sound/SoundData');
 
 module.exports = function() {
 
@@ -68,6 +68,11 @@ module.exports = function() {
             for (let j = 0; j < oneSetOfEffects.length; j++) {
 
                 let oneEffectData = oneSetOfEffects[j];
+
+                if (oneEffectData.target == BFD.target.CHARACTER && getEngine().battle.warriorsList[oneEffectData.id].getNotDrawSkillsAnimation()) {
+                    continue;
+                }
+
                 let oneEffect = this.createOneEffectData(oneEffectData);
 
                 this.startEffect(oneEffect)

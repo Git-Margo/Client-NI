@@ -1,9 +1,9 @@
-let FramesWithHoles = require('core/FramesWithHoles');
-let DirDynamicLight = require('core/night/DirDynamicLight.js');
-//let RajData                 = require('core/raj/RajData');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let FramesWithHoles = require('@core/FramesWithHoles');
+let DirDynamicLight = require('@core/night/DirDynamicLight.js');
+//let RajData                 = require('@core/raj/RajData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 module.exports = function() {
 
@@ -207,6 +207,47 @@ module.exports = function() {
         })
     };
 
+    const refreshFilter = () => {
+        for (let id in dynamicDirLightList) {
+            //debugger;
+            let lights = dynamicDirLightList[id].getAllLights();
+
+            for (let k in lights) {
+                let lightPoint = lights[k];
+                if (lightPoint && lightPoint.light) {
+                    lightPoint.light.updateFilterImage();
+                }
+            }
+
+        }
+    };
+
+    const getDynamicDirLightByNpcIdArray = (warriorsObjData) => {
+        let a = [];
+
+        for (let k in dynamicDirLightList) {
+            let oneDynamicDirLight = dynamicDirLightList[k];
+            //if (oneExtraLight.master && oneExtraLight.master.kind == "NPC" && oneExtraLight.master.id == npcId) {
+
+            let master = oneDynamicDirLight.getMaster();
+
+            if (master && master.getCanvasObjectType() == "HERO") {
+
+                let oneWarriorData = warriorsObjData[master.getId()];
+
+                if (!oneWarriorData) continue;
+
+                a.push({
+                    warriorId: oneWarriorData.warriorId,
+                    originalId: oneWarriorData.originalId,
+                    dynamicDirLight: oneDynamicDirLight
+                })
+            }
+        }
+
+        return a;
+    }
+
     this.init = init;
     this.update = update;
     this.updateData = updateData;
@@ -214,5 +255,6 @@ module.exports = function() {
     this.onClear = onClear;
     this.getframesWithHoles = getFramesWithHoles;
     this.rajRemoveActionBeyondManager = rajRemoveActionBeyondManager;
-
+    this.refreshFilter = refreshFilter;
+    this.getDynamicDirLightByNpcIdArray = getDynamicDirLightByNpcIdArray;
 }

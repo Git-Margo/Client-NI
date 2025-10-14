@@ -1,5 +1,5 @@
-// var wnd = require('core/Window');
-var tpl = require('core/Templates');
+// var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
 module.exports = function(Par, otherClan) {
     var content;
     var attrDataTab;
@@ -36,10 +36,10 @@ module.exports = function(Par, otherClan) {
     };
 
     this.initTexts = function() {
-        content.find('.clan-recruit-header-0').html(Par.tLang('basic_atributes'));
-        content.find('.clan-recruit-header-1').html(Par.tLang('additional_atributes'));
+        content.find('.clan-recruit-header-0').find('.header-text').html(Par.tLang('basic_atributes'));
+        content.find('.clan-recruit-header-1').find('.header-text').html(Par.tLang('additional_atributes'));
         //if (!otherClan) return;
-        content.find('.clan-recruit-header-2').html(Par.tLang('clan_skills'));
+        content.find('.clan-recruit-header-2').find('.header-text').html(Par.tLang('clan_skills'));
     };
 
     this.initAttrTab = function() {

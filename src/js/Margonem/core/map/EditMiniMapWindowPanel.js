@@ -1,11 +1,11 @@
-const tpl = require('core/Templates');
-const StorageFuncHandHeldMiniMap = require('core/map/StorageFuncHandHeldMiniMap');
-const HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
-const ColorPicker = require("core/components/ColorPicker");
-const Checkbox = require('core/components/Checkbox');
-const StorageData = require('core/StorageData');
-const InputMaskData = require('core/InputMaskData');
-const Table = require('core/components/Table');
+const tpl = require('@core/Templates');
+const StorageFuncHandHeldMiniMap = require('@core/map/StorageFuncHandHeldMiniMap');
+const HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
+const ColorPicker = require('@core/components/ColorPicker');
+const Checkbox = require('@core/components/Checkbox');
+const StorageData = require('@core/StorageData');
+const InputMaskData = require('@core/InputMaskData');
+const Table = require('@core/components/Table');
 
 module.exports = function() {
     let moduleData = {
@@ -265,7 +265,6 @@ module.exports = function() {
         var $wrapper1 = this.wnd.$.find('.global-option');
         var $wrapper2 = this.wnd.$.find('.by-name-option');
         var namesTab = Engine.miniMapController.handHeldMiniMapController.getNamesTab();
-        let table = new Table();
 
         this.createOneAmountOption(HandHeldMiniMapData.MIN_LEVEL_DATA, $wrapper1);
         this.createOneAmountOption(HandHeldMiniMapData.DATA_DRAWER_WIDTH_DATA, $wrapper1);
@@ -281,8 +280,10 @@ module.exports = function() {
         let optionsArray = [];
 
         for (var k in namesTab) {
-            let option = this.createOneOption(k, namesTab[k], _showHandHeldMiniMapCheckboxList, _showDataDrawerNickCheckboxList, _showDataDrawerProfAndLevelCheckboxList, _showWhoIsHereCheckboxList, _showMapBlurCheckboxList, _allColorPickers, table);
-            optionsArray.push(option);
+            let option = this.createOneOption(k, namesTab[k], _showHandHeldMiniMapCheckboxList, _showDataDrawerNickCheckboxList, _showDataDrawerProfAndLevelCheckboxList, _showWhoIsHereCheckboxList, _showMapBlurCheckboxList, _allColorPickers);
+            optionsArray.push({
+                rowData: option
+            });
         }
 
         showHandHeldMiniMapCheckboxList = _showHandHeldMiniMapCheckboxList;
@@ -292,15 +293,18 @@ module.exports = function() {
         showMapBlurCheckboxList = _showMapBlurCheckboxList;
         allColorPickers = _allColorPickers;
 
-        let $header = createHeader(table);
-        let dataTable = {
-            $wrapper: $wrapper2,
-            $headerRecord: $header,
-            bodyRecordsArray: optionsArray,
-            addClass: "config-characters-table"
-        };
 
-        table.init(dataTable);
+        const headers = createHeader();
+        new Table.default({
+            wrapper: $wrapper2[0],
+            headerRecord: headers,
+            bodyRecordsArray: optionsArray,
+            options: {
+                cssClass: "config-characters-table",
+                useScrollbar: true,
+                useStickyHeader: true,
+            }
+        });
     };
 
     this.createOneAmountOption = function(data, $wrapper) {
@@ -371,7 +375,7 @@ module.exports = function() {
         return $oneC;
     };
 
-    this.createOneOption = function(name, data, _showHandHeldMiniMapCheckboxList, _showDataDrawerNickCheckboxList, _showDataDrawerProfAndLevelCheckboxList, _showWhoIsHereCheckboxList, _showMapBlurCheckboxList, _allColorPickers, table) {
+    this.createOneOption = function(name, data, _showHandHeldMiniMapCheckboxList, _showDataDrawerNickCheckboxList, _showDataDrawerProfAndLevelCheckboxList, _showWhoIsHereCheckboxList, _showMapBlurCheckboxList, _allColorPickers) {
         //$oneC.attr('id', name);
 
         let state = self.getStateElementFromStorage(name);
@@ -423,25 +427,55 @@ module.exports = function() {
         }
 
 
-        let cl = " table-with-static-header-td center";
+        let cl = " text-center";
 
-        return table.createRecords([
-            $name,
-            $showWhoIsHereCheckboxWrapper,
-            $showMapBlurCheckboxWrapper,
-            $showCheckboxWrapper,
-            $showDataDrawerNickCheckboxWrapper,
-            $showDataDrawerProfAndLevelCheckboxWrapper,
-            createColorPicker(name, _allColorPickers)
-        ], [
-            CATEGORY + cl,
-            SHOW_PORTABLE_MAP + cl,
-            SHOW_DATA_DRAWER_NICK + cl,
-            SHOW_DATA_DRAWER_PROF_AND_LEVEL + cl,
-            SHOW_WHO_IS_HERE + cl,
-            SHOW_MAP_BLUR + cl,
-            COLOR + cl,
-        ]);
+        return [{
+                content: $name[0],
+                cssClass: CATEGORY + cl,
+            },
+            {
+                content: $showWhoIsHereCheckboxWrapper[0],
+                cssClass: SHOW_PORTABLE_MAP + cl
+            },
+            {
+                content: $showMapBlurCheckboxWrapper[0],
+                cssClass: SHOW_DATA_DRAWER_NICK + cl
+            },
+            {
+                content: $showCheckboxWrapper[0],
+                cssClass: SHOW_DATA_DRAWER_PROF_AND_LEVEL + cl
+            },
+            {
+                content: $showDataDrawerNickCheckboxWrapper[0],
+                cssClass: SHOW_WHO_IS_HERE + cl
+            },
+            {
+                content: $showDataDrawerProfAndLevelCheckboxWrapper[0],
+                cssClass: SHOW_MAP_BLUR + cl
+            },
+            {
+                content: createColorPicker(name, _allColorPickers)[0],
+                cssClass: COLOR + cl
+            },
+        ];
+
+        // return table.createRecords([
+        // 	$name[0],
+        // 	$showWhoIsHereCheckboxWrapper[0],
+        // 	$showMapBlurCheckboxWrapper[0],
+        // 	$showCheckboxWrapper[0],
+        // 	$showDataDrawerNickCheckboxWrapper[0],
+        // 	$showDataDrawerProfAndLevelCheckboxWrapper[0],
+        // 	createColorPicker(name, _allColorPickers)[0]
+        // ], [
+        // 	CATEGORY + cl,
+        // 	SHOW_PORTABLE_MAP + cl,
+        // 	SHOW_DATA_DRAWER_NICK + cl,
+        // 	SHOW_DATA_DRAWER_PROF_AND_LEVEL + cl,
+        // 	SHOW_WHO_IS_HERE + cl,
+        // 	SHOW_MAP_BLUR + cl,
+        // 	COLOR + cl,
+        // ]);
 
 
     }
@@ -693,31 +727,62 @@ module.exports = function() {
     //
     //};
 
-    const createHeader = (table) => {
+    const createHeader = () => {
 
-        let cl = " table-with-static-header-header-td center";
+        let cl = " table-with-static-header-header-td text-center";
 
         let name = _t("hero_name").replace(" ", "<br>")
 
-        return table.createRecords(
-            [
-                _t('option', null, "edit-panel-option"),
-                _t('players_on_map'),
-                _t('lighting', null, 'whoIsHere'),
-                _t('portable_map'),
-                name,
-                _t("levelAndProf", null, "edit-panel-option"),
-                _t("color", null, "whoIsHere")
-            ], [
-                CATEGORY + cl,
-                SHOW_PORTABLE_MAP + cl,
-                SHOW_DATA_DRAWER_NICK + cl,
-                SHOW_DATA_DRAWER_PROF_AND_LEVEL + cl,
-                SHOW_WHO_IS_HERE + cl,
-                SHOW_MAP_BLUR + cl,
-                COLOR + cl,
+        return {
+            rowData: [{
+                    content: _t('option', null, "edit-panel-option"),
+                    cssClass: CATEGORY + cl,
+                },
+                {
+                    content: _t('players_on_map'),
+                    cssClass: SHOW_PORTABLE_MAP + cl
+                },
+                {
+                    content: _t('lighting', null, 'whoIsHere'),
+                    cssClass: SHOW_DATA_DRAWER_NICK + cl
+                },
+                {
+                    content: _t('portable_map'),
+                    cssClass: SHOW_DATA_DRAWER_PROF_AND_LEVEL + cl,
+                },
+                {
+                    content: name,
+                    cssClass: SHOW_WHO_IS_HERE + cl,
+                },
+                {
+                    content: _t("levelAndProf", null, "edit-panel-option"),
+                    cssClass: SHOW_MAP_BLUR + cl
+                },
+                {
+                    content: _t("color", null, "whoIsHere"),
+                    cssClass: COLOR + cl,
+                },
             ]
-        );
+        };
+        // return table.createRecords(
+        // 	[
+        // 		_t('option', null, "edit-panel-option"),
+        // 		_t('players_on_map'),
+        // 		_t('lighting', null, 'whoIsHere'),
+        // 		_t('portable_map'),
+        // 		name,
+        // 		_t("levelAndProf", null, "edit-panel-option"),
+        // 		_t("color", null, "whoIsHere")
+        // 	], [
+        // 		CATEGORY + cl,
+        // 		SHOW_PORTABLE_MAP + cl,
+        // 		SHOW_DATA_DRAWER_NICK + cl,
+        // 		SHOW_DATA_DRAWER_PROF_AND_LEVEL + cl,
+        // 		SHOW_WHO_IS_HERE + cl,
+        // 		SHOW_MAP_BLUR + cl,
+        // 		COLOR + cl,
+        // 	]
+        // );
     };
 
 };

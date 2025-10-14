@@ -1,8 +1,8 @@
-//var Storage = require('core/Storage');
-let HotKeysData = require('core/hotKeys/HotKeysData');
-//let WidgetsData = require('core/interface/WidgetsData');
-let InputParser = require('core/InputParser');
-let ServerStorageData = require('core/storage/ServerStorageData');
+//var Storage = require('@core/Storage');
+let HotKeysData = require('@core/hotKeys/HotKeysData');
+//let WidgetsData = require('@core/interface/WidgetsData');
+let InputParser = require('@core/InputParser');
+let ServerStorageData = require('@core/storage/ServerStorageData');
 module.exports = function() {
     var self = this;
     var defaultHotKeys; // clbName: [keycode, selector]
@@ -18,6 +18,10 @@ module.exports = function() {
 
         //let wNames = Engine.interface.widgetNames;
         let wNames = Engine.widgetsData.name;
+
+
+        let chatColumnSellector = mobileCheck() ? '.top-left-column-visibility-toggle.column-visibility-toggle' : '.widget-button:has(.icon.chat):not(.from-settings-panel)'
+        let eqColumnSellector = mobileCheck() ? '.top-right-column-visibility-toggle.column-visibility-toggle' : '.widget-button:has(.icon.eq-show-icon):not(.from-settings-panel)';
 
         defaultHotKeys = {
 
@@ -44,7 +48,7 @@ module.exports = function() {
             [HotKeysData.name.goGateway]: [false, '.widget-button:has(.icon.go-gateway):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.USE_DOOR, HotKeysData.group.MAP],
             [HotKeysData.name.hotTalkNearMob]: ["R", '.widget-button:has(.icon.npc-talk-icon):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.TALK, HotKeysData.group.MAP], //r
 
-            [HotKeysData.name.iconchat]: ["C", '.widget-button:has(.icon.chat):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.CHAT, HotKeysData.group.SOCIAL], //c
+            [HotKeysData.name.iconchat]: ["C", chatColumnSellector, HotKeysData.type.TIP, wNames.CHAT, HotKeysData.group.SOCIAL], //c
             [HotKeysData.name.iconclans]: ["K", '.widget-button:has(.icon.clans):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.CLAN, HotKeysData.group.SOCIAL], //k
             [HotKeysData.name.iconfriends]: ["P", '.widget-button:has(.icon.friends):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.COMMUNITY, HotKeysData.group.SOCIAL], //p
             [HotKeysData.name.iconparty]: ["G", '.widget-button:has(.icon.party):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.PARTY, HotKeysData.group.SOCIAL], //g
@@ -53,25 +57,28 @@ module.exports = function() {
 
             [HotKeysData.name.iconconfig]: [false, '.widget-button:has(.icon.config):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.SETTINGS, HotKeysData.group.OTHER],
             //[HotKeysData.name.iconkeyboard]: 	   		  ["I",		 '.widget-button:has(.icon.keyboard):not(.from-settings-panel)', 										HotKeysData.type.TIP,		wNames.HELP,								HotKeysData.group.OTHER],						//i
-            [HotKeysData.name.iconWindows]: [false, '.widget-button:has(.icon.windows):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.FULL_SCREEN, HotKeysData.group.OTHER],
+            //[HotKeysData.name.iconWindows]: 			   	[false,	 '.widget-button:has(.icon.windows):not(.from-settings-panel)', 										HotKeysData.type.TIP,   wNames.FULL_SCREEN,					HotKeysData.group.OTHER],
             [HotKeysData.name.iconpuzzle]: [false, '.widget-button:has(.icon.puzzle):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.ADDONS, HotKeysData.group.OTHER],
 
             [HotKeysData.name.iconconsole]: ["`", '.widget-button:has(.icon.console):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.CONSOLE, HotKeysData.group.OTHER],
-            [HotKeysData.name.eqcolumnshow]: [false, '.widget-button:has(.icon.eq-show-icon):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.EQ_TOGGLE, HotKeysData.group.OTHER],
+            [HotKeysData.name.eqcolumnshow]: [false, eqColumnSellector, HotKeysData.type.TIP, wNames.EQ_TOGGLE, HotKeysData.group.OTHER],
             [HotKeysData.name.showhideStats]: [false, '.stats-expand', HotKeysData.type.LABEL, false, HotKeysData.group.OTHER],
 
             [HotKeysData.name.hotAuction]: [false, '.game-window-positioner .auctions-bar-put .put-button', HotKeysData.type.LABEL, false, HotKeysData.group.OTHER], //f
             [HotKeysData.name.iconphoto]: [false, '.widget-button:has(.icon.photo):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.CRAFTING, HotKeysData.group.OTHER],
             [HotKeysData.name.iconscroll]: ["T", '.widget-button:has(.icon.scroll):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.QUEST_LOG, HotKeysData.group.OTHER], //t
+            [HotKeysData.name.toggleActivityObserve]: [false, '.toggle-activity-observe', HotKeysData.type.LABEL, false, HotKeysData.group.OTHER],
             [HotKeysData.name.iconskills]: ["U", '.widget-button:has(.icon.skills):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.SKILLS, HotKeysData.group.OTHER], //u
             [HotKeysData.name.iconexit]: ["L", '.widget-button:has(.icon.exit):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.EXIT, HotKeysData.group.OTHER],
             [HotKeysData.name.iconstar]: [false, '.widget-button:has(.icon.star):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.PREMIUM, HotKeysData.group.OTHER],
-            [HotKeysData.name.world]: [false, '.widget-button:has(.icon.world-icon):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.WORLD, HotKeysData.group.SOCIAL]
+            [HotKeysData.name.world]: [false, '.widget-button:has(.icon.world-icon):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.WORLD, HotKeysData.group.SOCIAL],
+            [HotKeysData.name.lootFilter]: [false, '.widget-button:has(.icon.loot-filter-icon):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.LOOT_FILTER, HotKeysData.group.FIGHT],
+            [HotKeysData.name.rewardsCalendar]: [false, '.widget-button:has(.icon.widget-rewards-calendar):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.REWARDS_CALENDAR, HotKeysData.group.OTHER]
         };
 
         if (isPl()) defaultHotKeys[HotKeysData.name.news] = [false, '.widget-button:has(.icon.news-icon):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.NEWS, HotKeysData.group.OTHER];
         if (isPl()) defaultHotKeys[HotKeysData.name.matchmaking] = ["O", '.widget-button:has(.icon.matchmaking-icon):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.MATCHMAKING, HotKeysData.group.SOCIAL]; //o
-        if (!isPl()) defaultHotKeys[HotKeysData.name.achievements] = [false, '.widget-button:has(.icon.achievements-icon):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.ACHIEVEMENTS, HotKeysData.group.SOCIAL];
+        //if (!isPl()) defaultHotKeys[HotKeysData.name.achievements]       = [false,  '.widget-button:has(.icon.achievements-icon):not(.from-settings-panel)',	HotKeysData.type.TIP,		wNames.ACHIEVEMENTS,			HotKeysData.group.SOCIAL];
         if (isPl()) defaultHotKeys[HotKeysData.name.hotTakeGroundItem] = [false, false, HotKeysData.type.LABEL, wNames.PICK_UP_ITEM, HotKeysData.group.MAP];
 
         if (mobileCheck()) defaultHotKeys[HotKeysData.name.zoom] = [false, '.widget-button:has(.icon.zoom-in-out-panel):not(.from-settings-panel)', HotKeysData.type.TIP, wNames.ZOOM, HotKeysData.group.OTHER];
@@ -372,6 +379,10 @@ module.exports = function() {
         this.checkHotExist(HotKeysData.name.showBuildWindow);
     };
 
+    this.replacetoggleActivityObserveBtnsNames = function() {
+        this.checkHotExist(HotKeysData.name.toggleActivityObserve);
+    };
+
     //all callbacks
 
     this.hotAuction = function() {
@@ -392,7 +403,7 @@ module.exports = function() {
     };
 
     this.toggleBattlePanel = function() {
-        if (!Engine.battle.getShow()) return;
+        if (!Engine.battle.isBattleControllerShow()) return;
         Engine.battle.toggleBattlePanel();
     };
 
@@ -410,6 +421,10 @@ module.exports = function() {
         Engine.interface.clickMoreBtn()
     };
 
+    this.toggleActivityObserve = function() {
+        Engine.activityObserve.managePanelVisible()
+    };
+
     this.hotChangeTarget = function() {
         if (!Engine.battle.getShow()) return;
         Engine.battle.selectWarrior();
@@ -421,7 +436,7 @@ module.exports = function() {
     };
 
     this.checkCanCloseConsole = function() {
-        //var c = require('core/Console');
+        //var c = require('@core/Console');
         var c = Engine.console;
         if (c.isOpen) {
             c.close();

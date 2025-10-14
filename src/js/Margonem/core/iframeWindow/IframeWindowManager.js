@@ -1,4 +1,4 @@
-var IframeWindow = require('core/iframeWindow/IframeWindow');
+var IframeWindow = require('@core/iframeWindow/IframeWindow');
 module.exports = function() {
 
     const list = {};

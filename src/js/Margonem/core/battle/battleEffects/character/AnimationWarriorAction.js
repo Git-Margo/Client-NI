@@ -1,5 +1,5 @@
-let IconAnimation = require('core/battle/battleEffects/character/IconAnimation');
-let BFD = require('core/battle/battleEffects/BattleEffectsData');
+let IconAnimation = require('@core/battle/battleEffects/character/IconAnimation');
+let BFD = require('@core/battle/battleEffects/BattleEffectsData');
 
 module.exports = function() {
 

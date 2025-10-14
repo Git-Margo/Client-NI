@@ -1,6 +1,6 @@
-var tpl = require('core/Templates');
-var Premium = require('core/Premium');
-var DraconiteShop = require('core/shop/DraconiteShop');
+var tpl = require('@core/Templates');
+var Premium = require('@core/Premium');
+var DraconiteShop = require('@core/shop/DraconiteShop');
 
 module.exports = function(promoData) {
     var self = this;

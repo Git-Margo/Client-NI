@@ -1,6 +1,5 @@
-let RajObject = require('core/raj/RajObject');
-let RajData = require('core/raj/RajData');
-let RajActionData = require('core/raj/rajAction/RajActionData');
+let RajData = require('@core/raj/RajData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
 
 module.exports = function() {
 
@@ -19,6 +18,7 @@ module.exports = function() {
             case RajData.FAKE_NPC:
             case RajData.FLOAT_FOREGROUND:
             case RajData.CHARACTER_EFFECT:
+            case RajData.BEHAVIOR_DYNAMIC_LIGHT:
 
                 implementInterfaceDrawRajObject(prentObject);
 
@@ -44,6 +44,7 @@ module.exports = function() {
                 case CONFIGURATION_TYPE.SOUND:
                 case CONFIGURATION_TYPE.NIGHT:
                 case CONFIGURATION_TYPE.WEATHER:
+                case CONFIGURATION_TYPE.ANIMATION:
                 case CONFIGURATION_TYPE.NORMAL_SRAJ:
                     return true;
                 default:
@@ -90,6 +91,8 @@ module.exports = function() {
                     return true;
                 case CONFIGURATION_TYPE.NIGHT:
                     return isSettingsOptionsCycleDayAndNightOn();
+                case CONFIGURATION_TYPE.ANIMATION:
+                    return isSettingsOptionsInterfaceAnimationOn();
                 case CONFIGURATION_TYPE.WEATHER:
                     return isSettingsOptionsWeatherAndEventEffectsOn();
                 default:

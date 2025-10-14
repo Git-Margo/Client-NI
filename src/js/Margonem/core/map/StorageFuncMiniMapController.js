@@ -1,5 +1,5 @@
-var Store = require('core/Storage');
-var StorageData = require('core/StorageData');
+var Store = require('@core/Storage');
+var StorageData = require('@core/StorageData');
 
 module.exports = new(function() {
 

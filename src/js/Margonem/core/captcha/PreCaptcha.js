@@ -1,4 +1,4 @@
-var tpl = require('core/Templates');
+var tpl = require('@core/Templates');
 module.exports = function() {
     var si = null;
     var hidden = false;

@@ -4,7 +4,8 @@ const o = {
         NOTIFICATION: "NOTIFICATION",
         BATTLE_EFFECT: "BATTLE_EFFECT",
         SRAJ: "SRAJ",
-        TMP: "TMP"
+        TMP: "TMP",
+        ITEM: "ITEM"
     },
     QUALITY: {
         HQ: 'hq',

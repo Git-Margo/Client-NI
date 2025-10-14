@@ -7,9 +7,9 @@ module.exports = function(map) {
     var Map = map;
 
     this.updateData = function(v) {
-        for (var i = 0; i < v.length; i += 8) {
+        for (var i = 0; i < v.length; i += 9) {
             var r = new ripObejct(this);
-            r.init(v.slice(i, i + 8));
+            r.init(v.slice(i, i + 9));
             ripList[r.d.id] = r;
             //rips.push(r);
             Engine.miniMapController.updateWindowMiniMapRipsPos([r])
@@ -24,6 +24,13 @@ module.exports = function(map) {
             ripList[i].update(dt);
         }
     };
+
+    this.refreshLevelAndTip = () => {
+        for (var i in ripList) {
+            ripList[i].updateLev();
+            ripList[i].createTip();
+        }
+    }
 
     this.clear = function() {
         //rips = [];
@@ -69,12 +76,27 @@ module.exports = function(map) {
         this.init = function(v) {
             this.slugifiedNick = slugify(v[0]);
             this.nick = v[0];
-            this.lev = v[1] + v[2];
-            this.rx = v[3];
-            this.ry = v[4];
-            this.left = v[5];
-            this.info = v[6];
-            this.quote = v[7];
+
+
+            this.level = v[1];
+            this.operationLevel = v[2];
+            this.prof = v[3];
+
+            //let characterData = {
+            //	level 			: v[1],
+            //	operationLevel 	: v[2],
+            //	prof 			: v[3]
+            //}
+            //
+            ////getCharacterInfo(null, characterData)
+            //
+            //this.lev = getCharacterInfo(characterData);
+            this.updateLev();
+            this.rx = v[4];
+            this.ry = v[5];
+            this.left = v[6];
+            this.info = v[7];
+            this.quote = v[8];
             this.fw = 40;
             this.fh = 52;
             this.img = null;
@@ -97,6 +119,18 @@ module.exports = function(map) {
             };
         };
 
+        this.updateLev = () => {
+            let characterData = {
+                level: this.level,
+                operationLevel: this.operationLevel,
+                prof: this.prof
+            }
+
+            //getCharacterInfo(null, characterData)
+
+            this.lev = getCharacterInfo(characterData);
+        }
+
         this.changeWarShadowOpacity = function(dt) {
             if (s.warShadowOpacity != 1 && s.imgLoaded) {
                 //if (Engine.opt(8)) return s.warShadowOpacity = 1;
@@ -110,7 +144,7 @@ module.exports = function(map) {
 
         this.createTip = function() {
             var tip = '<b>' + _t('rip_prefix') + ' ' + this.nick +
-                ' (' + this.lev + ')</b><br><i>' + this.info +
+                ' ' + this.lev + '</b><br><i>' + this.info +
                 '</i><br><i>' + this.quote + '</i>';
             this.tip = [tip, 't_rip'];
         };

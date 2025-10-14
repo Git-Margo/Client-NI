@@ -1,4 +1,4 @@
-var EmotionsData = require('core/emotions/EmotionsData');
+var EmotionsData = require('@core/emotions/EmotionsData');
 let o = {
     BITS: {
         [EmotionsData.NAME.INKEEPER]: 0,
@@ -25,8 +25,9 @@ o.PRIORITY_EMO_MAP = {
     [EmotionsData.NAME.DAILY_QUEST]: 80,
     [EmotionsData.NAME.NORMAL_QUEST]: 90,
     [EmotionsData.NAME.NPC_TALK]: 100,
-    [EmotionsData.NAME.AGGRESSIVE]: 101,
-    [EmotionsData.NAME.ELITE_HERE]: 102,
+    [EmotionsData.NAME.AGGRESSIVE_1]: 101,
+    [EmotionsData.NAME.AGGRESSIVE_2]: 102,
+    [EmotionsData.NAME.ELITE_HERE]: 103,
 };
 
 o.GATE_URL = {
@@ -34,6 +35,8 @@ o.GATE_URL = {
     "mas/exit.gif": true,
     "obj/cos.gif": true
 }
+
+o.DIFFICULTIES = ['', 'normal', 'hard', 'master'];
 
 
 module.exports = o

@@ -1,8 +1,4 @@
-//var Window = require('core/Window');
-var Tpl = require('core/Templates');
-//var Items = require('core/items/ItemsManager');
-// var Store = require('core/Storage');
-//var wnd = require('core/Window');
+var Tpl = require('@core/Templates');
 module.exports = function(clbName, char) {
     var self = this;
 

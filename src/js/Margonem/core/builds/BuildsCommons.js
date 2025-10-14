@@ -40,7 +40,7 @@ module.exports = function() {
             let st = buildsWithItems[buildId];
             let buildData = getBuildById(buildId);
             let $oneBuild = buildData.get$build();
-            let $itemsWrapper = $oneBuild.find(".items");
+            let $itemsWrapper = $oneBuild.find(".build-items-wrapper");
 
             createItem(itemId, st, $itemsWrapper)
         }
@@ -57,9 +57,7 @@ module.exports = function() {
         }
 
         let $icon = iconData[0];
-
-        $icon.attr("data-st", parseInt(st) + 1);
-
+        //$icon.attr("data-st", parseInt(st) + 1);
 
         $icon.contextmenu(function(e, mE) {
             item.createOptionMenu(getE(e, mE), false, {
@@ -73,7 +71,10 @@ module.exports = function() {
             });
         });
 
-        $itemsWrapper.append($icon);
+        //$itemsWrapper.append($icon);
+        let selector = '[data-st="' + (parseInt(st) + 1) + '"]';
+
+        $itemsWrapper.find(selector).append($icon);
     };
 
     const getItemByIdInBuilds = (idItem) => {

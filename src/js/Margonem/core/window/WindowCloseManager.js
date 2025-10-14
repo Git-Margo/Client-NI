@@ -37,6 +37,7 @@ module.exports = function() {
                 break;
             case getEngine().windowsData.windowCloseConfig.DIALOGUE:
                 closeAllCrafts();
+                closeShop();
                 break;
             case getEngine().windowsData.windowCloseConfig.MAIL:
                 closeAllCrafts();
@@ -79,7 +80,7 @@ module.exports = function() {
     };
 
     const closeCrafting = () => {
-        if (getEngine().crafting.opened) getEngine().crafting.close();
+        if (getEngine().crafting.window.opened) getEngine().crafting.window.close();
     };
 
     const closeAllCrafts = () => {

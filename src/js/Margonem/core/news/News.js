@@ -1,4 +1,4 @@
-let tpl = require('core/Templates');
+let tpl = require('@core/Templates');
 module.exports = function() {
     var self = this;
     var content;

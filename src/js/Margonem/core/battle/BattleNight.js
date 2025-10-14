@@ -1,5 +1,6 @@
-let FramesWithHoles = require('core/FramesWithHoles');
-let BehaviorDynamicLight = require('core/night/BehaviorDynamicLight');
+let FramesWithHoles = require('@core/FramesWithHoles');
+let BehaviorDynamicLight = require('@core/night/BehaviorDynamicLight');
+let DirDynamicLight = require('@core/night/DirDynamicLight.js');
 
 module.exports = function() {
 
@@ -18,6 +19,11 @@ module.exports = function() {
 
     let extraLight = {};
     let behaviorDynamicLight = {};
+    let dynamicDirCharacterLight = {};
+    let cashedExtraLightList = null;
+    let cashedBehaviorDynamicLight = null;
+    let cashedDynamicDirCharacterLight = null;
+    let cashedNightColor = null;
 
     let framesWithHoles;
 
@@ -87,15 +93,28 @@ module.exports = function() {
         }
 
 
-        let a = getLightFromBehaviorDynamicLight();
+        let aBehaviorDynamicLight = getLightFromBehaviorDynamicLight();
+        let aDynamicDirCharacterLight = getLightFromDynamicDirCharacterLight();
 
-        if (!a.length) {
-            return;
+        if (aBehaviorDynamicLight.length) {
+
+            for (let k in aBehaviorDynamicLight) {
+                aBehaviorDynamicLight[k].update(dt, actualFrame);
+            }
+
         }
 
-        for (let k in a) {
-            a[k].update(dt);
+        if (aDynamicDirCharacterLight.length) {
+
+            for (let k in aDynamicDirCharacterLight) {
+                aDynamicDirCharacterLight[k].update(dt, actualFrame);
+            }
+
         }
+
+        //for (let k in a) {
+        //    a[k].update(dt, actualFrame);
+        //}
 
     };
 
@@ -109,13 +128,15 @@ module.exports = function() {
             return
         }
 
-        if (getEngine().nightController.checkNight()) {
-            drawActualFrameOfNight();
-            drawBehaviorDynamicLightHole();
-        }
+        //if (getEngine().nightController.checkNight()) {
+        drawActualFrameOfNight();
+        drawBehaviorDynamicLightHole();
+        drawDynamicDirCharacterLightHole();
+        //}
 
         drawExtraLight();
         drawBehaviorDynamicLight();
+        drawDynamicDirCharacterLight();
     };
 
     const drawExtraLight = () => {
@@ -152,8 +173,48 @@ module.exports = function() {
         battleNightCtx.restore();
     }
 
+    const drawDynamicDirCharacterLightHole = () => {
+        let a = getLightFromDynamicDirCharacterLight();
+
+
+        if (!a.length) {
+            return;
+        }
+
+        battleNightCtx.save();
+        battleNightCtx.globalCompositeOperation = 'destination-out';
+
+        for (let k in a) {
+            let oneDynamicDirCharacter = a[k];
+
+
+            oneDynamicDirCharacter.draw(battleNightCtx, actualFrame);
+
+            // let holes = oneBehaviorDynamic.getDynamicPoint();
+            // if (holes[actualFrame]) {
+            //     framesWithHoles.drawOneHole(holes[actualFrame], battleNightCtx, true);
+            // }
+        }
+
+        battleNightCtx.restore();
+    }
+
     const drawBehaviorDynamicLight = () => {
         let a = getLightFromBehaviorDynamicLight();
+
+        for (let k in a) {
+            let oneLight = a[k].getLight();
+
+            if (!oneLight) {
+                continue;
+            }
+
+            oneLight.draw(battleNightCtx, actualFrame);
+        }
+    }
+
+    const drawDynamicDirCharacterLight = () => {
+        let a = getLightFromDynamicDirCharacterLight();
 
         for (let k in a) {
             let oneLight = a[k].getLight();
@@ -221,7 +282,8 @@ module.exports = function() {
 
     const getLightFromExtraLight = () => {
         let a = [];
-        let isNight = getEngine().nightController.checkNight();
+        //let isNight 	= getEngine().nightController.checkNight();
+        let isNight = checkCanDraw();
 
         for (let k in extraLight) {
             let add = false;
@@ -245,12 +307,16 @@ module.exports = function() {
 
     const getLightFromBehaviorDynamicLight = () => {
         let a = [];
-        let isNight = getEngine().nightController.checkNight();
+        //let isNight 	= getEngine().nightController.checkNight();
+        let isNight = checkCanDraw();
 
         for (let k in behaviorDynamicLight) {
             let add = false;
             let onlyNight = behaviorDynamicLight[k].getOnlyNight();
             let oneExtraLight = behaviorDynamicLight[k].getLight();
+            let alive = behaviorDynamicLight[k].getMaster().hpp > 0
+
+            if (!alive) continue;
 
             if (!oneExtraLight) continue;
 
@@ -261,6 +327,33 @@ module.exports = function() {
             } else add = true;
 
             if (add) a.push(behaviorDynamicLight[k]);
+        }
+
+        return a;
+    };
+
+    const getLightFromDynamicDirCharacterLight = () => {
+        let a = [];
+        //let isNight 	= getEngine().nightController.checkNight();
+        let isNight = checkCanDraw();
+
+        for (let k in dynamicDirCharacterLight) {
+            let add = false;
+            let onlyNight = dynamicDirCharacterLight[k].getOnlyNight();
+            let oneExtraLight = dynamicDirCharacterLight[k].getLight();
+            let alive = dynamicDirCharacterLight[k].getMaster().hpp > 0;
+
+            if (!alive) continue;
+
+            if (!oneExtraLight) continue;
+
+            if (onlyNight) {
+
+                if (isNight) add = true;
+
+            } else add = true;
+
+            if (add) a.push(dynamicDirCharacterLight[k]);
         }
 
         return a;
@@ -292,10 +385,12 @@ module.exports = function() {
         resetActualFrame();
 
         clearExtraLight();
-        clearBehaviorDynamicLight();
+        if (cashedBehaviorDynamicLight == null) clearBehaviorDynamicLight();
+        if (cashedDynamicDirCharacterLight == null) clearDynamicDirCharacterLight();
 
         prepareAllExtraLight();
-        prepareAllBehaviorDynamicLight();
+        if (cashedBehaviorDynamicLight == null) prepareAllBehaviorDynamicLight();
+        if (cashedDynamicDirCharacterLight == null) prepareAllDynamicDirCharacterLight();
         drawEmptyNightOnCanvas();
         drawHolesOnFramesOfNight();
     };
@@ -306,9 +401,43 @@ module.exports = function() {
         }
     };
 
+    const setCashedExtraLightList = (a) => {
+        cashedExtraLightList = a;
+    };
+
+    const setCashedBehaviorDynamicLightList = (a) => {
+        cashedBehaviorDynamicLight = a;
+    };
+
+    const setCashedDynamicDirLightList = (a) => {
+        cashedDynamicDirCharacterLight = a;
+    };
+
+    const setCashedNightColor = (_cashedNightColor) => {
+        cashedNightColor = _cashedNightColor
+    };
+
     const prepareAllExtraLight = () => {
         let warriors = getWarriors();
-        let a = Engine.rajExtraLight.getExtraLightByNpcIdArray(warriors);
+        // let a           = Engine.rajExtraLight.getExtraLightByNpcIdArray(warriors);
+        let a;
+
+        if (cashedExtraLightList) {
+            a = [];
+
+            for (let k in cashedExtraLightList) {
+                let oneCashedExtraLight = cashedExtraLightList[k];
+                let warriorId = oneCashedExtraLight.warriorId;
+
+                if (Engine.battle.warriorsList[warriorId]) a.push(oneCashedExtraLight);
+            }
+
+        } else {
+            a = Engine.rajExtraLight.getExtraLightByNpcIdArray(warriors);
+            if (a.length) {
+                setCashedExtraLightList(a);
+            }
+        }
 
         if (!a.length) return;
 
@@ -320,8 +449,14 @@ module.exports = function() {
 
             if (master.kind == "NPC") {
                 let npcWarrior = Engine.battle.warriorsList[warriorId];
-                if (!npcWarrior) continue;
-                addExtraLight(extraLightId, oneDataArrayToDrawHole.extraLight, warriorId, npcWarrior.xPos, npcWarrior.yPos);
+
+                if (!npcWarrior) {
+                    continue;
+                }
+
+                if (npcWarrior.hpp > 0) {
+                    addExtraLight(extraLightId, oneDataArrayToDrawHole.extraLight, warriorId, npcWarrior.xPos, npcWarrior.yPos);
+                }
             }
         }
 
@@ -329,7 +464,35 @@ module.exports = function() {
 
     const prepareAllBehaviorDynamicLight = () => {
         let warriors = getWarriors();
-        let a = Engine.behaviorDynamicLightsManager.getBehaviorDynamicLightByNpcIdArray(warriors);
+        //debugger
+        //let a           = Engine.behaviorDynamicLightsManager.getBehaviorDynamicLightByNpcIdArray(warriors);
+        let a = null;
+
+
+        if (cashedBehaviorDynamicLight) {
+            a = [];
+
+            for (let k in cashedBehaviorDynamicLight) {
+                let oneCashedBehaviorDynamicLight = cashedBehaviorDynamicLight[k];
+                let warriorId = oneCashedBehaviorDynamicLight.warriorId;
+
+                let npcWarrior = Engine.battle.warriorsList[warriorId];
+
+                if (!npcWarrior) {
+                    continue;
+                }
+
+                if (npcWarrior.hpp > 0) {
+                    a.push(oneCashedBehaviorDynamicLight);
+                }
+            }
+
+        } else {
+            a = Engine.behaviorDynamicLightsManager.getBehaviorDynamicLightByNpcIdArray(warriors);
+            if (a.length) {
+                setCashedBehaviorDynamicLightList(a);
+            }
+        }
 
         if (!a.length) return;
 
@@ -342,7 +505,60 @@ module.exports = function() {
             if (master.getCanvasObjectType() == "NPC") {
                 let npcWarrior = Engine.battle.warriorsList[warriorId];
                 if (!npcWarrior) continue;
-                addBehaviorDynamicLight(extraLightId, oneDataArrayToDrawHole.behaviorDynamicLight, warriorId, npcWarrior.xPos, npcWarrior.yPos);
+                //addBehaviorDynamicLight(extraLightId, oneDataArrayToDrawHole.behaviorDynamicLight, warriorId, npcWarrior.xPos, npcWarrior.yPos);
+                addBehaviorDynamicLight(extraLightId, oneDataArrayToDrawHole.behaviorDynamicLight, warriorId);
+            }
+        }
+
+    };
+
+    const prepareAllDynamicDirCharacterLight = () => {
+        let warriors = getWarriors();
+        let a = null;
+
+
+        if (cashedDynamicDirCharacterLight) {
+            a = [];
+
+            for (let k in cashedDynamicDirCharacterLight) {
+                let oneCashedDynamicDirCharacterLight = cashedDynamicDirCharacterLight[k];
+                let warriorId = oneCashedDynamicDirCharacterLight.warriorId;
+
+                if (warriorId <= 0) {
+                    continue;
+                }
+
+                let npcWarrior = Engine.battle.warriorsList[warriorId];
+
+                if (!npcWarrior) {
+                    continue;
+                }
+
+                if (npcWarrior.hpp > 0) {
+                    a.push(oneCashedDynamicDirCharacterLight);
+                }
+            }
+
+        } else {
+            a = Engine.dynamicDirCharacterLightsManager.getDynamicDirLightByNpcIdArray(warriors);
+            if (a.length) {
+                setCashedDynamicDirLightList(a);
+            }
+        }
+
+        if (!a.length) return;
+
+        for (let k in a) {
+            let oneDataArrayToDrawHole = a[k];
+            let master = oneDataArrayToDrawHole.dynamicDirLight.getMaster();
+            let warriorId = oneDataArrayToDrawHole.warriorId;
+            let extraLightId = oneDataArrayToDrawHole.dynamicDirLight.getId();
+
+            if (master.getCanvasObjectType() == "HERO") {
+                let characterWarrior = Engine.battle.warriorsList[warriorId];
+                if (!characterWarrior) continue;
+
+                addDynamicDirCharacterLight(extraLightId, oneDataArrayToDrawHole.dynamicDirLight, warriorId);
             }
         }
 
@@ -351,7 +567,19 @@ module.exports = function() {
     const drawEmptyNightOnCanvas = () => {
         let w = battleNight.width;
         let h = battleNight.height;
-        let nightColor = getEngine().nightController.getCalculateStringNightColor();
+        //let nightColor  = getEngine().nightController.getCalculateStringNightColor();
+        let nightColor;
+
+
+        if (cashedNightColor == null) {
+            nightColor = getEngine().nightController.getCalculateStringNightColor();
+            nightColor = !nightColor ? false : nightColor;
+
+            setCashedNightColor(nightColor);
+        } else {
+            nightColor = cashedNightColor;
+        }
+
 
         if (!nightColor) nightColor = "0,0,0,0";
 
@@ -392,18 +620,20 @@ module.exports = function() {
         let engine = getEngine();
         let cloneRajData = GET_HARD_COPY_STRUCTURE(data.rajData);
 
-        let $battleArea = engine.battle.getBattleArea();
+        //let $battleArea     = engine.battle.getBattleArea();
         let scale = engine.battle.scaleBattle.getScale();
         //let top             = parseInt($battleArea.css('top'));
-        let position = engine.battle.getBattleArea().position()
+        //let position        = engine.battle.getBattleArea().position()
 
         x = x * scale;
         y = y * scale;
 
         y -= CFG.tileSize * scale / 2;
 
-        cloneRajData.x = x + position.left;
-        cloneRajData.y = y + position.top;
+        //cloneRajData.x  = x + position.left;
+        //cloneRajData.y  = y + position.top;
+        cloneRajData.x = x;
+        cloneRajData.y = y;
         cloneRajData.r *= scale;
 
         if (isset(cloneRajData.offsetX)) cloneRajData.offsetX *= scale;
@@ -443,7 +673,7 @@ module.exports = function() {
     }
 
 
-    const addBehaviorDynamicLight = (id, dataObject, warriorId, x, y) => {
+    const addBehaviorDynamicLight = (id, dataObject, warriorId) => {
 
         let cloneRajData = GET_HARD_COPY_STRUCTURE(dataObject.getSrajData());
         let srajAdditionalData = GET_HARD_COPY_STRUCTURE(dataObject.getAdditionalData());
@@ -453,22 +683,11 @@ module.exports = function() {
 
         let engine = getEngine();
         let scale = engine.battle.scaleBattle.getScale();
-        let position = engine.battle.getBattleArea().position();
-
-        x = x * scale;
-        y = y * scale;
-
-        y -= CFG.tileSize * scale / 2;
 
         if (!isset(cloneRajData.d.r)) {
             cloneRajData.d.r = framesWithHoles.getDefaultR();
         }
 
-        cloneRajData.scale = scale;
-        cloneRajData.position = position;
-
-        cloneRajData.d.x = x + position.left;
-        cloneRajData.d.y = y + position.top;
         cloneRajData.d.r *= scale;
 
         if (cloneRajData.master) {
@@ -481,6 +700,35 @@ module.exports = function() {
         oneBehaviorDynamicLight.init();
         oneBehaviorDynamicLight.setFramesWithHoles(framesWithHoles);
         oneBehaviorDynamicLight.updateData(id, cloneRajData, srajAdditionalData);
+    };
+
+    const addDynamicDirCharacterLight = (id, dataObject, warriorId) => {
+
+        let cloneRajData = GET_HARD_COPY_STRUCTURE(dataObject.getSrajData());
+        let srajAdditionalData = GET_HARD_COPY_STRUCTURE(dataObject.getAdditionalData());
+        let oneDirDynamicLight = new DirDynamicLight();
+
+        cloneRajData.battle = true;
+
+        let engine = getEngine();
+        let scale = engine.battle.scaleBattle.getScale();
+
+        if (!isset(cloneRajData.d.r)) {
+            cloneRajData.d.r = framesWithHoles.getDefaultR();
+        }
+
+        cloneRajData.d.r *= scale;
+
+        if (cloneRajData.master) {
+            cloneRajData.master.id = warriorId;
+            cloneRajData.master.kind = "WARRIOR";
+        }
+
+        dynamicDirCharacterLight[id] = oneDirDynamicLight;
+
+        oneDirDynamicLight.init();
+        oneDirDynamicLight.updateData(id, cloneRajData, srajAdditionalData, framesWithHoles);
+        //oneDirDynamicLight.setFramesWithHoles(framesWithHoles);
     };
 
     const getNight = () => {
@@ -497,7 +745,8 @@ module.exports = function() {
         //let extraLight 					= Engine.rajExtraLight.getAllExtraLight();
         //let dynamicLight 				= Engine.dynamicLightsManager.getDynamicLightList();
         //let behaviorDynamicLightList 	= Engine.behaviorDynamicLightsManager.getBehaviorDynamicLightList();
-        let isNight = Engine.nightController.checkNight();
+        //let isNight 					= Engine.nightController.checkNight();
+        let isNight = checkCanDraw();
 
         for (let k in extraLight) {
             let add = false;
@@ -522,8 +771,14 @@ module.exports = function() {
     const onClear = () => {
         clearExtraLight();
         clearBehaviorDynamicLight();
+        clearDynamicDirCharacterLight();
 
         resetActualFrame();
+
+        setCashedExtraLightList(null);
+        setCashedBehaviorDynamicLightList(null);
+        setCashedDynamicDirLightList(null);
+        setCashedNightColor(null);
     }
 
     const resetActualFrame = () => {
@@ -538,6 +793,10 @@ module.exports = function() {
         behaviorDynamicLight = {};
     };
 
+    const clearDynamicDirCharacterLight = () => {
+        dynamicDirCharacterLight = {};
+    };
+
     this.getBehaviorDynamicLight = () => {
         return behaviorDynamicLight
     }
@@ -545,6 +804,9 @@ module.exports = function() {
     this.init = init;
     //this.getDataArrayToDrawHole                     = getDataArrayToDrawHole;
     this.rebuildBattleNight = rebuildBattleNight;
+    //this.setCashedExtraLightList                    = setCashedExtraLightList;
+    //this.setCashedBehaviorDynamicLightList          = setCashedBehaviorDynamicLightList;
+    //this.setCashedNightColor                        = setCashedNightColor;
     this.update = update;
     this.draw = draw;
     //this.createBattleNight                          = createBattleNight;

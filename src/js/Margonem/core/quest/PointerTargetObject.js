@@ -1,4 +1,4 @@
-let QuestData = require('core/quest/QuestData');
+let QuestData = require('@core/quest/QuestData');
 
 
 module.exports = function() {
@@ -103,7 +103,7 @@ module.exports = function() {
 
     const updateCollect = (dt) => {
         let toCollect = pointerTargetObjectData.toCollect;
-        let name = pointerTargetObjectData.name2;
+        let name = pointerTargetObjectData.name1;
         let current = getEngine().heroEquipment.getAmountItemAmount(name);
         let itemNotExist = current == null;
         let stillCollect = itemNotExist || current < toCollect;
@@ -228,9 +228,11 @@ module.exports = function() {
     };
 
     const addArrow = (x, y) => {
+        let name2 = pointerTargetObjectData.name2;
         let targetObj = {
             x: x,
             y: y,
+            name: name2
         };
 
         let target = {};
@@ -238,7 +240,7 @@ module.exports = function() {
         if (drawTable) target.src = '/img/placeholder_npc_item.png';
 
         let text;
-        let name2 = pointerTargetObjectData.name2;
+        //let name2       = pointerTargetObjectData.name2;
         let killCounter = pointerTargetObjectData.killCounter;
 
         if (killCounter) {

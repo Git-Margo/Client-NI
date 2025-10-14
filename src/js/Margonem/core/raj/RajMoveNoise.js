@@ -1,4 +1,4 @@
-let VectorCalculate = require('core/VectorCalculate');
+let VectorCalculate = require('@core/VectorCalculate');
 
 
 module.exports = function() {

@@ -1,6 +1,6 @@
-var tpl = require('core/Templates');
+var tpl = require('@core/Templates');
 
-module.exports = function(Chat) {
+module.exports = function() {
 
     var self = this;
     this.wnd = null;
@@ -33,7 +33,6 @@ module.exports = function(Chat) {
                 this.close();
             }
         });
-        //this.wnd.$.addClass('mc-addon-window');
         this.wnd.addToAlertLayer();
         this.wnd.updatePos();
     };
@@ -72,8 +71,6 @@ module.exports = function(Chat) {
         for (var i = 0; i < t.length; i++) {
             var time = t[i];
             self.createButton(time, 'green small', $wrapper, function() {
-                //var msg = '/mute ' + $(this).find('.label').html() + ' ' + self.nick;
-                //Chat.sendMessage(msg);
                 let t = $(this).find('.label').html();
                 _g('console&custom=.mute' + esc(" " + self.nick.replace(" ", "_") + " " + t));
             });
@@ -82,8 +79,6 @@ module.exports = function(Chat) {
 
     this.initUnmuteBtn = function() {
         self.createButton('Unmute', 'green small', self.wnd.$.find('.unmute'), function() {
-            //var msg = '/unmute ' + self.nick;
-            //Chat.sendMessage(msg);
             _g('console&custom=.unmute' + esc(" " + self.nick.replace(" ", "_")));
         });
     };
@@ -95,9 +90,16 @@ module.exports = function(Chat) {
         $btn.click(clb);
     };
 
-    this.update = function(nick) {
+    this.update = function({
+        playerId,
+        nick,
+        attr
+    }) {
         self.wnd.$.find('.nick-header').html(nick);
         self.nick = nick.replace(/ /gi, '_');
+
+        const hadWarn = attr & 2;
+        self.wnd.$.find('.had-warn').css('display', hadWarn ? 'block' : 'none');
     };
 
     this.initScroll = function() {
@@ -108,12 +110,7 @@ module.exports = function(Chat) {
     };
 
     this.close = function() {
-        //self.wnd.$.remove();
         self.wnd.remove();
-        //delete (self.wnd);
         Engine.mcAddon = false;
     };
-
-    //this.init();
-
 };

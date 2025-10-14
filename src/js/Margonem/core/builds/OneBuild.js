@@ -26,6 +26,9 @@ module.exports = function() {
         $build = Templates.get("one-build");
         id = data.id;
 
+        let equipment = Templates.get('interface-element-equipment');
+        $build.find('.build-items-wrapper').prepend(equipment);
+
         setFullOptions(_fullOptions);
 
         $build.find(".build-index").html(parseInt(id));
@@ -124,7 +127,9 @@ module.exports = function() {
             }, 15);
         }]);
 
-        Engine.interface.showPopupMenu(menu, e, true)
+        Engine.interface.showPopupMenu(menu, e, {
+            onMap: true
+        })
     };
 
     const getName = () => {

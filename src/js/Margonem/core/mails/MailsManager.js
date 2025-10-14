@@ -3,7 +3,7 @@ const MailsData = require('./MailsData').default;
 const MailsWindow = require('./MailsWindow').default;
 const MailsPages = require('./MailsPages');
 const MailCreator = require('./MailCreator');
-const tpl = require('core/Templates');
+const tpl = require('@core/Templates');
 const Button = require('../components/Button');
 
 module.exports = function() {
@@ -144,6 +144,7 @@ module.exports = function() {
             mailBoxEmpty($mailsContainer);
             if (isReceived()) {
                 Engine.interface.deleteNotif('mailnotifier');
+                getEngine().interface.get$interfaceLayer().find('.character_wrapper').find('.mail-notifier-light-mode').remove()
             }
 
             if (firstPageUpdate) updateScroll();

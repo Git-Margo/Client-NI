@@ -18,11 +18,16 @@ const nickUppercase = (text) => {
     return text.replace(/\[NICK_UPPERCASE\]/, Engine.hero.d.nick.toUpperCase());
 };
 
+const nick = (text) => {
+    return text.replace(/\[NICK\]/, Engine.hero.d.nick);
+};
+
 const parseText = (text) => {
-    if (!getAlreadyInitialised()) return text;
+    if (!isHeroAlreadyInitialised()) return text;
 
     text = sexModify(text);
     text = nickUppercase(text);
+    text = nick(text);
     return text;
 }
 module.exports = {

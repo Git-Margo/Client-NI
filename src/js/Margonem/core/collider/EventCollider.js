@@ -1,9 +1,9 @@
 /**
  * Created by lukasz on 2014-12-01.
  */
-//var R = require('core/Renderer');
-//var Interface = require('core/Interface');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+//var R = require('@core/Renderer');
+//var Interface = require('@core/Interface');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 module.exports = function() {
     var list = [];
     var self = this;
@@ -13,6 +13,12 @@ module.exports = function() {
 
     this.topHoverObject = null;
     this.hoverCheck = function(e, o) {
+
+        if (self.topHoverObject == o && mobileCheck() && e.type == 'mouseup') {
+            Engine.canvasTip.hide(e);
+            return
+        }
+
         if (self.topHoverObject != o) {
             if (self.topHoverObject && self.topHoverObject.onhover) self.topHoverObject.onhover(e, false);
             //if (self.topHoverObject && self.topHoverObject.onhover && Engine.rajCharacterHide.checkShowTip(self.topHoverObject)) self.topHoverObject.onhover(e, false);

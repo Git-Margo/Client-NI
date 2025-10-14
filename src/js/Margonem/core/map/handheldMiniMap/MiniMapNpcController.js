@@ -1,6 +1,6 @@
- //let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObjectNew');
- let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObject');
- let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
+ //let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObjectNew');
+ let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObject');
+ let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
 
  module.exports = function() {
 
@@ -130,15 +130,11 @@
              return
          }
 
-         //let icon 	= getIcon(CFG.a_npath + npc.d.icon, npc.frameAmount, npc.fw, npc.fh, 190);
+         let t = Engine.npcs.getTip(npc, {
+             withIcon: true
+         });
 
-         let cl1 = 'mini-map-monster-icon-container';
-         let cl2 = 'mini-map-monster-icon';
-
-         let icon = createNpcIcon(cl1, cl2, CFG.a_npath + npc.d.icon, npc.frameAmount, npc.fw, npc.fh, 190);
-         let t = Engine.npcs.getTip(npc);
-
-         miniMapObject.setTip(t + icon, "t_npc");
+         miniMapObject.setTip(t, "t_npc");
      }
 
      //function getIcon (url, frameAMount, _fw, _fh, maxW, maxH) {
@@ -184,7 +180,7 @@
 
          if (isMonster(monster)) {
 
-             var dl = monster.d.lvl - Engine.hero.d.lvl;
+             var dl = monster.d.lvl - getHeroLevel();
              if (dl < -(Engine.worldConfig.getDropDestroyLvl())) color = 'style="color:#888"';
              else if (dl > 10) color = 'style="color:#f50"';
              else if (dl > 5) color = 'style="color:#ff0"';
@@ -249,7 +245,7 @@
      }
 
      function levelIsCorrect(npcObj) {
-         const mobLevel = npcObj.d.hasOwnProperty('elasticLevelFactor') ? Engine.npcs.getById(npcObj.d.id).getElasticMobLevel() : npcObj.d.lvl;
+         const mobLevel = npcObj.d.hasOwnProperty('elasticLevelFactor') ? Engine.npcs.getById(npcObj.d.id).getElasticMobLevel() : npcObj.getLevel();
 
          let minLevel = Engine.miniMapController.handHeldMiniMapController.getMinLevel();
 

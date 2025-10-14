@@ -1,21 +1,21 @@
 /**
  * Created by lukasz on 12.09.14.
  */
-const RajCharacterImageChangerData = require('core/raj/rajCharacterImageChanger/RajCharacterImageChangerData');
-var Character = require('core/characters/Character');
-var WhoIsHereGlow = require('core/whoIsHere/WhoIsHereGlow2');
-var CharacterBlur = require('core/characters/CharacterBlur');
-//var FollowGlow = require('core/glow/FollowGlow');
-var EmotionsData = require('core/emotions/EmotionsData');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let NpcData = require('core/characters/NpcData');
-//let NpcTimer = require('core/NpcTimer');
-let CharacterTimer = require('core/interfaceTimer/CharacterTimer.js');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-var RajData = require('core/raj/RajData');
-var FollowController = require('core/FollowController');
-var RajMapEventsData = require('core/raj/rajMapEvents/RajMapEventsData');
-let ColliderData = require('core/collider/ColliderData');
+const RajCharacterImageChangerData = require('@core/raj/rajCharacterImageChanger/RajCharacterImageChangerData');
+var Character = require('@core/characters/Character');
+var WhoIsHereGlow = require('@core/whoIsHere/WhoIsHereGlow2');
+var CharacterBlur = require('@core/characters/CharacterBlur');
+//var FollowGlow = require('@core/glow/FollowGlow');
+var EmotionsData = require('@core/emotions/EmotionsData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let NpcData = require('@core/characters/NpcData');
+//let NpcTimer = require('@core/NpcTimer');
+let CharacterTimer = require('@core/interfaceTimer/CharacterTimer.js');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+var RajData = require('@core/raj/RajData');
+var FollowController = require('@core/FollowController');
+var RajMapEventsData = require('@core/raj/rajMapEvents/RajMapEventsData');
+let ColliderData = require('@core/collider/ColliderData');
 
 var Npc = function() {
     var self = this;
@@ -45,6 +45,9 @@ var Npc = function() {
     this.walkOver = false;
     this.eliteHereWasCall = false;
     //this.onloadProperImg = false;
+
+    let sraj = null;
+    let srajCancel = null;
 
     this.eliteHereWasCall = false;
 
@@ -121,12 +124,19 @@ var Npc = function() {
         API.callEvent(Engine.apiData.REMOVE_NPC, self);
         // Engine.map.col.unset(self.mapColSet[0], self.mapColSet[1], 2);
 
-        if (!Engine.hero.checkStasis()) Engine.rajMapEvents.callAllActionsBySpecificEventAndNpc(RajMapEventsData.ON_DIE_NPC, {
-            npcId: self.d.id
-        });
-        if (!Engine.hero.checkStasis()) Engine.rajCharacterImageChangerManager.callAllActionsBySpecificEventAndNpc(RajCharacterImageChangerData.KIND.ON_DIE, {
-            npcId: self.d.id
-        });
+        //if (!Engine.hero.checkStasis()) Engine.rajMapEvents.callAllActionsBySpecificEventAndNpc(RajMapEventsData.ON_DIE_NPC, {npcId:self.d.id});
+        if (!Engine.hero.checkStasis()) {
+            Engine.rajController.parseObject({
+                [RajData.CALLBACK_INTERNAL_FUNCTION]: true
+            }, false, false, function() {
+                Engine.rajMapEvents.callAllActionsBySpecificEventAndNpc(RajMapEventsData.ON_DIE_NPC, {
+                    npcId: self.d.id
+                });
+                Engine.rajCharacterImageChangerManager.callAllActionsBySpecificEventAndNpc(RajCharacterImageChangerData.KIND.ON_DIE, {
+                    npcId: self.d.id
+                });
+            });
+        }
 
         self.deleteNpcCollision();
         Engine.npcs.removeOne(self.d.id);
@@ -231,7 +241,7 @@ var Npc = function() {
     };
 
     this.manageUpdateCollider = () => {
-        if (CFG.debug || self.d.type != 4) {
+        if (getDebug() || self.d.type != 4) {
             self.updateCollider();
         } else {
             self.collider = null;
@@ -246,6 +256,20 @@ var Npc = function() {
 
         this.refreshEmotions();
     }
+
+    //this.updateFilter = (v) => {
+    //	let filter = Engine.getFilter();
+    //
+    //	if (filter) {
+    //		let newImg = Engine.imgLoader.getImgWithFilter(getPath(v), filter, true);
+    //
+    //		if (!newImg) {
+    //			return
+    //		}
+    //
+    //		this.sprite = newImg;
+    //	}
+    //}
 
     this.afterLoadImage = () => {
         trackLock.unlock('image');
@@ -302,13 +326,18 @@ var Npc = function() {
         self.sequence = sequence;
     };
 
+    const getPath = (v) => {
+        return CFG.r_npath + v;
+    }
+
     this.updateIcon = function(v, o, d) {
         self.setPlaceHolderIcon();
         self.setStaticAnimation(!isSettingsOptionsInterfaceAnimationOn());
 
         if (d.type != 4) self.updateCollider();
 
-        let path = CFG.r_npath + v;
+        //let path    = CFG.r_npath + v;
+        let path = getPath(v);
         let isFast = d.wt > 9;
 
         self.setActions(path);
@@ -341,6 +370,8 @@ var Npc = function() {
                 this.beforeOnload(f, i, d);
             },
             (i) => {
+                //this.sprite = getEngine().canvasFilter.updateFilter(path, this.sprite);
+                updateFilterImage();
                 this.afterOnload();
             },
             () => {
@@ -352,6 +383,11 @@ var Npc = function() {
             Engine.dialogue.updateDialogAfterChangeNpc(self);
         }
     };
+
+    const updateFilterImage = () => {
+        let path = getPath(self.getImg());
+        this.sprite = getEngine().canvasFilter.updateFilter(path, this.sprite, true);
+    }
 
     this.checkNpcHasCollision = (_type) => {
         let type = isset(_type) ? _type : this.d.type;
@@ -455,12 +491,16 @@ var Npc = function() {
         this.rx = data.x;
         this.ry = data.y;
         //self.qm = '';
+
+        removeHasOnetimeQuest();
+        removeHasDailyQuest();
         this.clearQm();
     };
 
     this.manageEliteHereEmo = () => {
         let isEliteHere = self.d.wt < 90 && self.d.wt > 79 && !self.eliteHereWasCall;
-        let attackNpc = self.d.type == 2 || self.d.type == 3;
+        //let attackNpc 		= self.d.type == 2 || self.d.type == 3;
+        let attackNpc = isAttackNpc();
 
         if (!attackNpc) {
             return;
@@ -552,10 +592,49 @@ var Npc = function() {
         self.manageAggressiveEmo();
         self.manageActionsEmo();
 
-        if (this.d.external_properties) {
+        //if (this.d.external_properties) {
+        if (sraj) {
             //let k = RajData.keys;
 
-            Engine.rajController.parseObject(this.d.external_properties, [
+            //Engine.rajController.parseObject(this.d.external_properties, [
+            //	RajData.INTERFACE_SKIN,
+            //	RajData.WEATHER,
+            //	RajData.NIGHT,
+            //	RajData.SCREEN_EFFECTS,
+            //	RajData.MAP_FILTER,
+            //	RajData.EARTHQUAKE,
+            //	RajData.CHARACTER_EFFECT,
+            //	RajData.FAKE_NPC,
+            //	RajData.TUTORIAL,
+            //	RajData.BATTLE_EVENTS,
+            //	RajData.MAP_EVENTS,
+            //	RajData.CHARACTER_IMAGE_CHANGER,
+            //	RajData.WINDOW_EVENTS,
+            //	RajData.MAP_EXTERNAL_PROPERTIES_REFRESH,
+            //	RajData.PROGRAMMER,
+            //	RajData.EXTRA_LIGHT,
+            //	RajData.DYNAMIC_LIGHT,
+            //	RajData.BEHAVIOR_DYNAMIC_LIGHT,
+            //	RajData.TEMPLATE,
+            //	RajData.FLOAT_FOREGROUND,
+            //	RajData.FLOAT_OBJECT,
+            //	RajData.CAMERA,
+            //	RajData.CHARACTER_HIDE,
+            //	RajData.DIALOGUE,
+            //	RajData.CALL_INSTANT_BEHAVIOR_FAKE_NPC,
+            //	RajData.YELLOW_MESSAGE,
+            //	RajData.SEQUENCE,
+            //	RajData.RANDOM_CALLER,
+            //	RajData.SOUND,
+            //	RajData.AREA_TRIGGER,
+            //	RajData.CONNECT_SRAJ,
+            //	RajData.MAP_MUSIC,
+            //	RajData.ZOOM,
+            //	RajData.TRACKING
+            //], {npcId:self.d.id});
+
+
+            callSraj([
                 RajData.INTERFACE_SKIN,
                 RajData.WEATHER,
                 RajData.NIGHT,
@@ -590,27 +669,213 @@ var Npc = function() {
                 RajData.MAP_MUSIC,
                 RajData.ZOOM,
                 RajData.TRACKING
-            ], {
-                npcId: self.d.id
-            });
+            ])
         }
     };
 
-    this.manageAggressiveEmo = function() {
-        let AGGRESSIVE_EMO = EmotionsData.NAME.AGGRESSIVE;
-        const npcLvl = !isset(this.d.elasticLevelFactor) ? this.d.lvl : this.elasticLevel;
-        const isAggressive = self.d.type === 3 && npcLvl >= Engine.hero.d.lvl - 1 && !self.d.isNonAggressive;
+    const callSraj = (exception) => {
+        Engine.rajController.parseObject(sraj, exception, {
+            npcId: this.getId(),
+            npcNick: this.getNick(),
+            srajId: this.getSrajId()
+        });
+    }
 
-        Engine.emotions.removeEmotionBySourceIdAndEmoType(self.d.id, AGGRESSIVE_EMO);
+    const callSrajCancel = (exception) => {
+        if (srajCancel == null) {
+            return
+        }
+
+        Engine.rajController.parseObject(srajCancel, exception, {
+            npcId: this.getId(),
+            npcNick: this.getNick(),
+            srajId: this.getSrajId()
+        });
+    }
+
+    this.manageAggressiveEmo = function() {
+        /*
+		let AGGRESSIVE_EMO  = EmotionsData.NAME.AGGRESSIVE;
+        const npcLvl = !this.isElasticLevel() ? self.getLevel() : this.elasticLevel;
+
+    // let isAggressive =  self.d.type === 3 && npcLvl >= getHeroLevel() - 1 && !self.d.isNonAggressive;
+    let isAggressive =  false;
+
+    let hLevel = getHeroLevel();
+
+    if (isSettingsOptionsBerserk()) {
+      let lvlMin = getBerserkLvlMin();
+      let lvlMax = getBerserkLvlMax();
+
+      if (self.d.type === 3) {
+
+        let lowerThreshold = npcLvl >= Math.max(hLevel - lvlMin, 0)
+        let upperThreshold = npcLvl <= hLevel + lvlMax
+
+        isAggressive = lowerThreshold && upperThreshold && !self.d.isNonAggressive;
+      }
+
+      // isAggressive = self.d.type === 3 && npcLvl >= getHeroLevel() - 1 && !self.d.isNonAggressive && npcLvl >= lvlMin && npcLvl <= lvlMax;
+
+    } else {
+      isAggressive =  self.d.type === 3 && npcLvl >= getHeroLevel() - 1 && !self.d.isNonAggressive;
+    }
+*/
+
+        let AGGRESSIVE_EMO_1 = EmotionsData.NAME.AGGRESSIVE_1;
+        let AGGRESSIVE_EMO_2 = EmotionsData.NAME.AGGRESSIVE_2;
+        let isAggressive = checkAggressive();
+
+        Engine.emotions.removeEmotionBySourceIdAndEmoType(self.d.id, AGGRESSIVE_EMO_1);
+        Engine.emotions.removeEmotionBySourceIdAndEmoType(self.d.id, AGGRESSIVE_EMO_2);
 
         if (isAggressive) {
+
+            let kind = null;
+
+            switch (isAggressive) {
+                case 1:
+                    kind = AGGRESSIVE_EMO_1;
+                    break;
+                case 2:
+                    kind = AGGRESSIVE_EMO_2;
+                    break;
+            }
+
             Engine.emotions.updateData([{
-                name: AGGRESSIVE_EMO,
+                name: kind,
                 source_id: self.d.id,
                 source_type: EmotionsData.OBJECT_TYPE.NPC
             }]);
         }
     };
+
+    function isBetween(value, min, max) {
+        return value >= min && value <= max;
+    }
+
+    const isHeroesColossusTitan = () => {
+        let wt = this.d.wt;
+        return isBetween(wt, 80, 87) || isBetween(wt, 90, 95) || isBetween(wt, 100, 105);
+    }
+
+    const checkAggressive = () => {
+
+        if (!isAttackNpc()) {
+            return 0;
+        }
+
+        if (isHeroesColossusTitan()) {
+            return 0;
+        }
+
+        // const npcLvl                    = !this.isElasticLevel() ? self.getLevel() : this.elasticLevel;
+        const heroLevel = getHeroLevel()
+        const npcLvl = !this.isElasticLevel() ? self.getLevel() : this.elasticLevel;
+        const maxHeroLevel = heroLevel > 300 ? 300 : heroLevel
+        const npcInGroup = isGroup();
+        const heroInGroup = checkPartyExist();
+        const elite1Group = isEliteGroup();
+        const elite2Group = isElite2Group();
+        const berserkOn = heroInGroup ? isSettingsOptionsBerserkGroup() : isSettingsOptionsBerserk();
+
+        let lvlMin = null;
+        let lvlMax = null;
+        let lowerThreshold = null;
+        let upperThreshold = null;
+        let inLvlRange = null;
+
+        let berserkCommonSettings = null;
+        let berserkEliteSettings = null;
+        let berserkElite2Settings = null;
+
+        if (berserkOn) {
+            berserkCommonSettings = heroInGroup ? getBerserkGroupCommon() : getBerserkCommon();
+            berserkEliteSettings = heroInGroup ? getBerserkGroupElite() : getBerserkElite();
+            berserkElite2Settings = heroInGroup ? getBerserkGroupElite2() : getBerserkElite2();
+
+            lvlMin = heroInGroup ? getBerserkGroupLvlMin() : getBerserkLvlMin();
+            lvlMax = heroInGroup ? getBerserkGroupLvlMax() : getBerserkLvlMax();
+
+            lowerThreshold = npcLvl >= Math.max(maxHeroLevel + lvlMin, 0)
+            upperThreshold = npcLvl <= maxHeroLevel + lvlMax
+            inLvlRange = lowerThreshold && upperThreshold;
+        }
+
+        if (npcInGroup && (elite1Group || elite2Group)) {
+
+            // if (berserkOn && !heroInGroup) {
+            if (berserkOn) {
+
+                if (!inLvlRange) {
+                    return 0;
+                }
+
+                if (elite1Group && berserkEliteSettings) {
+                    return 2
+                }
+
+                if (elite2Group && berserkElite2Settings) {
+                    return 2
+                }
+
+                return 0;
+
+            } else {
+
+                return 0;
+
+            }
+
+        } else {
+
+            // if (berserkOn && !heroInGroup) {
+            if (berserkOn) {
+
+                if (!inLvlRange) {
+                    return aggressivePattern() ? 1 : 0;
+                }
+
+                let eliteIMob = checkEliteIMob();
+                let eliteIIMob = checkEliteIIMob();
+                let commonMob = !eliteIMob && !eliteIIMob;
+
+                if (commonMob && berserkCommonSettings) {
+                    return 2;
+                }
+
+                if (eliteIMob && berserkEliteSettings) {
+                    return 2;
+                }
+
+                if (eliteIIMob && berserkElite2Settings) {
+                    return 2;
+                }
+
+                return aggressivePattern() ? 1 : 0;
+
+            } else {
+                return aggressivePattern() ? 1 : 0
+            }
+
+        }
+    }
+
+    const aggressivePattern = () => {
+        const npcLvl = !this.isElasticLevel() ? self.getLevel() : this.elasticLevel;
+        const heroLevel = getHeroLevel();
+        const maxHeroLevel = heroLevel > 300 ? 300 : heroLevel;
+
+        return self.d.type === 3 && npcLvl >= maxHeroLevel + 14
+    }
+
+    const checkAlwaysAggressive = () => {
+        const npcLvl = !this.isElasticLevel() ? self.getLevel() : this.elasticLevel;
+        const heroLevel = getHeroLevel();
+        const maxHeroLevel = heroLevel > 300 ? 300 : heroLevel;
+
+        return self.d.type === 3 && npcLvl >= maxHeroLevel - 1 ? 1 : 0;
+    }
 
     const firstAfterUpdate = () => {
         setKind(getEngine().npcs.findKindNpc(this));
@@ -623,22 +888,21 @@ var Npc = function() {
 
         if (isset(this.d.del)) return this.delete(); // TODO .del is deprecated!
 
-        if (isset(this.d.elasticLevelFactor)) {
+        if (this.isElasticLevel()) {
             this.elasticLevel = this.getElasticMobLevel();
         }
 
-        let externalPropertiesExist = isset(this.d.external_properties);
+        if (checkSrajExist()) {
 
-        if (externalPropertiesExist) {
+            updateSraj();
+            callSraj([RajData.BATTLE_EVENTS, RajData.EMO_ACTIONS])
+
             Engine.characterEffectsMapManager.removeCharacterEffectFromDeleteCharacter(this.canvasObjectType, self.d.id);
-            //Engine.rajMapEvents.clearAllEventsByNpcId(self.d.id);
             removeAllExtraLights();
-            Engine.rajController.parseObject(this.d.external_properties, [
-                RajData.BATTLE_EVENTS,
-                RajData.EMO_ACTIONS
-            ], {
-                npcId: self.d.id
-            });
+            //Engine.rajController.parseObject(this.d.external_properties, [
+            //	RajData.BATTLE_EVENTS,
+            //	RajData.EMO_ACTIONS], {npcId:self.d.id}
+            //);
         }
 
 
@@ -658,7 +922,7 @@ var Npc = function() {
     };
 
     const drawNickOrTip = () => {
-        return CFG.debug || this.d.lvl || this.d.type != 4;
+        return getDebug() || this.getLevel() || this.d.type != 4;
     }
 
     this.createTipFromNpcData = () => {
@@ -684,7 +948,7 @@ var Npc = function() {
     };
 
     this.refreshTip = () => {
-        if (!this.d.hasOwnProperty('elasticLevelFactor')) return;
+        if (!this.isElasticLevel()) return;
 
         //if (this.d.lvl || this.d.type != 4) {
         if (drawNickOrTip()) {
@@ -702,11 +966,11 @@ var Npc = function() {
 
         let eLF = parseInt(this.d.elasticLevelFactor);
 
-        if (!Engine.party) return parseInt(Engine.hero.d.lvl) + eLF;
+        if (!Engine.party) return parseInt(getHeroLevel()) + eLF;
 
         let member = Engine.party.getMemberFromHeroMapWithTheBigestLevel();
 
-        return member ? (parseInt(member.d.lvl) + eLF) : (parseInt(Engine.hero.d.lvl) + eLF);
+        return member ? (parseInt(member.getLevel()) + eLF) : (parseInt(getHeroLevel()) + eLF);
     };
 
     this.getElasticMobLevel = () => {
@@ -714,6 +978,10 @@ var Npc = function() {
 
         return Math.min(level, 300);
     };
+
+    this.isElasticLevel = () => {
+        return isset(this.d.elasticLevelFactor);
+    }
 
     this.getOrder = function() {
         if (!self.initOrder) {
@@ -761,8 +1029,8 @@ var Npc = function() {
             //if (t == 0 || t == 5 || t == 6) 	$GC.addClass('dialogue-cursor');
             //if (t == 2 || t == 3) 				$GC.addClass('attack-cursor');
             if (t == 7) $GC.addClass(CURSOR.PICK_UP);
-            if (t == 0 || t == 5 || t == 6) $GC.addClass(CURSOR.DIALOGUE);
-            if (t == 2 || t == 3) $GC.addClass(CURSOR.ATTACK);
+            if (this.isTalkNpc()) $GC.addClass(CURSOR.DIALOGUE);
+            if (isAttackNpc()) $GC.addClass(CURSOR.ATTACK);
             //} else 									$GC.removeClass('get-cursor do-action-cursor dialogue-cursor attack-cursor')
         } else $GC.removeClass(`${CURSOR.DO_ACTION} ${CURSOR.PICK_UP} ${CURSOR.DIALOGUE} ${CURSOR.ATTACK}`);
     };
@@ -795,14 +1063,32 @@ var Npc = function() {
         return obj.d.wt < 30 && obj.d.wt > 19 ? obj : null;
     };
 
-    this.mobHaveLevelOverweight = function(mob, amount) {
-        return Engine.hero.d.lvl - mob.d.lvl > amount
+    const checkEliteIMob = () => {
+        return this.d.wt < 20 && this.d.wt > 9;
     };
+
+    const checkEliteIIMob = () => {
+        return this.d.wt < 30 && this.d.wt > 19;
+    };
+
+    this.mobHaveLevelOverweight = function(mob, amount) {
+        return getHeroLevel() - mob.getLevel() > amount
+    };
+
+    const isAttackNpc = () => {
+        return self.d.type == 2 || self.d.type == 3 || self.d.type == 9;
+    }
 
     this.isTalkNpc = () => {
         let type = this.d.type;
 
         return type == 0 || type == 5 || type == 6;
+    };
+
+    const isTalkOrTakeOrGoNpc = () => {
+        let type = this.d.type;
+
+        return self.isTalkNpc() || type == 7;
     };
 
     this.oncontextmenu = (e) => {
@@ -813,7 +1099,8 @@ var Npc = function() {
         let isCall = false;
 
         //if ((type == 0 || type == 5 || type == 6 || type == 7) && npcAndPlayerOnTile) {
-        if ((type == 0 || type == 5 || type == 6 || type == 7)) {
+        //if ((type == 0 || type == 5 || type == 6 || type == 7)) {
+        if (isTalkOrTakeOrGoNpc()) {
             let menu = [];
             let actionName = 'talk';
 
@@ -841,13 +1128,15 @@ var Npc = function() {
                 //if (menu.length == 1 && !npcAndPlayerOnTile) menu[0][1]();
                 //else {
                 if (!e) return;
-                Engine.interface.showPopupMenu(menu, e, true)
+                Engine.interface.showPopupMenu(menu, e, {
+                    onMap: true
+                })
                 //}
             }
             return;
         }
 
-        if (type == 2 || type == 3) {
+        if (isAttackNpc()) {
 
             isCall = true;
             callDebugMenu(e);
@@ -899,10 +1188,12 @@ var Npc = function() {
     //};
 
     const callDebugMenu = (e) => {
-        if (!CFG.debug) return
+        if (!getDebug()) return
         let menu = [];
         this.addDebugOptionMenu(menu);
-        Engine.interface.showPopupMenu(menu, e, true)
+        Engine.interface.showPopupMenu(menu, e, {
+            onMap: true
+        })
     };
 
     this.getFar = () => {
@@ -963,7 +1254,7 @@ var Npc = function() {
             }
         }
 
-        if (type == 2 || type == 3) {
+        if (isAttackNpc()) {
             Engine.hero.heroAtackRequest(self.d.id, false);
             return ret
         }
@@ -988,9 +1279,45 @@ var Npc = function() {
         return exist;
     }
 
-    this.getExternalProperties = () => {
-        return this.d.external_properties;
+    this.getSraj = () => {
+        //return this.d.external_properties;
+        return sraj;
     }
+
+    this.getSrajCancel = () => {
+        //return this.d.external_properties;
+        return srajCancel;
+    }
+
+    const updateSraj = () => {
+        let srajId = this.d.srajId;
+
+        if (!getEngine().srajStore.checkSrajTemplate(srajId)) {
+            return
+        }
+
+        let srajAppear = getEngine().srajStore.getSrajTemplate(srajId, "APPEAR");
+        let srajCancel = getEngine().srajStore.getSrajTemplate(srajId, "CANCEL");
+
+        setSraj(JSON.parse(srajAppear));
+        setSrajCancel(JSON.parse(srajCancel));
+    };
+
+    const checkSrajExist = () => {
+        return isset(this.d.srajId)
+    };
+
+    const setSraj = (_sraj) => {
+        sraj = _sraj;
+    };
+
+    const setSrajCancel = (_sraj) => {
+        srajCancel = _sraj;
+    };
+
+    this.getSrajId = () => {
+        return this.d.srajId;
+    };
 
     this.getNick = () => {
         return this.d.nick;
@@ -1072,6 +1399,14 @@ var Npc = function() {
         return isset(self.grp) ? self.grp : null;
     }
 
+    const isEliteGroup = () => {
+        return getGroup() && self.d.groupType == 1;
+    }
+
+    const isElite2Group = () => {
+        return getGroup() && self.d.groupType == 2;
+    }
+
     const setKind = (_kind) => {
         kind = _kind
     }
@@ -1099,6 +1434,20 @@ var Npc = function() {
     this.hasDailyQuest = function() {
         self.addEmoToQm(EmotionsData.NAME.DAILY_QUEST);
     }
+
+    const removeHasOnetimeQuest = () => {
+        if (!isset(this.d)) {
+            return;
+        }
+        delete this.d.hasOnetimeQuest;
+    };
+
+    const removeHasDailyQuest = () => {
+        if (!isset(this.d)) {
+            return;
+        }
+        delete this.d.hasDailyQuest;
+    };
 
     const getHasOnetimeQuest = () => {
         return this.d.hasOnetimeQuest ? true : false;
@@ -1130,6 +1479,8 @@ var Npc = function() {
         return isset(this.d.isIconInvisible) ? this.d.isIconInvisible : false;
     }
 
+    this.isAttackNpc = isAttackNpc;
+    this.isTalkOrTakeOrGoNpc = isTalkOrTakeOrGoNpc;
     this.addExtraLightId = addExtraLightId;
     this.getFreeIdOfExtraLights = getFreeIdOfExtraLights;
     this.drawNickOrTip = drawNickOrTip;
@@ -1155,6 +1506,8 @@ var Npc = function() {
     this.getOffsetX = getOffsetX;
     this.getOffsetY = getOffsetY;
     this.isIconInvisible = isIconInvisible;
+    this.updateFilterImage = updateFilterImage;
+    this.callSrajCancel = callSrajCancel;
 
 };
 Npc.prototype = Object.create(Character.prototype);

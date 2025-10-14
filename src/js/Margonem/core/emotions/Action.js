@@ -1,4 +1,4 @@
-var EmotionsData = require('core/emotions/EmotionsData');
+var EmotionsData = require('@core/emotions/EmotionsData');
 
 
 function Action() {};

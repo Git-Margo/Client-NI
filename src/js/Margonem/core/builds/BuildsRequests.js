@@ -1,4 +1,4 @@
-const BuildsData = require('core/builds/BuildsData.js');
+const BuildsData = require('@core/builds/BuildsData.js');
 
 module.exports = function() {
 

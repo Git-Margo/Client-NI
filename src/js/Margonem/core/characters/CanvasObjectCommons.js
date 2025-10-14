@@ -1,7 +1,7 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 function addDebugOptionMenu(canvasObject, menu) {
-    if (!CFG.debug) return;
+    if (!getDebug()) return;
 
 
     let _id = canvasObject.getId();
@@ -66,8 +66,11 @@ function addDebugOptionMenu(canvasObject, menu) {
         menu.push(['Copy tpl', function() {
             copyClipboard(canvasObject.getTpl())
         }, debugColor]);
-        menu.push(['get_external_properties', function() {
-            console.log(canvasObject.getExternalProperties())
+        menu.push(['get sraj', function() {
+            console.log(canvasObject.getSraj())
+        }, debugColor]);
+        menu.push(['get sraj cancel', function() {
+            console.log(canvasObject.getSrajCancel())
         }, debugColor]);
         menu.push(['getData', function() {
             console.log(canvasObject.getData())

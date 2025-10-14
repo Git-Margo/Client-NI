@@ -1,6 +1,6 @@
-const tpl = require('core/Templates');
-var ChatData = require('core/chat/ChatData');
-var ServerStorageData = require('core/storage/ServerStorageData.js');
+const tpl = require('@core/Templates');
+var ChatData = require('@core/chat/ChatData');
+var ServerStorageData = require('@core/storage/ServerStorageData.js');
 
 module.exports = function() {
 

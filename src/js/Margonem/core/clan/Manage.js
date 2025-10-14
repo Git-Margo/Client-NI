@@ -1,5 +1,5 @@
-// var wnd = require('core/Window');
-var tpl = require('core/Templates');
+// var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
 module.exports = function(Par) {
     var self = this;
     var content;

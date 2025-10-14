@@ -1,28 +1,27 @@
-var tpl = require('core/Templates');
-var ServerStorageData = require('core/storage/ServerStorageData');
-var AddonsData = require('core/addons/AddonsData');
+var tpl = require('@core/Templates');
+var ServerStorageData = require('@core/storage/ServerStorageData');
+var AddonsData = require('@core/addons/AddonsData');
 
 let addonsScripts = {
-    addon_1: require('core/addons/addonList/1.js'),
-    addon_2: require('core/addons/addonList/2.js'),
-    addon_3: require('core/addons/addonList/3.js'),
-    addon_5: require('core/addons/addonList/5.js'),
-    addon_7: require('core/addons/addonList/7.js'),
-    addon_8: require('core/addons/addonList/8.js'),
-    addon_11: require('core/addons/addonList/11.js'),
-    addon_12: require('core/addons/addonList/12.js'),
-    addon_17: require('core/addons/addonList/17.js'),
-    addon_19: require('core/addons/addonList/19.js'),
-    addon_20: require('core/addons/addonList/20.js'),
-    addon_21: require('core/addons/addonList/21.js'),
-    addon_24: require('core/addons/addonList/24.js'),
-    addon_25: require('core/addons/addonList/25.js'),
-    addon_27: require('core/addons/addonList/27.js'),
-    addon_28: require('core/addons/addonList/28.js')
+    addon_1: require('@core/addons/addonList/1.js'),
+    addon_2: require('@core/addons/addonList/2.js'),
+    addon_3: require('@core/addons/addonList/3.js'),
+    addon_5: require('@core/addons/addonList/5.js'),
+    addon_7: require('@core/addons/addonList/7.js'),
+    addon_8: require('@core/addons/addonList/8.js'),
+    addon_11: require('@core/addons/addonList/11.js'),
+    addon_12: require('@core/addons/addonList/12.js'),
+    addon_17: require('@core/addons/addonList/17.js'),
+    addon_19: require('@core/addons/addonList/19.js'),
+    addon_21: require('@core/addons/addonList/21.js'),
+    addon_24: require('@core/addons/addonList/24.js'),
+    addon_25: require('@core/addons/addonList/25.js'),
+    addon_27: require('@core/addons/addonList/27.js'),
+    addon_28: require('@core/addons/addonList/28.js')
 };
 
 if (!getMobile() && !isIframe()) {
-    addonsScripts.addon_29 = require('core/addons/addonList/29.js')
+    addonsScripts.addon_29 = require('@core/addons/addonList/29.js')
 }
 
 module.exports = function() {
@@ -31,7 +30,7 @@ module.exports = function() {
     var list = {};
     // this.showAddon = null;
 
-    this.exceptionClearDataAddons = [27, 20];
+    this.exceptionClearDataAddons = [27];
 
     this.init = function() {
         self.initWindow();
@@ -156,8 +155,10 @@ module.exports = function() {
         var opt = oneData.options;
         var bckStr = self.createBackgroundString(oneData.image);
         let $widgetButton = $oneAddon.find('.widget-button');
+        let widgetManager = getEngine().widgetManager;
+        let widgetSize = widgetManager.getWidgetSize(Engine.widgetsData.IN_WINDOW);
 
-        getEngine().widgetManager.set$BtnWidgetSize($widgetButton);
+        widgetManager.set$BtnWidgetSize($widgetButton, widgetSize);
 
         $w.find('.addon-list').append($oneAddon);
         self.setWindgetColor(id, self.getStorageStateOfAddon(id));
@@ -165,11 +166,11 @@ module.exports = function() {
         $oneAddon.find('.addon-title').html(name);
 
         $oneAddon.click(function() {
-            // self.showAddon = id;
-            var $icon = $w.find('.addon-header-img');
-            var $parent = $icon.parent();
+            let $icon = $w.find('.addon-header-img');
+            let $parent = $icon.parent();
+            let widgetSize = widgetManager.getWidgetSize(Engine.widgetsData.IN_WINDOW);
 
-            getEngine().widgetManager.set$BtnWidgetSize($parent);
+            widgetManager.set$BtnWidgetSize($parent, widgetSize);
 
             $parent.unbind('click');
             if ($parent.hasClass('ui-draggable')) {
@@ -177,16 +178,11 @@ module.exports = function() {
                 $parent.parent().find('.border-blink').remove();
                 $parent.tip('');
             }
+
             if (opt) {
                 $parent.addClass('from-addon-panel');
                 //$parent.data(Engine.widgetsData.data.WIDGET_KEY, self.getAddonIdKey(id));
                 var $borderBlink = tpl.get('border-blink');
-                let widgetSize = getEngine().widgetManager.getWidgetSize();
-
-                $borderBlink.css({
-                    width: widgetSize - 2,
-                    height: widgetSize - 2
-                })
 
                 $parent.parent().prepend($borderBlink);
 

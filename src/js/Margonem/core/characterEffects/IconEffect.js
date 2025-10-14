@@ -1,8 +1,8 @@
-let CharacterEffectData = require('core/characterEffects/CharacterEffectsData');
-let CharacterEffect = require('core/characterEffects/CharacterEffect');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let RajObjectInterface = require('core/raj/RajObjectInterface');
-let RajData = require('core/raj/RajData');
+let CharacterEffectData = require('@core/characterEffects/CharacterEffectsData');
+let CharacterEffect = require('@core/characterEffects/CharacterEffect');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let RajObjectInterface = require('@core/raj/RajObjectInterface');
+let RajData = require('@core/raj/RajData');
 
 let IconEffect = function() {
 
@@ -154,7 +154,7 @@ let IconEffect = function() {
         let fh = this.getFh();
 
         if (opacity) {
-            ctx.save();
+            //ctx.save();
             ctx.globalAlpha = opacity;
         }
 
@@ -183,7 +183,10 @@ let IconEffect = function() {
             fw, fh
         );
 
-        if (opacity) ctx.restore();
+        if (opacity) {
+            //ctx.restore();
+            ctx.globalAlpha = 1;
+        }
     };
 
 

@@ -1,4 +1,4 @@
-var BaseConnectionNode = require('core/searchPath/nodes/BaseConnectionNode');
+var BaseConnectionNode = require('@core/searchPath/nodes/BaseConnectionNode');
 
 var MapNode = function(x, y, map) {
     BaseConnectionNode.call(this);

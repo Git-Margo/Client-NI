@@ -1,4 +1,4 @@
-var EmotionsData = require('core/emotions/EmotionsData');
+var EmotionsData = require('@core/emotions/EmotionsData');
 
 
 var Emotion = function(parameters, data, onEnd) {
@@ -106,6 +106,7 @@ var Emotion = function(parameters, data, onEnd) {
             case EmotionsData.OBJECT_TYPE.OTHER:
                 return 0;
             case EmotionsData.OBJECT_TYPE.NPC:
+            case EmotionsData.OBJECT_TYPE.MAP:
             case EmotionsData.OBJECT_TYPE.PET:
                 return 0;
         }
@@ -169,6 +170,10 @@ var Emotion = function(parameters, data, onEnd) {
     };
 
     this.checkDrawBubbleEmo = () => {
+        if (this.sourceType == EmotionsData.OBJECT_TYPE.MAP) {
+            return true
+        }
+
         return this.sourceType == EmotionsData.OBJECT_TYPE.NPC &&
             Engine.npcs.isTalkNpc(this.source.d.id) &&
             this.type !== EmotionsData.NAME.BATTLE; // exception for talkNpc, which starts fight from dialog
@@ -235,6 +240,10 @@ var Emotion = function(parameters, data, onEnd) {
                 return Engine.others.getById(id);
             case EmotionsData.OBJECT_TYPE.NPC:
                 return Engine.npcs.getById(id);
+            case EmotionsData.OBJECT_TYPE.MAP:
+                return {
+                    rx: data.rawObj.sourceData.x, ry: data.rawObj.sourceData.y
+                };
             default:
                 errorReport("Emotion.js", "getCharacterById", "Incorrect type of self.sourceType Emo!", self.sourceType);
         }
@@ -268,7 +277,11 @@ var Emotion = function(parameters, data, onEnd) {
         self.setIsNpc();
         var initEmo = self.initId();
         self.init();
-        if (this.sourceType == EmotionsData.OBJECT_TYPE.NPC) self.loadBubbleEmo();
+
+        if (this.sourceType == EmotionsData.OBJECT_TYPE.NPC || this.sourceType == EmotionsData.OBJECT_TYPE.MAP) {
+            self.loadBubbleEmo();
+        }
+
         if (!initEmo) {
             this.delete();
             onEnd(this);
@@ -313,6 +326,22 @@ var Emotion = function(parameters, data, onEnd) {
     this.startScriptEmo = () => {
         $.getScript('https://www.margonem.pl/js/' + this.parameters.filename + '.min.js')
     }
+
+    const getSourceType = () => {
+        return this.sourceType
+    }
+
+    const getSourceId = () => {
+        return this.sourceId
+    }
+
+    const getSource = () => {
+        return this.source;
+    }
+
+    this.getSourceType = getSourceType;
+    this.getSourceId = getSourceId;
+    this.getSource = getSource;
 
 };
 module.exports = Emotion;

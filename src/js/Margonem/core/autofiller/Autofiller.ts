@@ -6,13 +6,21 @@ import {
     errorReport,
     isset
 } from '../HelpersTS';
+import {
+    specialFilters
+} from "./AutofillerData";
 
-const Tpl = require('core/Templates');
+const ItemData = require('@core/items/data/ItemData');
+const Tpl = require('@core/Templates');
 
 declare const Engine: any;
 declare const _t: any;
 
-const defaultOptions = {
+const defaultOptions: {
+    clByType: boolean | number,
+    btnTip: (i: number) => void
+} = {
+    clByType: false,
     btnTip: (i: number) => {
         return _t('great_merchamp_info %val%', {
             '%val%': i
@@ -111,7 +119,7 @@ export default class Autofiller {
         for (const filterName in data) {
             switch (filterName) {
                 case 'cl':
-                    this.options.itemGrabberOptions.allow.cls = data.cl;
+                    this.options.itemGrabberOptions.allow.cls = this.prepareCls(data.cl);
                     break;
                 case 'rarity':
                     const stat = this.options.itemGrabberOptions.allow.stats.find((stat: any) => stat.name === 'rarity');
@@ -124,6 +132,16 @@ export default class Autofiller {
             }
         }
         this.itemGrabber.setFilters(this.options.itemGrabberOptions);
+    }
+
+    prepareCls(cls: any[]) {
+        if (this.options.clByType && cls.includes(specialFilters.PER_TYPE)) {
+            return cls.filter(id =>
+                Object.values(ItemData.CL_GROUPS).some((group: any) => group.includes(this.options.clByType) && group.includes(id))
+            );
+        }
+
+        return cls;
     }
 
     mergeFilters(a: Filters, b: Filters) {
@@ -162,6 +180,14 @@ export default class Autofiller {
             this.autofillerConfig.filtersUpdate(data);
             this.afterDataSave(data);
         });
+    }
+
+    updateOptions(options: any) {
+        this.options = {
+            ...this.options,
+            ...options
+        };
+        this.afterDataSave(this.getData());
     }
 
     enabled() {

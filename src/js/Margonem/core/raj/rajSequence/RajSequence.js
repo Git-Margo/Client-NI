@@ -1,6 +1,6 @@
-let SequenceBehaviour = require('core/raj/rajSequence/RajSequenceBehavior.js');
-let RajSequenceData = require('core/raj/rajSequence/RajSequenceData.js');
-let RajSequenceBehaviorData = require('core/raj/rajSequence/RajSequenceBehaviorData.js');
+let SequenceBehaviour = require('@core/raj/rajSequence/RajSequenceBehavior.js');
+let RajSequenceData = require('@core/raj/rajSequence/RajSequenceData.js');
+let RajSequenceBehaviorData = require('@core/raj/rajSequence/RajSequenceBehaviorData.js');
 
 module.exports = function() {
 

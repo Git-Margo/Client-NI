@@ -1,17 +1,17 @@
 /**
  * Created by Michnik on 2015-11-13.
  */
-var Tpl = require('core/Templates');
-var DraconiteShop = require('core/shop/DraconiteShop');
-var EmotionsData = require('core/emotions/EmotionsData');
-var DialogueData = require('core/dialogue/DialogueData');
-var TextModifyByTag = require('core/TextModifyByTag');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-let WindowManageOpacity = require('core/window/WindowManageOpacity');
-let WindowManageSize = require('core/window/WindowManageSize');
+var Tpl = require('@core/Templates');
+var DraconiteShop = require('@core/shop/DraconiteShop');
+var EmotionsData = require('@core/emotions/EmotionsData');
+var DialogueData = require('@core/dialogue/DialogueData');
+var TextModifyByTag = require('@core/TextModifyByTag');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+let WindowManageOpacity = require('@core/window/WindowManageOpacity');
+let WindowManageSize = require('@core/window/WindowManageSize');
 const {
     nickUppercase
-} = require("../TextModifyByTag");
+} = require('../TextModifyByTag');
 
 module.exports = function() {
     var self = this;
@@ -90,15 +90,45 @@ module.exports = function() {
         initWindowManageOpacity();
         initWindowManageSize();
 
+        initHamburger();
+
         // if (Engine.loots) Engine.loots.acceptLoot();
     };
 
     const initWindowManageOpacity = () => {
         windowManageOpacity = new WindowManageOpacity();
 
-        windowManageOpacity.init(this, DialogueData.DIALOGUE_WINDOW, self.$);
+        windowManageOpacity.init(this, DialogueData.DIALOGUE_WINDOW, self.$, self.$);
         windowManageOpacity.setManageOpacity(4);
     };
+
+    const initHamburger = () => {
+
+        if (!mobileCheck()) {
+            return;
+        }
+
+        let $manageHamburgerButton = createHamburgerMenuButton('dialogue-hamburger-button', function(e, menu) {
+            menu.push([_t('WINDOW_OPACITY_UP'), function() {
+                windowManageOpacity.increaseOpacity()
+            }, {
+                button: {
+                    cls: 'not-close'
+                }
+            }])
+            menu.push([_t('SIZE_UP'), function() {
+                windowManageSize.callNextSizeOpt()
+            }, {
+                button: {
+                    cls: 'not-close'
+                }
+            }]);
+        });
+
+
+        self.$.append($manageHamburgerButton)
+
+    }
 
     const initWindowManageSize = () => {
         let sizeArray = [{
@@ -118,6 +148,7 @@ module.exports = function() {
         windowManageSize = new WindowManageSize();
 
         windowManageSize.init(null, DialogueData.DIALOGUE_WINDOW, self.$, self.$.find('.scroll-wrapper'), sizeArray, scrollUpdate);
+        windowManageSize.updateSizeWindow();
     };
 
     this.checkIfBubbleExist = () => {

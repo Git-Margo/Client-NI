@@ -1,4 +1,4 @@
-let AuctionData = require('core/auction/AuctionData');
+let AuctionData = require('@core/auction/AuctionData');
 
 module.exports = function() {
 
@@ -48,7 +48,7 @@ module.exports = function() {
         attackRightClickToToCloneItem($icon, itemData);
 
         $offer.find('.' + AuctionData.AUCTION_CEIL.ITEM_NAME_TD.key).html(itemData.name);
-        $offer.find('.' + AuctionData.AUCTION_CEIL.ITEM_LEVEL_TD.key).html(itemData.getLvl());
+        $offer.find('.' + AuctionData.AUCTION_CEIL.ITEM_LEVEL_TD.key).html(itemData.getLvlStat());
         $offer.find('.' + AuctionData.AUCTION_CEIL.ITEM_SLOT_TD.key).find('.item-slot').append($icon);
     };
 

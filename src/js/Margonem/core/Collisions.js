@@ -1,7 +1,7 @@
 /**
  * Created by lukasz on 09.09.14.
  */
-var SearchPath = require('core/searchPath/SearchPath');
+var SearchPath = require('@core/searchPath/SearchPath');
 module.exports = function() {
     /**
      * Collisions:

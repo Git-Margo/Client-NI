@@ -1,6 +1,6 @@
-var tpl = require('core/Templates');
-let StorageFuncBattle = require('core/battle/StorageFuncBattle');
-let WindowManageSize = require('core/window/WindowManageSize');
+var tpl = require('@core/Templates');
+let StorageFuncBattle = require('@core/battle/StorageFuncBattle');
+let WindowManageSize = require('@core/window/WindowManageSize');
 
 module.exports = function() {
 
@@ -131,6 +131,7 @@ module.exports = function() {
             }
         });
         wnd.addToAlertLayer();
+        wnd.updateSizeWindow();
         wnd.center();
 
         $wndScrollbar = wnd.$.find('.scroll-wrapper');
@@ -168,6 +169,10 @@ module.exports = function() {
     };
 
     const updateScrollbar = () => {
+        if (!$wndScrollbar) {
+            return
+        }
+
         $wndScrollbar.trigger('update');
         //$wndScrollbar.trigger('updateWhenBottom');
     };

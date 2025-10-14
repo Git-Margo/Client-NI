@@ -37,6 +37,7 @@ module.exports = {
         RGB_COLOR: "RGB_COLOR",
         RGBA_COLOR: "RGBA_COLOR",
         RGB_OR_RGBA_COLOR: "RGB_OR_RGBA_COLOR",
+        RGB_OR_RGBA_COLOR_OR_A: "RGB_OR_RGBA_COLOR_OR_A",
         RGB_OR_RGBA_COLOR_GET_RANDOM_ELEMENTS: "RGB_OR_RGBA_COLOR_GET_RANDOM_ELEMENTS",
 
         TARGET: "TARGET",
@@ -49,6 +50,7 @@ module.exports = {
         NORMAL_SRAJ: "NORMAL_SRAJ",
         NIGHT: "NIGHT",
         WEATHER: "WEATHER",
+        ANIMATION: "ANIMATION",
         SOUND: "SOUND "
     }
 };

@@ -1,11 +1,11 @@
-var FakeNpc = require('core/characters/FakeNpc');
-//var FakeNpc 				= require('core/characters/FakeNpc');
-var FakeNpcData = require('core/characters/FakeNpcData');
-var RajData = require('core/raj/RajData');
-let RajRandomElements = require('core/raj/RajRandomElements');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
+var FakeNpc = require('@core/characters/FakeNpc');
+//var FakeNpc 				= require('@core/characters/FakeNpc');
+var FakeNpcData = require('@core/characters/FakeNpcData');
+var RajData = require('@core/raj/RajData');
+let RajRandomElements = require('@core/raj/RajRandomElements');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
 
 module.exports = function() {
 
@@ -366,6 +366,12 @@ module.exports = function() {
 
     };
 
+    const refreshFilter = () => {
+        for (let id in fakeNpcList) {
+            fakeNpcList[id].updateFilterImage();
+        }
+    }
+
     this.init = init;
     this.update = update;
     this.draw = draw;
@@ -378,5 +384,6 @@ module.exports = function() {
     this.updateData = updateData;
     this.updateBehavior = updateBehavior;
     this.checkFakeNpcListExist = checkFakeNpcListExist;
+    this.refreshFilter = refreshFilter;
 
 };

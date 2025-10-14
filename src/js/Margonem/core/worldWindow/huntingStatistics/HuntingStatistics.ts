@@ -17,7 +17,7 @@ import {
     TABLE_HEADERS
 } from './HuntingStatisticsData';
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 declare const _t: (name: string, val ? : string | {} | null, category ? : string) => string;
 declare const createNiInput: (data: {}) => JQuery;
@@ -52,7 +52,8 @@ type Statistic = {
 };
 
 enum NpcTypes {
-    EVENT = "EVENT",
+    REGULAR = "REGULAR",
+        EVENT = "EVENT",
         ARCHAIC = "ARCHAIC"
 }
 
@@ -189,16 +190,12 @@ export default class HuntingStatistics {
                 wt: npc.warrior_type,
                 ...npc
             }
+        }, {
+            withIcon: true
         });
-        const difficulty = this.getNpcDifficulty(npc);
-        const icon = `<div class="mt-2 text-center"><img src="${CFG.a_npath + npc.icon}" style="display: inline-block; max-width: 100%;"></div>`;
-        $(nameEl).tip(tipContent + '<br>' + difficulty + icon);
+        $(nameEl).tip(tipContent);
 
         return itemEl;
-    }
-
-    getNpcDifficulty(npc: Npc): string {
-        return npc.difficulty ? this.tLang('difficulty_' + DIFFICULTIES[npc.difficulty]) : '';
     }
 
     update(data: Response) {
@@ -308,6 +305,10 @@ export default class HuntingStatistics {
         const npcTypes = [{
                 val: 'all',
                 text: _t('prof_all', null, 'auction')
+            },
+            {
+                val: NpcTypes.REGULAR,
+                text: this.tLang(NpcTypes.REGULAR)
             },
             {
                 val: NpcTypes.EVENT,

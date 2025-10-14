@@ -1,4 +1,4 @@
-let BFD = require('core/battle/battleEffects/BattleEffectsData');
+let BFD = require('@core/battle/battleEffects/BattleEffectsData');
 
 module.exports = function() {
 

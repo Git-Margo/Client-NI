@@ -135,6 +135,29 @@ module.exports = function() {
             if (isset(par.v)) p = parseNumber(par.v);
             if (isset(par.a)) p = parseAction(par.a);
 
+
+            //if (isset(par.a)) {
+            //    let a = par.a;
+            //    p = parseAction(a);
+            //
+            //    if (takeNextValAction(a)) {
+            //        let nextPar = list[i + 1];
+            //        let correctData = isset(nextPar) && isset(nextPar.v);
+            //        if (!correctData) {
+            //            errorReport(moduleData.fileName, "getMath", "next par not exist!")
+            //            return 0;
+            //        }
+            //        p += nextPar.v;
+            //
+            //        i++;
+            //    }
+            //
+            //    let actionSufix = getActionSufix(par.a);
+            //
+            //    if (actionSufix) {
+            //        p += actionSufix;
+            //    }
+
             if (p == null) return data;
 
             mathEval += p;
@@ -164,6 +187,24 @@ module.exports = function() {
         return v;
     };
 
+    const takeNextValAction = (action) => {
+        switch (action) {
+            case "SIN":
+            case "COS":
+                return true;
+        }
+        return false
+    }
+
+    const getActionSufix = (action) => {
+        switch (action) {
+            case "SIN":
+            case "COS":
+                return ')';
+        }
+        return null;
+    }
+
     const parseAction = (action) => {
         switch (action) {
             case "*":
@@ -178,6 +219,12 @@ module.exports = function() {
                 return "(";
             case ")":
                 return ")";
+                //case "SIN": return "Math.sin(";
+                //case "COS": return "Math.cos(";
+            case "SIN":
+                return "Math.sin";
+            case "COS":
+                return "Math.cos";
 
             default: {
                 errorReport(moduleData.fileName, "parseAction", "unresigned action", action)
@@ -206,10 +253,21 @@ module.exports = function() {
         for (let i = 0; i < iteration; i++) {
             let dataClone = copyStructure(data.data);
 
-            if (!forVars[i]) forVars[i] = {};
+            if (!forVars[i]) {
+                forVars[i] = {};
+            }
 
             dataClone.id = idPrefix + i;
             forVars[i].index = i;
+
+            if (data.forVarsEachIteration) {
+                let forVarsEachIteration = data.forVarsEachIteration;
+
+                for (let forVarsEachIterationName in forVarsEachIteration) {
+                    forVars[i][forVarsEachIterationName] = copyStructure(forVarsEachIteration[forVarsEachIterationName]);
+                }
+            }
+
 
             a.push(dataClone);
         }
@@ -222,9 +280,13 @@ module.exports = function() {
         });
 
         let counter = 0;
+        let varsForVars = [];
 
         for (let k in forVars) {
-            preParseForVars(forVars[k], {}, counter, actualIndexOfForVars, dataFromParentFor);
+            varsForVars.push({
+                index: counter
+            });
+            preParseForVars(forVars[k], varsForVars, counter, actualIndexOfForVars, dataFromParentFor);
             counter++;
         }
 
@@ -267,8 +329,9 @@ module.exports = function() {
 
             if (elementIsObject(oneData)) {
 
-                if (oneData.getForVar) data[k] = getForVar(oneData, forVars, index, actualIndexOfForVars, dataFromParentFor);
-                else {
+                if (oneData.getForVar) {
+                    data[k] = getForVar(oneData, forVars, index, actualIndexOfForVars, dataFromParentFor);
+                } else {
                     getForParseJson(data[k], dataFromParentFor);
                     getForVarParseJson(data[k], forVars, index, actualIndexOfForVars, dataFromParentFor);
                 }

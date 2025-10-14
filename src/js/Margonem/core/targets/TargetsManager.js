@@ -1,5 +1,5 @@
-var Arrow = require('core/quest/Arrow');
-var Target = require('core/quest/Target');
+var Arrow = require('@core/quest/Arrow');
+var Target = require('@core/quest/Target');
 
 module.exports = function() {
     var list = {};
@@ -32,10 +32,13 @@ module.exports = function() {
         if (target) {
             let oneTarget = new Target();
             let src = target.src ? target.src : null;
+            let targetTip = src ? [_t("quest_placeholder_item", {
+                "%NAME%": objParent.name
+            }, "quest")] : null;
 
             oneTarget.init();
             oneTarget.setEnabled(true);
-            oneTarget.updateData(getEngine().hero, objParent, ['' + name], src);
+            oneTarget.updateData(getEngine().hero, objParent, targetTip, src);
             targetList[id] = oneTarget;
         }
 

@@ -2,10 +2,10 @@
  * Created by Michnik on 2015-11-24.
  */
 
-//var FollowGlow = require('core/glow/FollowGlow');
-var FollowController = require('core/FollowController');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
-//let ColliderData = require('core/collider/ColliderData');
+//var FollowGlow = require('@core/glow/FollowGlow');
+var FollowController = require('@core/FollowController');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+//let ColliderData = require('@core/collider/ColliderData');
 
 module.exports = function(map) {
     var self = this;
@@ -163,7 +163,9 @@ module.exports = function(map) {
                 });
             }]);
 
-            getEngine().interface.showPopupMenu(menu, e, true);
+            getEngine().interface.showPopupMenu(menu, e, {
+                onMap: true
+            });
             return true;
         };
 
@@ -230,21 +232,21 @@ module.exports = function(map) {
                         (data.max >= 1000 ? '' : _t('to_lvl %lvl%', {
                             '%lvl%': data.max
                         }, 'gtw')) + _t('lvl_lvl', null, 'gtw'); //' do '+data.max //' poziomu'
-                    if (data.min != 0 && data.min > Engine.hero.d.lvl) available = false;
-                    else if (data.max < 1000 && data.max < Engine.hero.d.lvl) available = false;
+                    if (data.min != 0 && data.min > getHeroLevel()) available = false;
+                    else if (data.max < 1000 && data.max < getHeroLevel()) available = false;
                 } else {
                     tip += '<br>' + _t('gateway_availavle_for %lvl%', {
                         '%lvl%': data.max
                     }, 'gtw'); //PrzejÅcie dostÄpne dla '+data.max+' poziomu'
-                    if (data.max != Engine.hero.d.lvl) available = false;
+                    if (data.max != getHeroLevel()) available = false;
                 }
             }
-            let debug = (CFG.debug ? getTipDebugContent(this.d.id) : '');
+            let debug = (getDebug() ? getTipDebugContent(this.d.id) : '');
             this.tip = [tip + debug, ''];
             this.available = available;
         }
 
-        const getTipDebugContent = (id) => CFG.debug ? `<br><span class="debug-content">
+        const getTipDebugContent = (id) => getDebug() ? `<br><span class="debug-content">
 			id: ${id}
 		</span>` : '';
 
@@ -272,6 +274,12 @@ module.exports = function(map) {
         // let debug = (CFG.debug ? (' id: ' + this.d.id) : '');
         // this.tip = [tip + debug, ''];
         // this.available = available;
+
+        const getCanvasObjectType = () => {
+            return this.canvasObjectType
+        }
+
+        this.getCanvasObjectType = getCanvasObjectType
     };
 
 

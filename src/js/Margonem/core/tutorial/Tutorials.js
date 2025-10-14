@@ -1,6 +1,7 @@
-// var wnd = require('core/Window');
-var tpl = require('core/Templates');
-const TutorialData = require("./TutorialData");
+// var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
+const TutorialData = require('./TutorialData');
+const WindowPosition = require('./WindowPosition');
 module.exports = function() {
     this.active = null;
     this.activeStep = null;
@@ -33,7 +34,7 @@ module.exports = function() {
 
         if (_externalData) setExternalData(_externalData);
 
-        console.log('tutorialStart !!!!!!!!!!!!!', id);
+        console.log('tutorialStart !!!!!!!!!!!!!', id, _externalData);
 
         this.requestRemoveCloud();
         this.addAdditionalFunctionBeforeCreate();
@@ -156,6 +157,13 @@ module.exports = function() {
             }
         };
 
+
+
+        let t = self.getActiveStepData();
+
+        if (t.mobileAddClass && mobileCheck()) {
+            wndOption.addClass = t.mobileAddClass
+        }
 
         let draggableWnd = this.getActiveStepData().draggableWnd;
 
@@ -378,6 +386,13 @@ module.exports = function() {
         let blink = this.getActiveStepData().blink;
 
         if (!selector) return;
+
+        let $selector = $(selector);
+
+        if (!$selector.length) {
+            return;
+        }
+
         Engine.htmlFocus.create($(selector), true, blink);
     };
 
@@ -546,7 +561,9 @@ module.exports = function() {
         let wObj = $obj.width();
         let hObj = $obj.height();
 
-        self.findPosition(wObj, hObj, offsetObj.left, offsetObj.top, $obj, htmlPositionOffset ? htmlPositionOffset : null);
+        //self.findPosition(self.wnd.$, wObj, hObj, offsetObj.left, offsetObj.top, $obj, htmlPositionOffset ? htmlPositionOffset : null);
+        self.wnd.show();
+        WindowPosition.findPosition(self.wnd.$, wObj, hObj, offsetObj.left, offsetObj.top, $obj, htmlPositionOffset ? htmlPositionOffset : null);
     };
 
     this.setCanvasPosition = function(canvasPosition) {
@@ -586,7 +603,12 @@ module.exports = function() {
             }, 500);
             return
         }
-        self.findPosition(target.fw, target.fh,
+        //self.findPosition(
+        self.wnd.show();
+        WindowPosition.findPosition(
+            self.wnd.$,
+            target.fw,
+            target.fh,
             (target.d.x - Engine.map.offset[0] / 32) * 32 + Engine.interface.get$GAME_CANVAS().offset().left,
             (target.d.y - Engine.map.offset[1] / 32) * 32 + Engine.interface.get$GAME_CANVAS().offset().top
         );
@@ -607,37 +629,31 @@ module.exports = function() {
         return [width, height];
     };
 
-    this.findPosition = (wObj, hObj, left, top, $htmlObj, offset) => {
-        let $w = self.wnd.$;
-        let marginTutorialWnd = 4;
-        //let wTutorialWnd = $w.width() + 2 * marginTutorialWnd;
-        //let hTutorialWnd = $w.height() + 2 * marginTutorialWnd;
-        let wTutorialWnd = $w.outerWidth();
-        let hTutorialWnd = $w.outerHeight();
+    this.findPosition = ($w, wObj, hObj, left, top, $htmlObj, offset) => {
 
+        let wWnd = $w.outerWidth();
+        let hWnd = $w.outerHeight();
         let shift = this.getShift($htmlObj);
-
         let borderWidth = shift[0];
         let borderHeight = shift[1];
-
-        let distBeetweenTargetAndTutorialWnd = 10;
+        let distBetweenTargetAndlWnd = 10;
 
         let posArray = [
             [
-                left + wObj + borderWidth + distBeetweenTargetAndTutorialWnd, //right down
-                top + hObj + borderHeight + distBeetweenTargetAndTutorialWnd
+                left + wObj + borderWidth + distBetweenTargetAndlWnd, //right down
+                top + hObj + borderHeight + distBetweenTargetAndlWnd
             ],
             [ //left up
-                left - wTutorialWnd - distBeetweenTargetAndTutorialWnd,
-                top - hTutorialWnd - distBeetweenTargetAndTutorialWnd
+                left - wWnd - distBetweenTargetAndlWnd,
+                top - hWnd - distBetweenTargetAndlWnd
             ],
             [
-                left + wObj + borderWidth + distBeetweenTargetAndTutorialWnd, //right up
-                top - hTutorialWnd - distBeetweenTargetAndTutorialWnd
+                left + wObj + borderWidth + distBetweenTargetAndlWnd, //right up
+                top - hWnd - distBetweenTargetAndlWnd
             ],
             [
-                left - wTutorialWnd - distBeetweenTargetAndTutorialWnd, //left down
-                top + hObj + borderHeight + distBeetweenTargetAndTutorialWnd
+                left - wWnd - distBetweenTargetAndlWnd, //left down
+                top + hObj + borderHeight + distBetweenTargetAndlWnd
             ]
         ];
 
@@ -648,8 +664,8 @@ module.exports = function() {
         for (let i = 0; i < posArray.length; i++) {
             let x = posArray[i][0];
             let y = posArray[i][1];
-            let xMax = x + wTutorialWnd;
-            let yMax = y + hTutorialWnd;
+            let xMax = x + wWnd;
+            let yMax = y + hWnd;
 
             if (x > 0 && y > 0 && xMax < wXMax && yMax < hYMax) {
                 opt = i;
@@ -660,18 +676,18 @@ module.exports = function() {
         if (opt == -1) {
 
             //let y = top - wTutorialWnd + borderHeight;
-            let y = top + (hObj + borderHeight) / 2 - wTutorialWnd / 2;
+            let y = top + (hObj + borderHeight) / 2 - wWnd / 2;
 
             posArray = [
 
-                [left - wTutorialWnd - distBeetweenTargetAndTutorialWnd, y], //left  middle top
-                [left + wObj + borderWidth + distBeetweenTargetAndTutorialWnd, y] //right middle top
+                [left - wWnd - distBetweenTargetAndlWnd, y], //left  middle top
+                [left + wObj + borderWidth + distBetweenTargetAndlWnd, y] //right middle top
 
             ];
 
             for (let i = 0; i < posArray.length; i++) {
                 let x = posArray[i][0];
-                let xMax = x + wTutorialWnd;
+                let xMax = x + wWnd;
 
                 if (x > 0 && xMax < wXMax) {
                     opt = i;
@@ -679,7 +695,9 @@ module.exports = function() {
                 }
             }
         }
+
         self.wnd.show();
+
         $w.css('left', posArray[opt][0] + (offset && offset.left ? offset.left : 0));
         $w.css('top', posArray[opt][1] + (offset && offset.top ? offset.top : 0));
     };

@@ -1,8 +1,16 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 const {
     roundToNextStep,
     roundToPrevStep
 } = require('../HelpersTS');
+const {
+    secToParsedTime
+} = require('@core/HelpersTS');
+const npcClasses = {
+    HEROES: 'HEROES',
+    COLOSSUS: 'COLOSSUS',
+    TITAN: 'TITAN'
+}
 
 module.exports = function() {
 
@@ -33,6 +41,7 @@ module.exports = function() {
             nick: _d.nick,
             icon: _d.icon,
             lvl: _d.lvl,
+            prof: _d.prof,
             kind: _d.kind,
             wt: _d.wt,
             resp: _d.resp,
@@ -142,18 +151,45 @@ module.exports = function() {
         return d.icon;
     };
 
+    const getClass = () => {
+        let npcClass;
+        const wt = getWt();
+        if (wt > 99) npcClass = npcClasses.TITAN;
+        else if (wt > 89) npcClass = npcClasses.COLOSSUS;
+        else if (wt > 79) npcClass = npcClasses.HEROES;
+
+        return npcClass;
+    }
+
     const getFrameAmount = () => {
         return frameAmount;
     };
 
     const getPreparedResp = () => {
-        const minResp = roundToPrevStep(d.resp * 0.5 / Engine.worldConfig.getNpcResp(), 1);
-        const maxResp = roundToNextStep(d.resp * 1.5 / Engine.worldConfig.getNpcResp(), 1);
-
-        return `${secToParsedTime(minResp * 60, false)} - ${secToParsedTime(maxResp * 60, false)}`;
+        let minResp = 0;
+        let maxResp = 0;
+        switch (getClass()) {
+            case npcClasses.HEROES:
+                minResp = roundToPrevStep(d.resp * 0.5 / Engine.worldConfig.getNpcResp(), 1);
+                maxResp = roundToNextStep(d.resp * 1.5 / Engine.worldConfig.getNpcResp(), 1);
+                break;
+            case npcClasses.TITAN:
+                minResp = roundToPrevStep(d.resp * 0.75 / Engine.worldConfig.getNpcResp(), 1);
+                maxResp = roundToNextStep(d.resp * 1.25 / Engine.worldConfig.getNpcResp(), 1);
+                break;
+            default:
+                errorReport('HeroesResp.js', 'getPreparedResp', 'Unknown npc class');
+        }
+        const options = {
+            showDays: false,
+            showSec: false
+        }
+        return `${secToParsedTime(minResp * 60, options)} - ${secToParsedTime(maxResp * 60, options)}`;
     };
 
     const getLvlRanges = () => {
+        if (getClass() === npcClasses.TITAN) return false;
+
         const respLvl = this.getLvl();
         const respKind = this.getKind();
         const dropDestroyLvl = Engine.worldConfig.getDropDestroyLvl();
@@ -170,6 +206,8 @@ module.exports = function() {
     }
 
     const getPreparedLvlRanges = () => {
+        if (getClass() === npcClasses.TITAN) return false;
+
         const [min, max] = this.getLvlRanges();
 
         return `${Math.floor(min)} lvl - ${max === '-' ? _t('no-limitations') : max + ' lvl'}`;
@@ -186,6 +224,7 @@ module.exports = function() {
     this.getKind = getKind;
     this.getLvl = getLvl;
     this.getWt = getWt;
+    this.getClass = getClass;
     this.getResp = getResp;
     this.getNick = getNick;
     this.getFrameAmount = getFrameAmount;

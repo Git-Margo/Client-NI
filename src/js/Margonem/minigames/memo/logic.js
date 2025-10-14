@@ -1,4 +1,4 @@
-// var Window = require('core/Window');
+// var Window = require('@core/Window');
 module.exports = function(loaderInstance) {
     var self = this;
     var showedTime = 0x3E8;
@@ -163,12 +163,19 @@ module.exports = function(loaderInstance) {
         self.checkStatus(self.initData);
     };
 
-    this.endGame = function() {
+    const onClear = () => {
         clearInterval(self.remainintTimeInterval);
         self.wnd.fadeAndRemove();
+        Engine.lock.remove('minigames');
+    }
+
+    this.endGame = function() {
+        // clearInterval(self.remainintTimeInterval);
+        // self.wnd.fadeAndRemove();
+        onClear();
         loaderInstance.game = null;
         loaderInstance.endGame();
-        Engine.lock.remove('minigames');
+        // Engine.lock.remove('minigames');
     };
 
     this.checkStatus = function(msg) {
@@ -208,6 +215,8 @@ module.exports = function(loaderInstance) {
     this.unlock = function() {
         self.isLocked = false;
     };
+
+    this.onClear = onClear;
 
     return this;
 }

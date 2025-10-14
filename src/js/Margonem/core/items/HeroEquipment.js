@@ -1,12 +1,12 @@
-var Tpl = require('core/Templates');
-var ChestAnimation = require('core/ChestAnimation');
-var ItemData = require('core/items/data/ItemData');
-var ItemState = require('core/items/ItemState');
-var ItemClass = require('core/items/ItemClass');
-var ItemLocation = require('core/items/ItemLocation');
-var Input = require('core/InputParser');
-var TutorialData = require('core/tutorial/TutorialData');
-const InputMaskData = require('core/InputMaskData');
+var Tpl = require('@core/Templates');
+var ChestAnimation = require('@core/ChestAnimation');
+var ItemData = require('@core/items/data/ItemData');
+var ItemState = require('@core/items/ItemState');
+var ItemClass = require('@core/items/ItemClass');
+var ItemLocation = require('@core/items/ItemLocation');
+var Input = require('@core/InputParser');
+var TutorialData = require('@core/tutorial/TutorialData');
+const InputMaskData = require('@core/InputMaskData');
 module.exports = function() {
     let moduleData = {
         filName: "HeroEquipment.js"
@@ -337,6 +337,7 @@ module.exports = function() {
                 self.bagManage(old, i);
             } else {
                 if (finish) Engine.itemsMarkManager.compareAllItems();
+                if (i.getNow) self.addHighlightNewItem(i, $icon, old);
             }
 
             i.updadeViewAfterUpdateItem($icon);
@@ -556,18 +557,26 @@ module.exports = function() {
         if (Engine.loots) {
             Engine.loots.updateFreeBagSlots();
         }
+
+        if (getEngine().interface.getInterfaceLightMode()) {
+            Engine.widgetManager.updateAmountOfEqColumnVisibleButton(totalFreeSlots);
+        }
+
     };
 
     this.getFreeSlots = () => freeSlots;
 
-    this.addHighlightNewItem = function(i, $icon) {
-        //var bool2 = !(i.cl == 25 || 20 <= i.st && i.st <= 26 );
-        // var bool2 = !(i.cl == 25 || ItemState.isBagSlotSt(i.st) );
-        var bool2 = !(ItemClass.isBlessCl(i.cl) || ItemState.isBagSlotSt(i.st));
-        var bool3 = i.getNow;
-        var alreadyHas = $icon.find('.highlight').find('.new-item').length > 0;
-        //if ((allInit || bool1) && bool2 && bool3 ) {
-        if (bool2 && bool3 && !alreadyHas) {
+    this.addHighlightNewItem = function(i, $icon, old) {
+        const isInBag = ItemState.isInBagSt(i.st);
+        const isGetNow = i.getNow;
+        const alreadyHas = $icon.find('.highlight').find('.new-item').length > 0;
+        //const increaseAmount = old && i.haveStat('amount') && Number(i.getAmount()) > Number(Engine.items.parseItemStat(old.stat)['amount'])
+        const increaseAmount = old && i.issetAmountStat() && Number(i.getAmount()) > Number(Engine.items.parseItemStat(old.stat)[Engine.itemStatsData.amount])
+
+        let condition = isInBag && isGetNow && !alreadyHas;
+        if (old) condition = condition && increaseAmount;
+
+        if (condition) {
             var $div = Tpl.get('new-item');
             $icon.find('.highlight').append($div);
             newItemsAmount++;
@@ -611,15 +620,18 @@ module.exports = function() {
     }
 
     this.checkItemCanEquip = function(i) {
-        let regp = i._cachedStats['reqp'];
-        let lvl = i._cachedStats['lvl'];
+        //let regp = i._cachedStats['reqp'];
+        //let lvl = i._cachedStats['lvl'];
+        let regp = i.getReqpStat();
+        let lvl = i.getLvlStat();
         //return  i.st !== 0 || i.cl > 14
         // return  !ItemState.isInBagSt(i.st) || i.cl > 14
         // && i.cl != 21 //&& i.cl != 25
+
         return !ItemState.isInBagSt(i.st) ||
             ItemClass.isNotEquipClWithoutBlessCl(i.cl) ||
-            isset(lvl) && lvl > Engine.hero.d.lvl ||
-            (isset(regp) && regp.indexOf(Engine.hero.d.prof) < 0) ? false : true;
+            lvl !== null && lvl > getHeroLevel() ||
+            (regp !== null && regp.indexOf(Engine.hero.d.prof) < 0) ? false : true;
     };
 
     //this.getClassOfItemToComparation = function (i) {
@@ -848,10 +860,26 @@ module.exports = function() {
     };
 
     this.afterOnClickEq = function(i, $view) {
-        if (Engine.crafting && Engine.crafting.enhancement) {
-            Engine.crafting.enhancement.onClickInventoryItem(i);
-            return true;
+        if (!$view || itemIsDisabled($view)) return;
+        if (Engine.crafting) {
+            if (Engine.crafting.enhancement) {
+                Engine.crafting.enhancement.onClickInventoryItem(i);
+                return true;
+            }
+            if (Engine.crafting.socket_enchantment) {
+                Engine.crafting.socket_enchantment.onClickInventoryItem(i);
+                return true;
+            }
+            if (Engine.crafting.socket_extraction) {
+                Engine.crafting.socket_extraction.onClickInventoryItem(i);
+                return true;
+            }
+            if (Engine.crafting.socket_composition) {
+                Engine.crafting.socket_composition.onClickInventoryItem(i);
+                return true;
+            }
         }
+
         return false;
     };
 
@@ -878,22 +906,38 @@ module.exports = function() {
             Engine.shop.basket.sellItem(i);
             return true;
         }
-        if (Engine.crafting && Engine.crafting.salvage) {
-            Engine.crafting.salvage.onClickInventoryItem(i);
-            return true;
+        if (Engine.crafting) {
+            if (Engine.crafting.salvage) {
+                Engine.crafting.salvage.onClickInventoryItem(i);
+                return true;
+            }
+            if (Engine.crafting.enhancement) {
+                Engine.crafting.enhancement.onClickInventoryItem(i);
+                return true;
+            }
+            if (Engine.crafting.extraction) {
+                Engine.crafting.extraction.onClickInventoryItem(i);
+                return true;
+            }
+            if (Engine.crafting.socket_enchantment) {
+                Engine.crafting.socket_enchantment.onClickInventoryItem(i);
+                return true;
+            }
+            if (Engine.crafting.socket_extraction) {
+                Engine.crafting.socket_extraction.onClickInventoryItem(i);
+                return true;
+            }
+            if (Engine.crafting.socket_composition) {
+                Engine.crafting.socket_composition.onClickInventoryItem(i);
+                return true;
+            }
         }
-        if (Engine.crafting && Engine.crafting.enhancement) {
-            Engine.crafting.enhancement.onClickInventoryItem(i);
-            return true;
-        }
-        if (Engine.crafting && Engine.crafting.extraction) {
-            Engine.crafting.extraction.onClickInventoryItem(i);
-            return true;
-        }
+
         if (Engine.bonusReselectWindow) {
             Engine.bonusReselectWindow.onClickInventoryItem(i);
             return true;
         }
+
         return false;
     };
 
@@ -937,9 +981,10 @@ module.exports = function() {
             if (isset(data['t'])) Engine.interface.checkTeleport(data);
 
 
-            var stats = i._cachedStats;
+            // var stats = i._cachedStats;
             API.callEvent(Engine.apiData.ITEM_USED, i);
-            if (stats.animation) {
+            // if (stats.animation) {
+            if (i.getAnimationStat()) {
                 if (!Engine.chestAnimation) {
                     Engine.chestAnimation = new ChestAnimation();
                     Engine.chestAnimation.init();
@@ -969,7 +1014,8 @@ module.exports = function() {
             tplId
         );
 
-        Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        //Engine.tutorialManager.checkCanFinishExternalAndFinish(tutorialDataTrigger)
+        Engine.rajController.parseObject(tutorialDataTrigger);
     };
 
     this.createChest = function() {
@@ -998,10 +1044,12 @@ module.exports = function() {
     }
 
     this.init = function() {
-        let $gWP = Engine.interface.get$gameWindowPositioner();
-        $character = $gWP.find('.right-column').find('.inner-wrapper').find('.character_wrapper');
-        $inventory = $gWP.find('.right-column').find('.inner-wrapper').find('.inventory_wrapper');
-        $bags = $gWP.find('.right-column').find('.inner-wrapper').find('.bags-navigation');
+        //let $gWP = Engine.interface.get$gameWindowPositioner();
+        let $rightMainColumnWrapper = Engine.interface.getRightMainColumnWrapper();
+
+        $character = $rightMainColumnWrapper.find('.character_wrapper');
+        $inventory = $rightMainColumnWrapper.find('.inventory_wrapper');
+        $bags = $rightMainColumnWrapper.find('.bags-navigation');
 
         this.initBeforeUpdateItems();
         this.initAfterUpdateItems();
@@ -1011,7 +1059,10 @@ module.exports = function() {
             accept: '.item:not(.shop-item)',
             drop: function(e, ui) {
                 var item = ui.draggable.data('item');
-                if (Engine.dead && !isset(item._cachedStats.revive)) return;
+                // if (Engine.dead && !isset(item._cachedStats.revive)) return;
+                if (Engine.dead && !item.issetReviveStat()) {
+                    return;
+                }
 
                 var left = ui.offset.left - $(this).offset().left;
                 var top = ui.offset.top - $(this).offset().top;
@@ -1020,7 +1071,7 @@ module.exports = function() {
                 var yPass = 88 < top && top < 116;
 
                 if (xPass && yPass) { //sakwa st=9
-                    if (Engine.hero.d.lvl < 25) {
+                    if (getHeroLevel() < 25) {
                         message(_t('need__lvl', {
                             '%val%': 25
                         }));
@@ -1068,7 +1119,8 @@ module.exports = function() {
 
                 const defaultRequest = 'moveitem&st=0&id=' + item.id + '&x=' + dx + '&y=' + dy;
 
-                if (item.stat.match(/amount/) && e.shiftKey) {
+                // if (item.stat.match(/amount/) && e.shiftKey) {
+                if (item.issetAmountStat() && e.shiftKey) {
                     let findSlot = !!itemInSlot;
                     self.splitItem(item, dx, dy, findSlot);
                     return;
@@ -1107,10 +1159,36 @@ module.exports = function() {
                 var item = ui.draggable.data('item');
                 var gridOffset = $(this).offset();
                 var dx = Math.floor((ui.offset.left + ui.draggable.height() * Engine.zoomFactor / 2 - gridOffset.left) / 33 / Engine.zoomFactor);
+
                 if (dx >= 0 && dx < 4) {
                     dx = dx == 3 ? 6 : dx; // exception for key bags
-                    if (isset(item._cachedStats['bag']) && (item.st < 20 || item.st > 26) &&
-                        !(isset(item._cachedStats['soulbound']) || isset(item._cachedStats['permbound']))) {
+                    // if (isset(item._cachedStats['bag']) && (item.st < 20 || item.st > 26) &&
+                    // 	!(isset(item._cachedStats['soulbound']) || isset(item._cachedStats['permbound']))) {
+                    // 	mAlert(_t('bag_drop_infotxt', null, 'item'), [
+                    // 		{
+                    // 			txt: _t('yes'),
+                    // 			callback: function () {
+                    // 				_g('moveitem&id=' + item.id + '&st=' + (20 + dx) + '&put=1');
+                    // 				return true;
+                    // 			}
+                    // 		},
+                    // 		{
+                    // 			txt: _t('no'),
+                    // 			callback: function () {
+                    // 				_g('moveitem&id=' + item.id + '&st=' + (20 + dx) + '&put=2');
+                    // 				return true;
+                    // 			}
+                    // 		}
+                    // 	]);
+                    // } else _g('moveitem&id=' + item.id + '&st=' + (20 + dx));
+
+
+                    let bagIsset = item.issetBagStat();
+                    let soulboundIsset = item.issetSoulboundStat();
+                    let permboundIsset = item.issetPermboundStat();
+                    let setBagInSlotAlert = bagIsset && (item.st < 20 || item.st > 26) && !(soulboundIsset || permboundIsset);
+
+                    if (setBagInSlotAlert) {
                         mAlert(_t('bag_drop_infotxt', null, 'item'), [{
                                 txt: _t('yes'),
                                 callback: function() {
@@ -1126,17 +1204,22 @@ module.exports = function() {
                                 }
                             }
                         ]);
-                    } else _g('moveitem&id=' + item.id + '&st=' + (20 + dx));
+                    } else {
+                        _g('moveitem&id=' + item.id + '&st=' + (20 + dx));
+                    }
+
+
                 }
             }
         });
     };
 
     this.checkBonusReselect = (item, itemInSlot, dx, dy) => {
-        if (
-            isset(item._cachedStats.bonus_reselect) &&
-            isset(itemInSlot._cachedStats.bonus)
-        ) {
+        // if (
+        // 		isset(item._cachedStats.bonus_reselect) &&
+        // 		isset(itemInSlot._cachedStats.bonus)
+        // ) {
+        if (item.issetBonus_reselectStat() && itemInSlot.issetBonusStat()) {
             this.movedOnItemConfirm(_t('bonus_reselect_confirm', {
                 '%val%': itemInSlot.name
             }), item.id, dx, dy)
@@ -1150,7 +1233,14 @@ module.exports = function() {
         // 		(isset(item._cachedStats.enhancement_add) || isset(item._cachedStats.enhancement_add_point)) &&
         // 		itemInSlot.cl >= 1 && itemInSlot.cl <= 14
         // ) {
-        if ((isset(item._cachedStats.enhancement_add) || isset(item._cachedStats.enhancement_add_point)) && ItemClass.isEquipCl(itemInSlot.cl)) {
+        // if ((isset(item._cachedStats.enhancement_add) || isset(item._cachedStats.enhancement_add_point)) && ItemClass.isEquipCl(itemInSlot.cl)) {
+        // 	this.movedOnItemConfirm(_t('enhancement_add_confirm'), item.id, dx, dy)
+        // 	return true;
+        // }
+
+        let result = (item.issetEnhancement_addStat() || item.issetEnhancement_add_pointStat()) && ItemClass.isEquipCl(itemInSlot.cl);
+
+        if (result) {
             this.movedOnItemConfirm(_t('enhancement_add_confirm'), item.id, dx, dy)
             return true;
         }
@@ -1216,7 +1306,7 @@ module.exports = function() {
                 mAlert(_t('bad_prof_to_use_item'));
                 return true;
             }
-            if (isset(stats['lvl']) && stats['lvl'] > Engine.hero.d.lvl) {
+            if (isset(stats['lvl']) && stats['lvl'] > getHeroLevel()) {
                 mAlert(_t('low_level_to_use_item'));
                 return true;
             }
@@ -1252,22 +1342,31 @@ module.exports = function() {
             _t('this_item_cant_split', null, 'item'),
             _t('split_bad_value', null, 'item')
         ];
-        var stats = Engine.items.parseItemStat(item.stat);
-        var am = stats.amount;
-        var re;
-        if (am > 1) {
-            if (stats.cansplit == 0) return mAlert(t[1]);
+
+        // var stats = Engine.items.parseItemStat(item.stat);
+        // var am = stats.amount;
+        let parseAmountStat = parseInt(item.getAmountStat());
+        let req;
+        // if (am > 1) {
+        if (item.issetAmountStat() && parseAmountStat > 1) {
+            // if (stats.cansplit == 0) return mAlert(t[1]);
+            if (parseInt(item.getCansplitStat()) == 0) {
+                return mAlert(t[1]);
+            }
             // if (stats.quest) return mAlert(t[0]);
             // if (stats.upgraded) return mAlert(t[1]);
             // if (!(stats.capacity || item.cl == 21)) return mAlert(t[1]);
-            if (!(stats.capacity || ItemClass.isArrowsCl(item.cl))) return mAlert(t[1]);
+            // if (!(stats.capacity || ItemClass.isArrowsCl(item.cl))) return mAlert(t[1]);
+            if (!(item.getCapacityStat() || ItemClass.isArrowsCl(item.cl))) {
+                return mAlert(t[1]);
+            }
 
             if (!findSlot) {
-                re = 'moveitem&st=0&id=' + item.id + '&x=' + dx + '&y=' + dy + '&split=';
+                req = 'moveitem&st=0&id=' + item.id + '&x=' + dx + '&y=' + dy + '&split=';
             } else {
-                re = 'moveitem&findslot=1&st=0&id=' + item.id + '&x=' + dx + '&y=' + dy + '&split=';
+                req = 'moveitem&findslot=1&st=0&id=' + item.id + '&x=' + dx + '&y=' + dy + '&split=';
             }
-            this.alertWindow(am, re);
+            this.alertWindow(parseAmountStat, req);
         }
     };
 
@@ -1373,6 +1472,24 @@ module.exports = function() {
     //	}
     //	return result;
     //}
+
+    this.moveToDepoItems = () => {
+        let a = [];
+
+        for (let k in hItems) {
+            a.push(hItems[k]);
+        }
+
+        const intervalMoveToDepo = (i, item) => {
+            setTimeout(function() {
+                Engine.depo.setDepoItem(item)
+            }, i * 500)
+        }
+
+        for (let i = 0; i < a.length; i++) {
+            intervalMoveToDepo(i, a[i]);
+        }
+    }
 
     this.setClassInItemsHighlightIfExist = setClassInItemsHighlightIfExist;
     this.unsetClassInItemsHighlightIfExist = unsetClassInItemsHighlightIfExist;

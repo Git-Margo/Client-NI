@@ -1,4 +1,4 @@
-var Templates = require('core/Templates');
+var Templates = require('@core/Templates');
 module.exports = new(function() {
     var self = this;
     $.fn.createDivideButton = function(data, id, setFirstOpt, clb) {

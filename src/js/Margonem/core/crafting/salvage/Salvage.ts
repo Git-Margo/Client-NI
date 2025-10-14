@@ -2,7 +2,7 @@ import {
     enhancedItemConfirmIfNeeded
 } from '../../HelpersTS';
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 declare const askAlert: any;
 declare const removeFromArray: any;
@@ -52,7 +52,6 @@ export default class Salvage {
 
     constructor(private wndEl: HTMLElement) {
         this.createContent();
-        this.initScroll();
         this.droppableInit();
         //this.getEngine().tpls.fetch('h', this.newReceivedItem.bind(this));
         this.getEngine().tpls.fetch(Engine.itemsFetchData.NEW_SALVAGE_RECEIVED_TPL, this.newReceivedItem.bind(this));
@@ -119,12 +118,6 @@ export default class Salvage {
         this.reagentsGridEl = this.contentEl.querySelector('.salvage__reagents') as HTMLElement;
         this.receivesGridEl = this.contentEl.querySelector('.salvage__receives') as HTMLElement;
     }
-
-    initScroll() {
-        $(this.contentEl).find('.scroll-wrapper').addScrollBar({
-            track: true
-        });
-    };
 
     createConfirmButton() {
         const confirmButton = createButton(_t('submit', null, 'salvager'), ['small', 'green', 'disable'], this.confirmOnClick.bind(this));
@@ -332,6 +325,10 @@ export default class Salvage {
         this.getEngine().tpls.deleteMessItemsByLoc('h');
     }
 
+    updateScroll() {
+        this.getEngine().crafting.itemCraft.updateScroll();
+    };
+
     clearAll() {
         this.reagentSlots = {};
         this.selectedInventoryItems = [];
@@ -341,6 +338,7 @@ export default class Salvage {
         this.getEngine().itemsMovedManager.removeItemsByTarget(this.getEngine().itemsMovedData.SALVAGE);
         this.removeAllReceivedItems();
         this.setConfirmButton();
+        this.updateScroll();
     }
 
     close() {

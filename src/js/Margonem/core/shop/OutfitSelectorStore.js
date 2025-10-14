@@ -1,5 +1,5 @@
-let CharacterData = require('core/characters/CharactersData');
-let Tpl = require('core/Templates');
+let CharacterData = require('@core/characters/CharactersData');
+let Tpl = require('@core/Templates');
 
 module.exports = function() {
     let self = this;

@@ -1,5 +1,5 @@
-var BaseMap = require("core/searchPath/maps/BaseMap");
-var ContextMapNode = require("core/searchPath/nodes/ContextMapNode");
+var BaseMap = require('@core/searchPath/maps/BaseMap');
+var ContextMapNode = require('@core/searchPath/nodes/ContextMapNode');
 
 var ContextMap = function(map) {
     //var t0 = performance.now();

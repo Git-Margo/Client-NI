@@ -1,4 +1,4 @@
-let ItemData = require('core/items/data/FetchData');
+let ItemData = require('@core/items/data/FetchData');
 
 module.exports = new(function() {
 

@@ -1,4 +1,4 @@
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 module.exports = {
     addOffsetOfEmo: (master, oneLine) => {

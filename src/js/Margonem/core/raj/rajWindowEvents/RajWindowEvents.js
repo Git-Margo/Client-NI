@@ -1,8 +1,8 @@
-//var RajEventsData = require('core/raj/RajEventsData');
-//var RajData                 = require('core/raj/RajData');
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajWindowEventsData = require('core/raj/rajWindowEvents/RajWindowEventsData');
+//var RajEventsData = require('@core/raj/RajEventsData');
+//var RajData                 = require('@core/raj/RajData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajWindowEventsData = require('@core/raj/rajWindowEvents/RajWindowEventsData');
 
 module.exports = function() {
 

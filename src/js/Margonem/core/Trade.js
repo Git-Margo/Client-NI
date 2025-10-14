@@ -1,9 +1,9 @@
-var tpl = require('core/Templates');
-const InputMaskData = require('core/InputMaskData');
-const ConfirmationQueue = require("./utils/ConfirmationQueue");
+var tpl = require('@core/Templates');
+const InputMaskData = require('@core/InputMaskData');
+const ConfirmationQueue = require('./utils/ConfirmationQueue');
 const {
     checkPersonalItems
-} = require("./HelpersTS");
+} = require('./HelpersTS');
 
 module.exports = function(tId) {
     var self = this;
@@ -47,6 +47,18 @@ module.exports = function(tId) {
         return $tradeAccept.hasClass(disableClass);
     };
 
+    const updateMoney = (mygold) => {
+        let $heroPrize = this.$.find('.hero-prize');
+
+
+        $heroPrize.val(mygold == 0 ? '' : round(mygold, 3));
+        $heroPrize.attr('data-prize', mygold);
+
+        let str = formNumberToNumbersGroup(mygold) + '<br>' + _t('press_enter', null, "trade");
+
+        $heroPrize.tip(str);
+    }
+
     this.update = function(val) {
         if (val.close && val.close == 1) this.closeTrade(val);
 
@@ -59,10 +71,11 @@ module.exports = function(tId) {
         }
 
         if (isset(val.mygold)) {
-            this.$.find('.hero-prize').val(val.mygold == 0 ? '' : round(val.mygold, 3));
-            this.$.find('.hero-prize').attr('data-prize', val.mygold);
-            this.$.find('.hero-prize').tip(formNumberToNumbersGroup(val.mygold));
-            this.acceptBtnActive();
+            //this.$.find('.hero-prize').val(val.mygold == 0 ? '' : round(val.mygold, 3));
+            //this.$.find('.hero-prize').attr('data-prize', val.mygold);
+            //this.$.find('.hero-prize').tip(formNumberToNumbersGroup(val.mygold));
+            updateMoney(val.mygold);
+            //this.acceptBtnActive();
         }
 
         const creditsRatio = (1 - gainedCreditsRatio) * 100; // percent
@@ -104,7 +117,7 @@ module.exports = function(tId) {
         this.initDropable('show', 's');
         this.initDropable('sell', 't');
         this.initGoldChange();
-        this.createButAcceptGold();
+        //this.createButAcceptGold();
     };
 
     this.createTradeDialog = function() {
@@ -181,36 +194,46 @@ module.exports = function(tId) {
         }).focusout(function() {
             var v;
             $(this).off('keydown', self.acceptGold);
-            if (self.$.find('.acceptMoney').is(':hover')) return;
+            //if (self.$.find('.acceptMoney').is(':hover'))return;
+
+            let roundHeroPrize = round(self.$.find('.hero-prize').attr('data-prize'), 3);
+            let heroPrize = self.$.find('.hero-prize').val()
+
+            if (roundHeroPrize == heroPrize || roundHeroPrize == 0 && heroPrize == "") {
+                return
+            }
+
+            message(_t('press_enter', null, "trade"));
+
             if (lastGold == 0) {
                 v = ''
-                self.acceptBtnDeactive();
+                //self.acceptBtnDeactive();
             } else {
                 v = lastGold;
-                self.acceptBtnActive();
+                //self.acceptBtnActive();
             }
             $(this).val(v);
         }).tip(tip, 't_static');
     };
 
-    this.acceptBtnActive = function() {
-        this.$.find('.acceptMoney').addClass('active');
-    };
+    //this.acceptBtnActive = function() {
+    //	this.$.find('.acceptMoney').addClass('active');
+    //};
 
-    this.acceptBtnDeactive = function() {
-        this.$.find('.acceptMoney').removeClass('active');
-    };
+    //this.acceptBtnDeactive = function() {
+    //	this.$.find('.acceptMoney').removeClass('active');
+    //};
 
-    this.createButAcceptGold = function() {
-        var tip = self.tLang('press_enter');
-        var $bck = tpl.get('add-bck');
-        var $but = tpl.get('button').addClass('green').tip(tip);
-        this.$.find('.info').append($but);
-        $but.append($bck);
-        $but.click(function() {
-            self.acceptGold();
-        }).addClass('small acceptMoney');
-    };
+    //this.createButAcceptGold = function () {
+    //	var tip = self.tLang('press_enter');
+    //	var $bck = tpl.get('add-bck');
+    //	var $but = tpl.get('button').addClass('green').tip(tip);
+    //	this.$.find('.info').append($but);
+    //	$but.append($bck);
+    //	$but.click(function () {
+    //		self.acceptGold();
+    //	}).addClass('small acceptMoney');
+    //};
 
     this.acceptGold = function(event) {
         var myGold = self.checkPrize(self.$.find('.hero-prize').val());
@@ -222,16 +245,18 @@ module.exports = function(tId) {
         var k;
         if (event) k = event.keyCode;
         if (event) {
-            if (lastGold != myGold) {
-                self.acceptBtnDeactive();
-            } else {
-                self.acceptBtnActive();
-            }
+            //if(lastGold != myGold) {
+            //	self.acceptBtnDeactive();
+            //} else {
+            //	self.acceptBtnActive();
+            //}
         }
         if (!event || k == 13) {
-            _g(task, function() {
-                lastGold = myGold;
-                self.$.find('.hero-prize').blur();
+            _g(task, function(e) {
+                if (!e.msg) {
+                    //console.log(lastGold, myGold)
+                    lastGold = myGold;
+                }
             });
         }
     };
@@ -246,15 +271,35 @@ module.exports = function(tId) {
         var hGold = self.checkPrize(parsePrice(self.$.find('.hero-prize').attr('data-prize')));
         var buy = [];
         var sell = [];
+        let buyPersonalItem = false;
         for (var k in list) {
             var o = list[k];
             if (o.kind === 'sell') sell.push(k);
-            if (o.kind === 'buy') buy.push(k);
+            if (o.kind === 'buy') {
+                buy.push(k);
+                if (checkPersonalItems(Object.keys(o.data))) buyPersonalItem = true;
+            }
         }
-        _g('trade&a=accept&buy=' +
-            oGold + self.formTab(buy) +
-            '&sell=' + hGold +
-            self.formTab(sell));
+
+        const tradeAcceptSend = () => {
+            _g('trade&a=accept&buy=' +
+                oGold + self.formTab(buy) +
+                '&sell=' + hGold +
+                self.formTab(sell));
+        }
+
+        if (buyPersonalItem) {
+            const confirmInfo = self.tLang('personal-item-confirm'),
+                dataAlert = {
+                    q: confirmInfo,
+                    clb: () => tradeAcceptSend(),
+                    m: 'yesno4',
+                };
+            askAlert(dataAlert);
+            return;
+        }
+
+        tradeAcceptSend();
     };
 
     this.formTab = function(tab) {
@@ -426,10 +471,11 @@ module.exports = function(tId) {
         var viewName = data.loc === 't' ? Engine.itemsViewData.TRADE_ITEM_T_VIEW : Engine.itemsViewData.TRADE_ITEM_S_VIEW;
         var $e = Engine.items.createViewIcon(data.id, viewName)[0];
         var who = data.own == idHero ? 'hero' : 'other';
-        var multiplier = loc == 't' ? 35.4 : 70.8;
+        //var multiplier = loc == 't' ? 35.4 : 70.8;
+        var multiplier = loc == 't' ? 33 : 65;
         var kind = self.kindOfItem(who, loc);
         var slot = self.theLowestSlot(kind);
-        var top = 2;
+        var top = 1;
         var newData = self.createData(data);
 
         list[data.id] = {};
@@ -438,7 +484,7 @@ module.exports = function(tId) {
         list[data.id].kind = kind;
         list[data.id].data = newData;
         if (slot > 4) {
-            top = 38;
+            top = 34;
             slot -= 5;
         }
         $e.css({

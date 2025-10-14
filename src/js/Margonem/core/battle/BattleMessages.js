@@ -1,9 +1,9 @@
 /**
  * Created by Michnik on 2016-01-08.
  */
-//var Interface = require('core/Interface');
-var tpl = require('core/Templates');
-var BattleLogHelpWindow = require('core/battle/BattleLogHelpWindow');
+//var Interface = require('@core/Interface');
+var tpl = require('@core/Templates');
+var BattleLogHelpWindow = require('@core/battle/BattleLogHelpWindow');
 
 
 module.exports = function() {
@@ -33,6 +33,13 @@ module.exports = function() {
         battleLogHelpWindow = new BattleLogHelpWindow();
         battleLogHelpWindow.init();
     };
+
+    this.addToLogLogContent = ($logContent) => {
+        let $clone = $logContent.clone()
+        $msgWrapper[0].innerHTML += $logContent[0].innerHTML
+
+        battleLogHelpWindow.addToLogLogContent($clone);
+    }
 
     this.open = function() {
         show = true
@@ -87,6 +94,7 @@ module.exports = function() {
             '%grp1%': a,
             '%grp2%': b
         }));
+        self.updateScroll();
     };
 
     this.copyForumLog = function() {
@@ -104,7 +112,7 @@ module.exports = function() {
         document.body.removeChild($copyContent);
     };
 
-    this.battleMsg = function(msg, init, allM, indexMsg) {
+    this.battleMsg = function(msg, init, allM, indexMsg, $battleMessageWrapper) {
         var tmpMsg = msg;
         msg = msg.split(';');
         if (!isset(init)) init = false;
@@ -114,13 +122,19 @@ module.exports = function() {
         if (msg[0].indexOf('=') > 0) {
             var tmp = msg[0].split('=');
             id1 = parseInt(tmp[0]); //&&init
-            if (isset(Engine.battle.getShow()) && isset(Engine.battle.warriorsList[id1])) Engine.battle.warriorsList[id1].hpp = parseInt(tmp[1]);
+            if (isset(Engine.battle.getShow()) && isset(Engine.battle.warriorsList[id1])) {
+                Engine.battle.warriorsList[id1].correctHpp = Engine.battle.warriorsList[id1].hpp;
+                Engine.battle.warriorsList[id1].hpp = parseInt(tmp[1]);
+            }
             dotHp = true;
         } else id1 = parseInt(msg[0]);
         if (msg[1].indexOf('=') > 0) {
             var tmp = msg[1].split('=');
             id2 = parseInt(tmp[0]); //&&init
-            if (isset(Engine.battle.getShow()) && isset(Engine.battle.warriorsList[id2])) Engine.battle.warriorsList[id2].hpp = parseInt(tmp[1]);
+            if (isset(Engine.battle.getShow()) && isset(Engine.battle.warriorsList[id2])) {
+                Engine.battle.warriorsList[id2].correctHpp = Engine.battle.warriorsList[id2].hpp;
+                Engine.battle.warriorsList[id2].hpp = parseInt(tmp[1]);
+            }
         } else id2 = parseInt(msg[1]);
         var f1;
         var f2;
@@ -157,8 +171,8 @@ module.exports = function() {
         var isDot = id1 != 0 && id2 == 0 && dotHp; //current message is 'damage over time' effect description
         var tmpName = '';
         for (var k in msg) {
+            tmpName = f1.name;
             if (k == (msg.length - 1) && isDot) {
-                tmpName = f1.name;
                 f1.name += '(' + f1.hpp + '%)';
             }
             var m = msg[k].split('=');
@@ -498,6 +512,7 @@ module.exports = function() {
                     break;
                 case 'poison_lowdmg_per-enemies':
                     tm[1] += _t('msg_poison_lowdmg_per-enemies %val%', {
+                        '%name%': tmpName,
                         '%val%': m[1]
                     }) + '<br>'; // OsÅabienie o %val%% zadawanych obraÅ¼eÅ przez zatrutych przeciwnikÃ³w.
                     break;
@@ -679,7 +694,6 @@ module.exports = function() {
                     tm[1] += _t('msg_lowheal_per-enemies val', {
                         '%val%': m[1]
                     }) + '<br>';
-                    console.log(m[1]);
                     break;
 
                 case 'stinkbomb':
@@ -720,10 +734,7 @@ module.exports = function() {
                     break;
                 case 'legbon_lastheal':
                     var mm = m[1].split(',');
-                    tm[1] += _t('msg_legbon_lastheal %val%', {
-                        '%val%': mm[1],
-                        '%val2%': mm[0]
-                    }) + '<br>'; //mm[1]+': Ostatni ratunek, +'+mm[0]+' punktÃ³w Å¼ycia<br>'
+                    tm[1] += `<font color='00fff0'><b>${_t('msg_legbon_lastheal %val%', {'%val%': mm[1], '%val2%': mm[0]})}</b></font><br>`; //mm[1]+': Ostatni ratunek, +'+mm[0]+' punktÃ³w Å¼ycia<br>'
                     break;
 
                 case '+superspell-dispel':
@@ -842,7 +853,7 @@ module.exports = function() {
                     tm[1] += _t('msg_+stun2-d') + '<br>'; //'+PotÄÅ¼na przeszywajÄca strzaÅa<br>'
                     break;
                 case '+freeze':
-                    tm[1] += "<font color='#66efff'><i>" + _t('msg_+freeze') + '</i></font><br>'; //'+ZamroÅ¼enie<br>'
+                    tm[1] += "<font color='66efff'><i>" + _t('msg_+freeze') + '</i></font><br>'; //'+ZamroÅ¼enie<br>'
                     break;
                 case '+immobilize':
                     tm[1] += _t('msg_+immobilize') + '<br>'; //'+Unieruchomienie<br>'
@@ -990,11 +1001,7 @@ module.exports = function() {
                     }) + '<br>'; //'-Aktywna ochrona fizyczna '+m[1]+'% obraÅ¼eÅ na caÅÄ walkÄ<br />'
                     break;
                 case 'anguish':
-                    //console.log('anguish', m, msg);
-
                     let anguishArray = m[1].split(",");
-
-                    console.log('anguish')
                     type = 'neu'
                     if (anguishArray.length == 1) {
                         tm[1] += _t('msg_anguish %name% %hpp% %val0%', {
@@ -1003,7 +1010,6 @@ module.exports = function() {
                             '%val0%': anguishArray[0]
                         }) + '<br>';
                     } else {
-                        //debugger;
                         tm[1] += _t('msg_anguish %name% %hpp% %val0% %val1%', {
                             '%name%': tmpName,
                             '%hpp%': f1.hpp,
@@ -1013,21 +1019,11 @@ module.exports = function() {
                     }
                     break;
                 case '-legbon_facade':
-                    tm[1] += _t('msg_-legbon_facade %val%', {
-                        '%val%': m[1]
-                    }) + '<br>';
-                    console.log('-legbon_facade')
+                    tm[1] += `<font color="c7c8eb"><b><i>${_t('msg_-legbon_facade %val%', {'%val%': m[1]})}</i></b></font><br>`;
                     break;
                 case '+legbon_anguish':
-                    tm[1] += _t('msg_+legbon_anguish %val%', {
-                        '%val%': m[1]
-                    }) + '<br>';
-                    console.log('+legbon_anguish')
+                    tm[1] += `<font color="ecb608"><b>${_t('msg_+legbon_anguish %val%', {'%val%': m[1]})}</b></font><br>`;
                     break;
-                    //case '-legbon_anguish':
-                    //	tm[1] += _t('msg_-legbon_anguish %val%', {'%val%': m[1]}) + '<br>';
-                    //	console.log('-legbon_anguish')
-                    //	break;
                 case '-legbon_retaliation':
                     tm[1] += _t('msg_-legbon_retaliation %val%', {
                         '%val%': m[1]
@@ -1037,13 +1033,11 @@ module.exports = function() {
                     tm[1] += _t('msg_+legbon_frenzy_main %val%', {
                         '%val%': m[1]
                     }) + '<br>';
-                    console.log('+legbon_frenzy_main')
                     break;
                 case '+legbon_frenzy_off':
                     tm[1] += _t('msg_+legbon_frenzy_off %val%', {
                         '%val%': m[1]
                     }) + '<br>';
-                    console.log('msg_+legbon_frenzy_off %val%')
                     break;
                 case '-blok':
                     tm[2] += "<font color='8dff5b'><b>" + _t('msg_-blok %val%', {
@@ -1098,7 +1092,10 @@ module.exports = function() {
                     takenum += m[1];
                     break;
                 case '-legbon_critred':
-                    tm[2] += _t('msg_-legbon_critred') + '<br>'; //'-Krytyczna osÅona<br>'
+                    tm[2] += `<font color='c7c8eb'><b>${_t(`msg_${m[0]} %val%`, {'%val%': m[1]})}</b></font><br>`;
+                    break;
+                case '+legbon_puncture':
+                    tm[2] += `<font color='ecb608'><b><i>${_t(`msg_${m[0]} %val%`, {'%val%': m[1]})}</i></b></font><br>`;
                     break;
                 case '-legbon_resgain':
                     tm[2] += _t('msg_-legbon_resgain') + '<br>'; //'-Ochrona Å¼ywioÅÃ³w<br>'
@@ -1310,17 +1307,12 @@ module.exports = function() {
                     }) + '<br>'; // %name% ma obniÅ¼onÄ szansÄ na cios krytyczny.
                     break;
                     //nick and value
-                case 'heal_per-enemies':
-                    tm[1] += _t('eng_game_nick_and_value_' + m[0] + ' %name% %val%', {
-                        '%name%': f1.name,
-                        '%val%': Math.abs(m[1])
-                    }) + '<br>'; // -obniÅ¼enie siÅ krytyka magicznego i fizycznego x%val%
-                    break;
                 case 'heal_per-allies':
+                case 'heal_per-enemies':
                 case 'hp_per-allies':
                 case 'hp_per-enemies':
                     tm[1] += _t('eng_game_nick_and_value_' + m[0] + ' %name% %val%', {
-                        '%name%': f1.name,
+                        '%name%': tmpName,
                         '%val%': m[1]
                     }) + '<br>'; // -obniÅ¼enie siÅ krytyka magicznego i fizycznego x%val%
                     break;
@@ -1483,17 +1475,25 @@ module.exports = function() {
         var $msg = tpl.get('battle-msg').html(parseContentBB(tmpM, false));
         var s = type.split('=');
         $msg.addClass(s[1]);
-        $msgWrapper.append($msg);
 
-        if (!Engine.dead) {
-            //if (!Engine.opt(8)) {
-            if (isSettingsOptionsInterfaceAnimationOn()) {
-                $msg.css('display', 'none');
-                $msg.fadeIn("slow");
-            }
+
+        if ($battleMessageWrapper) {
+            $battleMessageWrapper.append($msg)
+        } else {
+            $msgWrapper.append($msg);
         }
-        battleLogHelpWindow.appendMsg($msg.clone());
-        self.updateScroll();
+
+        //if (!Engine.dead) {
+        //if (!Engine.opt(8)) {
+        //if (isSettingsOptionsInterfaceAnimationOn()) {
+        //	$msg.css('display', 'none');
+        //	$msg.fadeIn("slow");
+        //}
+        //}
+        if (!$battleMessageWrapper) {
+            battleLogHelpWindow.appendMsg($msg.clone());
+        }
+        //self.updateScroll();
     };
 
     //var transitionEvent = whichTransitionEvent();

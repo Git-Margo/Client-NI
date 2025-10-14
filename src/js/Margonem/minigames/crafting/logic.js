@@ -1,5 +1,5 @@
-// var Window = require('core/Window');
-var Templates = require('core/Templates');
+// var Window = require('@core/Window');
+var Templates = require('@core/Templates');
 
 module.exports = function(loaderInstance) {
     this.initData = null;
@@ -72,11 +72,19 @@ module.exports = function(loaderInstance) {
         this.init();
     };
 
-    this.endGame = function() {
+    const onClear = () => {
         Engine.lock.remove('minigames');
         clearInterval(self.remainingTimeInterval);
         this.infobox.remove();
         self.wnd.fadeAndRemove();
+    }
+
+    this.endGame = function() {
+        // Engine.lock.remove('minigames');
+        // clearInterval(self.remainingTimeInterval);
+        // this.infobox.remove();
+        // self.wnd.fadeAndRemove();
+        onClear();
         this.l.endGame();
     };
     this.parseMessage = function(msg) {
@@ -142,4 +150,6 @@ module.exports = function(loaderInstance) {
         $infoText.text(this.initData.i[0]);
         this.infobox.append($infoText);
     };
+
+    this.onClear = onClear;
 };

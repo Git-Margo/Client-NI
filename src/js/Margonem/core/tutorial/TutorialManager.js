@@ -1,9 +1,10 @@
-let Tutorials = require('core/tutorial/Tutorials');
-let PLDataTutorial = require('core/tutorial/PLDataTutorial');
-let ENDataTutorial = require('core/tutorial/ENDataTutorial');
-var bigInt = require("big-integer");
-let ItemState = require('core/items/ItemState');
-var TutorialData = require('core/tutorial/TutorialData');
+let Tutorials = require('@core/tutorial/Tutorials');
+let PLDataTutorial = require('@core/tutorial/PLDataTutorial');
+let ENDataTutorial = require('@core/tutorial/ENDataTutorial');
+var bigInt = require('big-integer');
+let ItemState = require('@core/items/ItemState');
+var TutorialData = require('@core/tutorial/TutorialData');
+var RajData = require('@core/raj/RajData');
 
 module.exports = function() {
 
@@ -314,11 +315,11 @@ module.exports = function() {
     };
 
     this.checkMinLevel = (minLevel) => {
-        return Engine.hero.d.lvl >= minLevel;
+        return getHeroLevel() >= minLevel;
     };
 
     this.checkMaxLevel = (maxLevel) => {
-        return Engine.hero.d.lvl <= maxLevel;
+        return getHeroLevel() <= maxLevel;
     };
 
     this.checkMap = (idMaps) => {
@@ -674,16 +675,51 @@ module.exports = function() {
         Engine.rajController.parseObject(d);
     }
 
+    const requireNameIsCorrect = (oneRequire, oneTutorialData) => {
+        const FUNC = 'requireNameIsCorrect';
+
+        if (!lengthObject(oneRequire)) {
+            errorReport(moduleData.fileName, FUNC, `require object is empty!`, oneTutorialData);
+            return false
+        }
+
+        for (let requireName in oneRequire) {
+
+            if (!checkRequireNameIsExist(requireName)) {
+                errorReport(moduleData.fileName, FUNC, `require name ${requireName} not exist!`, oneRequire);
+                return false
+            }
+        }
+
+        return true
+    };
+
+    const checkRequireNameIsExist = (searchRequireName) => {
+        const OFR = TutorialData.ON_FINISH_REQUIRE;
+
+        for (let requireKey in OFR) {
+            let requireName = OFR[requireKey];
+
+            if (requireName == searchRequireName) {
+                return true
+            }
+        }
+
+        return false
+    };
+
     const checkExternalFinish = (oneTutorialData, tutorialDataTrigger, activeId) => { // tutorialFinishRequireName) => {
+        const FUNC = 'checkExternalFinish';
+        const SYSTEM = "SYSTEM";
+
         let onFinish = oneTutorialData[0].onFinish;
 
         if (!onFinish) {
-            errorReport("TutorialManager.js", "checkExternalFinish", "onFinish not exist :O", oneTutorialData);
+            errorReport(moduleData.fileName, FUNC, "onFinish not exist :O", oneTutorialData);
             message('LOOK TO CONSOLE!');
-            //return false;
             return {
                 result: false,
-                kind: "SYSTEM"
+                kind: SYSTEM
             };
         }
 
@@ -692,12 +728,19 @@ module.exports = function() {
         let breakTutorial = onFinish[TutorialData.ON_FINISH_TYPE.BREAK];
 
         if (!require) {
-            errorReport("TutorialManager.js", "checkExternalFinish", "onFinish.require not exist :O", oneTutorialData);
-            message('LOOK TO CONSOLE!')
-            //return false;
+            errorReport(moduleData.fileName, FUNC, "onFinish.require not exist :O", oneTutorialData);
+            message('LOOK TO CONSOLE!');
             return {
                 result: false,
-                kind: "SYSTEM"
+                kind: SYSTEM
+            };
+        }
+
+        if (!elementIsArray(require)) {
+            errorReport(moduleData.fileName, FUNC, "onFinish.require have to be array!", oneTutorialData);
+            return {
+                result: false,
+                kind: SYSTEM
             };
         }
 
@@ -706,11 +749,12 @@ module.exports = function() {
             for (let i = 0; i < breakTutorial.length; i++) {
                 let oneBreakName = breakTutorial[i];
 
-                //if (oneBreakName == tutorialDataTrigger.name) return true;
-                if (oneBreakName == tutorialDataTrigger.name) return {
-                    result: true,
-                    kind: TutorialData.ON_FINISH_TYPE.BREAK
-                };
+                if (oneBreakName == tutorialDataTrigger.name) {
+                    return {
+                        result: true,
+                        kind: TutorialData.ON_FINISH_TYPE.BREAK
+                    };
+                }
             }
         }
 
@@ -718,37 +762,133 @@ module.exports = function() {
             for (let i = 0; i < absoluteFinish.length; i++) {
                 let oneAbsoluteFinishName = absoluteFinish[i];
 
-                //if (oneAbsoluteFinishName == tutorialDataTrigger.name) return true;
-                if (oneAbsoluteFinishName == tutorialDataTrigger.name) return {
-                    result: true,
-                    kind: TutorialData.ON_FINISH_TYPE.ABSOLUTE_FINISH
-                };
+                if (oneAbsoluteFinishName == tutorialDataTrigger.name) {
+                    return {
+                        result: true,
+                        kind: TutorialData.ON_FINISH_TYPE.ABSOLUTE_FINISH
+                    };
+                }
             }
         }
+
+        let fullFillAmount = 0;
 
         for (let i = 0; i < require.length; i++) {
             let oneRequire = require[i];
 
-            if (!oneRequire[tutorialDataTrigger.name]) continue;
-            if (!checkExternalOneTutorialRequireFullFill(oneRequire, tutorialDataTrigger, activeId)) continue;
+            if (!elementIsObject(oneRequire)) {
+                errorReport(moduleData.fileName, FUNC, "Each element of require array have to be object!", require);
+                return {
+                    result: false,
+                    kind: SYSTEM
+                };
+            }
 
-            require.splice(i, 1);
-            i--;
+            if (!requireNameIsCorrect(oneRequire, oneTutorialData)) {
+                return {
+                    result: false,
+                    kind: SYSTEM
+                };
+            }
+
+            if (oneRequire[tutorialDataTrigger.name] && checkExternalOneTutorialRequireFullFill(oneRequire, tutorialDataTrigger, activeId)) {
+                fullFillAmount++;
+            }
+
         }
 
-        let result = require.length ? false : true;
+
+        const AND = TutorialData.ON_FINISH_TYPE_CONNECTOR.AND;
+        const OR = TutorialData.ON_FINISH_TYPE_CONNECTOR.OR;
+
+        let connector = AND;
+        let requireConnector = onFinish.requireConnector;
+
+        if (requireConnector && checkConnector(requireConnector)) {
+            connector = requireConnector;
+        }
+
+        let result;
+        switch (connector) {
+            case AND:
+                result = fullFillAmount == require.length;
+                break;
+            case OR:
+                result = fullFillAmount > 0;
+                break;
+        }
+
+        //let result = fullFillAmount == require.length;
 
         return {
             result: result,
             kind: TutorialData.ON_FINISH_TYPE.REQUIRE
         };
     };
+    /*
+        const getConnector = (onFinishData) => {
+
+            const AND = TutorialData.ON_FINISH_TYPE_CONNECTOR.AND;
+            const OR = TutorialData.ON_FINISH_TYPE_CONNECTOR.OR;
+
+            if (TutorialData.ON_FINISH_TYPE.REQUIRE) {
+
+                let requireConnector = onFinishData.requireConnector;
+
+                if (!requireConnector || !checkConnector(requireConnector)) {
+                    return AND
+                }
+
+                return requireConnector;
+            }
+
+            if (TutorialData.ON_FINISH_TYPE.ABSOLUTE_FINISH) {
+
+                let absoluteFinishConnector = onFinishData.absoluteFinishConnector;
+
+                if (!absoluteFinishConnector || !checkConnector(absoluteFinishConnector)) {
+                    return OR
+                }
+
+                return absoluteFinishConnector;
+            }
+
+            if (TutorialData.ON_FINISH_TYPE.BREAK) {
+
+                let breakConnector = onFinishData.breakConnector;
+
+                if (!breakConnector || !checkConnector(breakConnector)) {
+                    return OR
+                }
+
+                return breakConnector;
+            }
+
+        };
+    */
+    const checkConnector = (connector) => {
+        if (connector == TutorialData.ON_FINISH_TYPE_CONNECTOR.OR || connector == TutorialData.ON_FINISH_TYPE_CONNECTOR.AND) {
+            return true
+        }
+
+        errorReport(moduleData.fileName, "checkConnector", "incorrect connector");
+
+        return false
+    }
 
     this.createTutorialDataTrigger = (name, type, val) => {
+        //return {
+        //    name	: name,
+        //    type	: type,
+        //    [name]	: val
+        //}
+
         return {
-            name: name,
-            type: type,
-            [name]: val
+            [RajData.TUTORIAL_CLOSE_INTERNAL_FUNCTION]: {
+                name: name,
+                type: type,
+                [name]: val
+            }
         }
 
     }
@@ -770,8 +910,9 @@ module.exports = function() {
 
 
         switch (tutorialDataTrigger.name) {
+            //case USE_ITEM_TPL:                               return oneRequire[USE_ITEM_TPL].includes(tutorialDataTrigger[USE_ITEM_TPL]);
             case USE_ITEM_TPL:
-                return oneRequire[USE_ITEM_TPL].includes(tutorialDataTrigger[USE_ITEM_TPL]);
+                return itemsUse(oneRequire, tutorialDataTrigger);
             case TALK_NPC_ID:
                 return oneRequire[TALK_NPC_ID] == tutorialDataTrigger[TALK_NPC_ID];
             case CLICK_RECIPE_ON_LIST:
@@ -803,6 +944,18 @@ module.exports = function() {
                 return false;
         }
     }
+
+    const itemsUse = (oneRequire, tutorialDataTrigger) => {
+        const USE_ITEM_TPL = TutorialData.ON_FINISH_REQUIRE.USE_ITEM_TPL;
+        let data = oneRequire[USE_ITEM_TPL];
+
+        if (!elementIsArray(data)) {
+            errorReport(moduleData.fileName, "itemsUse", "useItemTpl have to be array!", oneRequire);
+            return false
+        }
+
+        return oneRequire[USE_ITEM_TPL].includes(tutorialDataTrigger[USE_ITEM_TPL])
+    };
 
     this.onClear = () => {
         this.externalList[CFG.LANG.PL] = {};

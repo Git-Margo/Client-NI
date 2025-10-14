@@ -1,5 +1,5 @@
-let SpecificAnimation = require('core/specificAnimation/SpecificAnimation.js');
-let SpecificAnimationMechanism = require('core/specificAnimation/SpecificAnimationMechanism.js');
+let SpecificAnimation = require('@core/specificAnimation/SpecificAnimation.js');
+let SpecificAnimationMechanism = require('@core/specificAnimation/SpecificAnimationMechanism.js');
 
 module.exports = function() {
 

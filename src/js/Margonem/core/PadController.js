@@ -1,25 +1,24 @@
-const tpl = require('core/Templates');
-const Input = require('core/InputParser');
-const HeroDirectionData = require('core/characters/HeroDirectionData');
-const StorageFuncWindow = require('core/window/StorageFuncWindow');
+const tpl = require('@core/Templates');
+const Input = require('@core/InputParser');
+const HeroDirectionData = require('@core/characters/HeroDirectionData');
+const StorageFuncWindow = require('@core/window/StorageFuncWindow');
 
 module.exports = function() {
     var self = this;
     var content = null;
     var $pad;
-    var marginLeft;
-    var marginTop;
+    var $padBall;
     var zoom;
+    const PAD_SIZE = 74;
 
-    this.init = function() {
-        this.initWindow();
-        this.initTouch('.pad-bck');
-        this.setVisible();
-        $pad = this.wnd.$.find('.pad-bck')
+    const init = () => {
+        initWindow();
 
+        $pad = this.wnd.$.find('.pad-bck');
+        $padBall = this.wnd.$.find('.pad-ball');
     };
 
-    this.initWindow = function() {
+    const initWindow = () => {
         content = tpl.get('pad-controller');
 
         Engine.windowManager.add({
@@ -28,47 +27,58 @@ module.exports = function() {
             type: Engine.windowsData.type.TRANSPARENT,
             nameRefInParent: 'wnd',
             objParent: this,
-            manageOpacity: 1,
+            manageOpacity: 0,
             managePosition: {
                 x: '251',
                 y: '60'
             },
             title: '',
             addClass: 'pad-controller-window',
-            manageShow: true,
+            //manageShow        : true,
+            closeable: false,
             onclose: () => {
-                this.toggleVisible();
+                //this.toggleVisible();
             }
         });
 
-        this.wnd.updatePos();
+        this.wnd.hide();
         this.wnd.$.css('min-width', '0px');
-
         this.wnd.addToAlertLayer();
     };
 
-    this.toggleVisible = function() {
-        var isOpen = self.wnd.isShow();
-        isOpen ? self.wnd.hide() : self.wnd.show();
+    const show = (e) => {
+        this.wnd.show();
+        Engine.canvasTip.hide(e);
+        Engine.interface.removePopupMenu();
     };
 
-    this.initTouch = function(name) {
-        content.find(name)[0].addEventListener("touchstart", function(e) {
-            e.preventDefault();
-            zoom = 1 / Engine.zoomFactor;
-            marginLeft = 10 * zoom;
-            marginTop = 33 * zoom;
-            self.calculateDir(e);
-        }, false);
-        content.find(name)[0].addEventListener("touchmove", function(e) {
-            e.preventDefault();
-            self.calculateDir(e);
-        }, false);
-        content.find(name)[0].addEventListener("touchend", function(e) {
-            e.preventDefault();
-            Input.setMoveDirection(null);
-        }, false);
+    const hide = () => {
+        this.wnd.hide();
     };
+
+    const isShow = () => {
+        return this.wnd.isShow()
+    };
+
+    const touchstartEvent = (e) => {
+        e.preventDefault();
+        zoom = 1 / Engine.zoomFactor;
+        self.calculateDir(e);
+    };
+
+    const touchmoveEvent = (e) => {
+        e.preventDefault();
+        self.calculateDir(e);
+    };
+
+    const touchendEvent = (e) => {
+        e.preventDefault();
+        Input.setMoveDirection(null);
+    };
+
+    const getPadSize = () => {
+        return PAD_SIZE;
+    }
 
     this.calculateDir = function(e) {
         var touches = e.targetTouches[0];
@@ -80,15 +90,25 @@ module.exports = function() {
         var screenLeft = pos.left * zoom;
         var screenTop = pos.top * zoom;
 
-        var l = pLeft - screenLeft - marginLeft;
-        var t = pTop - screenTop - marginTop;
+        var l = pLeft - screenLeft;
+        var t = pTop - screenTop;
 
-        let padWidth = 176;
-        let centreOfPad = padWidth / 2;
+        let centreOfPad = getPadSize() / 2;
 
         var xDiff = centreOfPad - l;
         var yDiff = centreOfPad - t;
-        if (Math.abs(xDiff) < 10 && Math.abs(yDiff) < 10) return;
+
+        let posToDraw = getPoint(-xDiff, -yDiff, 30);
+
+        let margin = 2;
+
+        $padBall.css('left', centreOfPad + posToDraw[0] + margin);
+        $padBall.css('top', centreOfPad + posToDraw[1] + margin);
+
+        if (Math.abs(xDiff) < 10 && Math.abs(yDiff) < 10) {
+            Engine.inputParser.setMoveDirection(null);
+            return;
+        }
 
         var xDiffIsMore = Math.abs(xDiff) > Math.abs(yDiff);
 
@@ -97,12 +117,29 @@ module.exports = function() {
 
     };
 
-    this.setVisible = function() {
-        var store = StorageFuncWindow.getShowWindow(Engine.windowsData.name.PAD_CONTROLLER);
-        var show;
-        if (store === null) {
-            show = true;
-            StorageFuncWindow.setShowWindow(show, Engine.windowsData.name.PAD_CONTROLLER);
-        } else if (!store) self.wnd.hide();
+    const getPoint = (x, y, radius) => {
+        const distance = Math.sqrt(x * x + y * y);
+        if (distance > radius) {
+            const scale = radius / distance;
+            x *= scale;
+            y *= scale;
+        }
+
+        return [x, y]
     };
+
+    const setPos = (x, y) => {
+        this.wnd.setXPos(x);
+        this.wnd.setYPos(y);
+    };
+
+    this.init = init;
+    this.show = show;
+    this.hide = hide;
+    this.isShow = isShow;
+    this.setPos = setPos;
+    this.getPadSize = getPadSize;
+    this.touchstartEvent = touchstartEvent;
+    this.touchmoveEvent = touchmoveEvent;
+    this.touchendEvent = touchendEvent;
 };

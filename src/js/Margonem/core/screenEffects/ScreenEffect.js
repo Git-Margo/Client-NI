@@ -1,9 +1,9 @@
-var ScreenBehaviour = require('core/screenEffects/ScreenBehaviour.js');
-let FramesWithHoles = require('core/FramesWithHoles');
-let ScreenEffectData = require('core/screenEffects/ScreenEffectData.js');
-let RajRandomElements = require('core/raj/RajRandomElements');
-let RajObjectInterface = require('core/raj/RajObjectInterface');
-let RajData = require('core/raj/RajData');
+var ScreenBehaviour = require('@core/screenEffects/ScreenBehaviour.js');
+let FramesWithHoles = require('@core/FramesWithHoles');
+let ScreenEffectData = require('@core/screenEffects/ScreenEffectData.js');
+let RajRandomElements = require('@core/raj/RajRandomElements');
+let RajObjectInterface = require('@core/raj/RajObjectInterface');
+let RajData = require('@core/raj/RajData');
 
 module.exports = function() {
 
@@ -66,7 +66,7 @@ module.exports = function() {
         this.updateDataRajObject(data);
         setId(data.id);
         if (data.order) setOrder(data.order);
-        if (data.behavior.repeat) setRepeat(data.repeat);
+        if (data.behavior.repeat) setRepeat(data.behavior.repeat);
 
         //let list = data.behavior;
         let list = data.behavior.list;

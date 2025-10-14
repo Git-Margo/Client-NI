@@ -1,4 +1,4 @@
-let AuctionData = require('core/auction/AuctionData');
+let AuctionData = require('@core/auction/AuctionData');
 let Templates = require('../Templates');
 
 module.exports = function AuctionItemCategory() {

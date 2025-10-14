@@ -1,5 +1,5 @@
-var Window = require('core/window/Window.js');
-let LayersData = require('core/interface/LayersData');
+var Window = require('@core/window/Window.js');
+let LayersData = require('@core/interface/LayersData');
 
 module.exports = function() {
 

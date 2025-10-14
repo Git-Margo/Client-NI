@@ -1,6 +1,6 @@
-let CharacterEffectsData = require('core/characterEffects/CharacterEffectsData');
-let HeroDirectionData = require('core/characters/HeroDirectionData');
-let CanvasObjectTypeData = require('core/CanvasObjectTypeData');
+let CharacterEffectsData = require('@core/characterEffects/CharacterEffectsData');
+let HeroDirectionData = require('@core/characters/HeroDirectionData');
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
 
 let CharacterEffect = function() {};
 

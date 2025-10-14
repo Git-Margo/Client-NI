@@ -1,5 +1,5 @@
-let CanvasFade = require('core/canvasFade/CanvasFade.js');
-let CanvasFadeData = require('core/canvasFade/CanvasFadeData.js');
+let CanvasFade = require('@core/canvasFade/CanvasFade.js');
+let CanvasFadeData = require('@core/canvasFade/CanvasFadeData.js');
 
 module.exports = function() {
 
@@ -68,10 +68,11 @@ module.exports = function() {
     };
 
     const draw = (ctx) => {
-        ctx.save();
+        //ctx.save();
         ctx.globalAlpha = canvasFade.getFadeValue();
         originalObject.draw(ctx);
-        ctx.restore();
+        ctx.globalAlpha = 1;
+        //ctx.restore();
     };
 
     const setOriginalObject = (_originalObject) => {

@@ -1,6 +1,10 @@
-let QuestData = require('core/quest/QuestData');
+let QuestData = require('@core/quest/QuestData');
 
 module.exports = function() {
+
+    const moduleData = {
+        fileName: "QuestTrackingParser.js"
+    };
 
     const init = () => {
 
@@ -33,9 +37,13 @@ module.exports = function() {
 
         let splitData = data.split("|");
 
-        if (splitData.length == 5) return parseMargoPlOneData(splitData);
+        if (splitData.length == 5) {
+            return parseMargoPlOneData(splitData);
+        }
 
-        if (splitData.length == 3) return parseMargoComOneData(splitData);
+        errorReport(moduleData.fileName, "parseOneData", "undefined data format", data);
+
+        //if (splitData.length == 3) return parseMargoComOneData(splitData);
 
     };
 
@@ -53,7 +61,7 @@ module.exports = function() {
             questId: splitData[0],
             kind: kind,
             killCounter: getKillConter(kind, splitData[2]),
-            toCollect: getToCollect(kind, splitData[2]),
+            toCollect: getToCollectPl(kind, splitData[2]),
             name1: name1, // text on map table, or item in shop
             name2: mixData.name, // name of item or npc to find on map
             pos: mixData.pos
@@ -173,6 +181,18 @@ module.exports = function() {
         let splitData = val.split("/");
 
         return parseInt(splitData[1])
+    };
+
+    const getToCollectPl = (kind, data) => {
+        if (kind != QuestData.TYPE.COLLECT) return null;
+
+        let dataSplit = data.split("/");
+
+        if (dataSplit.length == 1) {
+            return data;
+        }
+
+        return dataSplit[1];
     };
 
     const getMixData = (data, name1) => {

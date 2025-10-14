@@ -1,10 +1,18 @@
-//let wnd = require('core/Window');
-let Templates = require('core/Templates');
+//let wnd = require('@core/Window');
+let Templates = require('@core/Templates');
+let Tabs = require('@core//components/Tabs');
+let OutfitCard = require('@core//components/OutfitCard');
 
 module.exports = function() {
 
-    let showCard = 0;
+    const moduleData = {
+        fileName: "ChangeOutfit"
+    };
+
+    //let showCard = 0;
     let chooseOutfit = null;
+
+    let outfitCards = [];
 
     let animX = {
         your: null,
@@ -28,6 +36,11 @@ module.exports = function() {
         x: 0,
         y: 0
     };
+
+    const SETTINGS_DATA = {
+        DEFAULT: "DEFAULT",
+        EQ: "EQ"
+    }
 
     let yourLoaded = false;
     let previewLoaded = false;
@@ -62,16 +75,25 @@ module.exports = function() {
     };
 
     this.prepareData = (i) => {
-        let relativeUrl = i._cachedStats.outfit.split(',')[1];
+        //let relativeUrl = i._cachedStats.outfit.split(',')[1];
+        let outfitStat = i.getOutfitStat();
+        let relativeUrl = outfitStat.split(',')[1];
+
         let data = {
             requirements: {},
             relativeUrl: relativeUrl
         };
 
-        if (i._cachedStats.lvl) data.requirements.level = i._cachedStats.lvl;
+        //if (i._cachedStats.lvl) data.requirements.level = i._cachedStats.lvl;
+        if (i.getLvlStat()) {
+            data.requirements.level = i.getLvlStat();
+        }
 
-        if (i._cachedStats.timelimit) {
-            let d = i._cachedStats.timelimit.split(',');
+        //if (i._cachedStats.timelimit) {
+        if (i.issetTimelimitStat()) {
+            //let d = i._cachedStats.timelimit.split(',');
+            let timelimitStat = i.getTimelimitStat();
+            let d = timelimitStat.split(',');
             if (d[1]) {
                 let timelimit = d[1];
 
@@ -83,7 +105,7 @@ module.exports = function() {
                         timelimit: timelimit
                     };
 
-                    this.addInterval(i, timelimit);
+                    this.addInterval(i, timelimit, data.requirements.level);
                 }
             }
         }
@@ -92,10 +114,14 @@ module.exports = function() {
     };
 
     this.newOutfitItem = (i, finish) => {
-        if (!i._cachedStats.outfit) return;
+        //if (!i._cachedStats.outfit) return;
+        if (!i.issetOutfitStat()) {
+            return;
+        }
 
         let data = this.prepareData(i);
 
+        //let $one = this.createOneOutfit(data, i);
         let $one = this.createOneOutfit(data, i);
         this.wnd.$.find('.equip-section').find('.scroll-pane').append($one);
 
@@ -116,22 +142,60 @@ module.exports = function() {
         return Math.floor((parseInt(timelimit) - unix_time()) / 60);
     };
 
-    this.addInterval = (i, timelimit) => {
-        allIntervals[i.id] = setInterval(() => {
+    this.addInterval = (i, timelimit, level) => {
+
+        let id = i.id;
+
+        allIntervals[id] = setInterval(() => {
+
+            let outfitCard = getOutfitCardById(id);
+
+            if (!outfitCard) {
+                errorReport(moduleData.fileName, "addInterval", "outfitCard not exist", id);
+                return
+            }
 
             let min = this.getMinutes(timelimit);
             if (min < 0) {
-                clearInterval(allIntervals[i.id]);
-                delete allIntervals[i.id];
-                this.wnd.$.find('.outfit-item-id-' + i.id).removeClass('it-is-not-time');
+                clearInterval(allIntervals[id]);
+                delete allIntervals[id];
+                //this.wnd.$.find('.outfit-item-id-' + id).removeClass('it-is-not-time');
+                //outfitCard.getOutfit().removeClass('it-is-not-time')
+
+                if (!level || level && getHeroLevel() >= level) {
+                    outfitCard.setDisable(false);
+                }
+
+                outfitCard.setDisableText(null);
                 return;
             }
 
             let str = (min < 1 ? '<1' : min) + 'min';
 
-            this.wnd.$.find('.outfit-item-id-' + i.id).find('.outfit-timelimit').html(str);
+            //this.wnd.$.find('.outfit-item-id-' + id).find('.disable-text').html(str);
+            outfitCard.setDisableText(str)
         }, 1000)
     };
+
+    const getOutfitCardById = (id) => {
+        for (let k in outfitCards) {
+            if (outfitCards[k].getId() == id) {
+                return outfitCards[k]
+            }
+        }
+
+        return null
+    }
+
+    const getActiveOutfitCard = () => {
+        for (let k in outfitCards) {
+            if (outfitCards[k].getState()) {
+                return outfitCards[k];
+            }
+        }
+
+        return null;
+    }
 
     this.initAnimUpdate = () => {
         this.updateFrames();
@@ -205,55 +269,94 @@ module.exports = function() {
         });
     };
 
+
+
     this.initCards = () => {
-        let con = this.wnd.$.find('.cards-header');
-        let str1 = _t('default');
-        let str2 = _t('equip');
-        this.newCard(con, str1, () => {
-            //chooseOutfit = null;
-        });
-        this.newCard(con, str2, () => {
-            //chooseOutfit = null;
-        });
-        this.setFirstCard();
+        //let con = this.wnd.$.find('.cards-header');
+        //let str1 = _t('default');
+        //let str2 = _t('equip');
+        //this.newCard(con, str1, () => {
+        //    //chooseOutfit = null;
+        //});
+        //this.newCard(con, str2, () => {
+        //    //chooseOutfit = null;
+        //});
+        //this.setFirstCard();
+
+
+        let cards = {
+            [SETTINGS_DATA.DEFAULT]: {
+                name: _t('default'),
+                afterShowFn: () => afterShowFunction(0),
+                contentTargetEl: this.wnd.$[0].querySelector(".default-section")
+            },
+            [SETTINGS_DATA.CONTROLS]: {
+                name: _t('equip'),
+                afterShowFn: () => afterShowFunction(1),
+                contentTargetEl: this.wnd.$[0].querySelector(".equip-section")
+            }
+        };
+
+
+        const tabsOptions = {
+            tabsEl: {
+                navEl: this.wnd.$[0].querySelector('.cards-header-wrapper'),
+                //contentsEl: this.wndEl.querySelector('.mails-window__contents'),
+            }
+        };
+
+        this.tabsInstance = new Tabs.default(cards, tabsOptions);
+
+        this.tabsInstance.activateCard(SETTINGS_DATA.DEFAULT);
+        this.tabsInstance.callAfterShowFn(SETTINGS_DATA.DEFAULT);
+
     };
 
-    this.setFirstCard = () => {
-        this.wnd.$.find('.section').eq(0).addClass('visible');
-        this.wnd.$.find('.card').eq(0).addClass('active');
+    const afterShowFunction = (index) => {
+        this.updateScroll();
+
+        let $bottomBar = this.wnd.$.find('.bottom-bar');
+        $bottomBar.children().css('display', 'none');
+        $bottomBar.children().eq(index).css('display', 'block');
     };
+
+    //this.setFirstCard = () => {
+    //    this.wnd.$.find('.section').eq(0).addClass('visible');
+    //    this.wnd.$.find('.card').eq(0).addClass('active');
+    //};
 
     this.updateScroll = () => {
         this.wnd.$.find('.default-section').trigger('update');
         this.wnd.$.find('.equip-section').trigger('update');
     };
 
-    this.newCard = ($par, label, clb) => {
-        let $card = Templates.get('card');
-        $card.find('.label').html(label);
-        $par.append($card);
-        let self = this;
-        $card.click(function() {
-            let index = $(this).index();
-            self.setVisible(index);
-            self.updateScroll();
-            if (clb) clb();
-        });
-    };
+    //this.newCard = ($par, label, clb) => {
+    //    let $card = Templates.get('card');
+    //    $card.find('.label').html(label);
+    //    $par.append($card);
+    //    let self = this;
+    //    $card.click(function () {
+    //        let index = $(this).index();
+    //        self.setVisible(index);
+    //        self.updateScroll();
+    //        if (clb) clb();
+    //    });
+    //};
 
-    this.setVisible = (index) => {
-        let $allC = this.wnd.$.find('.card').removeClass('active');
-        let $bottomBar = this.wnd.$.find('.bottom-bar');
-        let $allS = this.wnd.$.find('.section').removeClass('visible');
-        $allC.eq(index).addClass('active');
-        $allS.eq(index).addClass('visible');
-        $bottomBar.children().css('display', 'none');
-        $bottomBar.children().eq(index).css('display', 'block');
-        showCard = index;
-    };
+    //this.setVisible = (index) => {
+    //    let $allC = this.wnd.$.find('.card').removeClass('active');
+    //    let $bottomBar = this.wnd.$.find('.bottom-bar');
+    //    let $allS = this.wnd.$.find('.section').removeClass('visible');
+    //    $allC.eq(index).addClass('active');
+    //    $allS.eq(index).addClass('visible');
+    //    $bottomBar.children().css('display', 'none');
+    //    $bottomBar.children().eq(index).css('display', 'block');
+    //    showCard = index;
+    //};
 
     this.update = (data) => {
         for (let i = 0; i < data.length; i++) {
+            //let $one = this.createOneOutfit(data[i]);
             let $one = this.createOneOutfit(data[i]);
             this.wnd.$.find('.default-section').find('.scroll-pane').append($one);
         }
@@ -262,56 +365,129 @@ module.exports = function() {
         this.wnd.center();
     };
 
-    this.createOneOutfit = (data, item) => {
-        let $outfit = Templates.get('one-outfit');
-        let $span = $outfit.find('.text');
+    //this.createOneOutfit = (data, item) => {
+    //    let $outfit = Templates.get('one-outfit');
+    //    let $span   = $outfit.find('.text');
+    //
+    //    let lvl         = data.requirements.level;
+    //    let kb          = data.requirements.kb;
+    //    let timelimit   = data.requirements.timelimit;
+    //    let rUrl        = data.relativeUrl;
+    //
+    //    let patch   = CFG.a_opath + '/' + rUrl;
+    //
+    //    if (item) {
+    //        $outfit.addClass('outfit-item outfit-item-id-' + item.id);
+    //        $outfit.data('item', item);
+    //        this.setAmount(item, $outfit);
+    //    }
+    //
+    //    if (timelimit) {
+    //        let tm = timelimit.timelimit;
+    //        let min = this.getMinutes(tm);
+    //        $outfit.find('.outfit-timelimit').html(min);
+    //        //$outfit.addClass('it-is-not-time');
+    //    }
+    //
+    //    if (lvl) {
+    //        if (getHeroLevel() >= lvl) $span.addClass('green');
+    //        else $outfit.addClass('disable');
+    //
+    //        $span.html(lvl + 'lvl');
+    //    }
+    //
+    //    if (kb) {
+    //        $span.addClass('green');
+    //        $span.html("KB");
+    //    }
+    //
+    //    this.checkOutfitIsYourOutfit($outfit.find('.outfit-border'), rUrl);
+    //
+    //    createImgStyle($outfit.find('.outfit-wrapper'), patch);
+    //
+    //    $outfit.find('.requirements').html($span);
+    //
+    //    $outfit.on('click', function () {
+    //        Engine.changeOutfit.wnd.$.find('.save-button').find('.button').removeClass('disable');
+    //        Engine.changeOutfit.wnd.$.find('.outfit-border').removeClass('preview');
+    //        chooseOutfit = rUrl;
+    //        $(this).find('.outfit-border').addClass('preview');
+    //        let $e = Engine.changeOutfit.wnd.$.find('.preview-outfit').find('.outfit-graphic');
+    //        Engine.changeOutfit.setOutfitInPreview($e, patch, 'preview');
+    //    });
+    //
+    //    return $outfit;
+    //};
 
-        let lvl = data.requirements.level;
-        let kb = data.requirements.kb;
-        let timelimit = data.requirements.timelimit;
-        let rUrl = data.relativeUrl;
-
+    this.createOneOutfit = (data1, item) => {
+        let lvl = data1.requirements.level;
+        let kb = data1.requirements.kb;
+        let timelimit = data1.requirements.timelimit;
+        let rUrl = data1.relativeUrl;
+        let outfitCard = new OutfitCard();
         let patch = CFG.a_opath + '/' + rUrl;
+        let data = {
+            url: rUrl,
+            cl: []
+        };
+
+        outfitCard.init();
+
+        let $outfit = outfitCard.getOutfit();
 
         if (item) {
-            $outfit.addClass('outfit-item outfit-item-id-' + item.id);
-            $outfit.data('item', item);
-            this.setAmount(item, $outfit);
+            let amount = getAmount(item);
+
+            if (amount) {
+                data.amount = amount;
+            }
+
+            $outfit.attr('item-id', item.id);
+
+            data.cl.push('outfit-item');
+            data.id = item.id;
         }
 
         if (timelimit) {
-            let tm = timelimit.timelimit;
-            let min = this.getMinutes(tm);
-            $outfit.find('.outfit-timelimit').html(min);
-            $outfit.addClass('it-is-not-time');
+            data.disableText = this.getMinutes(timelimit.timelimit);
+
+            data.disable = true;
         }
 
         if (lvl) {
-            if (Engine.hero.d.lvl >= lvl) $span.addClass('green');
-            else $outfit.addClass('disable');
+            if (getHeroLevel() >= lvl) data.textColor = 'green';
+            else data.disabled = true;
 
-            $span.html(lvl + 'lvl');
+            data.text = lvl + 'lvl'
         }
 
         if (kb) {
-            $span.addClass('green');
-            $span.html("KB");
+            data.textColor = 'green';
+            data.text = "KB";
         }
 
-        this.checkOutfitIsYourOutfit($outfit.find('.outfit-border'), rUrl);
+        if (checkActiveOutfic(rUrl)) {
+            data.state = true
+        }
 
-        createImgStyle($outfit.find('.outfit-wrapper'), patch);
-
-        $outfit.find('.requirements').html($span);
-
-        $outfit.on('click', function() {
+        data.beforeClb = () => {
             Engine.changeOutfit.wnd.$.find('.save-button').find('.button').removeClass('disable');
-            Engine.changeOutfit.wnd.$.find('.outfit-border').removeClass('preview');
+
+            for (let k in outfitCards) {
+                outfitCards[k].setStateAndUpdate(false);
+            }
+        };
+
+        data.clb = () => {
             chooseOutfit = rUrl;
-            $(this).find('.outfit-border').addClass('preview');
+
             let $e = Engine.changeOutfit.wnd.$.find('.preview-outfit').find('.outfit-graphic');
             Engine.changeOutfit.setOutfitInPreview($e, patch, 'preview');
-        });
+        };
+
+        outfitCard.updateData(data);
+
+        outfitCards.push(outfitCard);
 
         return $outfit;
     };
@@ -321,9 +497,18 @@ module.exports = function() {
         $outfit.find('.amount').text(amount);
     };
 
+    const getAmount = (item) => {
+        return isset(item.parseStats().amount) ? item.parseStats().amount : 0;
+
+    }
+
     this.checkOutfitIsYourOutfit = ($outfit, rUrl) => {
         if (Engine.hero.d.img == '/' + rUrl) $outfit.find('.outfit-border').addClass('active');
     };
+
+    const checkActiveOutfic = (url) => {
+        return Engine.hero.d.img == '/' + url;
+    }
 
     this.setOutfitInPreview = ($el, url, kind) => {
 
@@ -375,13 +560,22 @@ module.exports = function() {
         $but.on('click', () => {
             if (chooseOutfit === null) return;
 
-            let $outfitRecord = this.wnd.$.find('.outfit-border.preview').parent();
-            let isOutfitItem = $outfitRecord.hasClass('outfit-item');
+
+            let outfitCard = getActiveOutfitCard();
+            let $outfit = outfitCard.getOutfit();
+            let isOutfitItem = $outfit.hasClass('outfit-item');
 
             if (isOutfitItem) {
-                let item = $outfitRecord.data('item');
-                console.log(item);
-                Engine.heroEquipment.sendUseRequest(item);
+                let id = $outfit.attr('item-id');
+                let item = getEngine().items.getItemById(id);
+
+                if (!item) {
+                    errorReport(moduleData.fileName, "initSaveButton", "item not exist!", id);
+                    return
+                }
+
+                getEngine().heroEquipment.sendUseRequest(item);
+
                 this.close();
             } else {
                 this.sendSaveRequest()

@@ -1,4 +1,4 @@
-let ItemData = require('core/items/data/ItemData');
+let ItemData = require('@core/items/data/ItemData');
 
 module.exports = new(function() {
 
@@ -65,6 +65,10 @@ module.exports = new(function() {
 
     this.isPetCl = (cl) => {
         return cl == ItemData.CL.PETS;
+    }
+
+    this.isCurrencyCl = (cl) => {
+        return cl == ItemData.CL.COINAGE;
     }
 
     this.isShowPreviewItemInShop = (cl) => {

@@ -1,14 +1,14 @@
 /**
  * Created by lukaszkowalski on 22/05/15.
  */
-var crafting = require('minigames/crafting/logic');
-var mastermind = require('minigames/mastermind/logic');
-var pipes = require('minigames/pipes/logic');
-var questions = require('minigames/questions/logic');
-var saper = require('minigames/saper/logic');
-var memo = require('minigames/memo/logic');
-var hidden = require('minigames/hidden/logic');
-module.exports = new(function() {
+var crafting = require('@minigames/crafting/logic');
+var mastermind = require('@minigames/mastermind/logic');
+var pipes = require('@minigames/pipes/logic');
+var questions = require('@minigames/questions/logic');
+var saper = require('@minigames/saper/logic');
+var memo = require('@minigames/memo/logic');
+var hidden = require('@minigames/hidden/logic');
+module.exports = function() {
     this.game = null;
     this.v = null;
     this.data = null;
@@ -135,4 +135,19 @@ module.exports = new(function() {
         });
         running = false;
     };
-})();
+
+    const onClear = () => {
+
+        this.v = null;
+        this.data = null;
+        this.loadedGames = [];
+        running = false;
+
+        if (this.game) {
+            this.game.onClear();
+            this.game = null;
+        }
+    }
+
+    this.onClear = onClear;
+};

@@ -1,7 +1,7 @@
-var SearchPathMap = require("core/searchPath/maps/SearchPathMap");
-var ContextMap = require("core/searchPath/maps/ContextMap");
-var SearchContext = require("core/searchPath/SearchContext");
-var Road = require("core/searchPath/Road");
+var SearchPathMap = require('@core/searchPath/maps/SearchPathMap');
+var ContextMap = require('@core/searchPath/maps/ContextMap');
+var SearchContext = require('@core/searchPath/SearchContext');
+var Road = require('@core/searchPath/Road');
 
 var SearchPath = function() {
     var self = this;
@@ -10,7 +10,7 @@ var SearchPath = function() {
     this.roads = [];
     //window.SearchPath = this;
 
-    asdasd = this;
+    // asdasd = this;
 
     this.createMap = function(size) {
         self.map = new SearchPathMap(size);

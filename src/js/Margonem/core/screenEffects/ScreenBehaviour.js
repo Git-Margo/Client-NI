@@ -1,5 +1,7 @@
-let RajGetSpecificData = require('core/raj/RajGetSpecificData');
-let ScreenEffectData = require('core/screenEffects/ScreenEffectData.js');
+let RajGetSpecificData = require('@core/raj/RajGetSpecificData');
+let ScreenEffectData = require('@core/screenEffects/ScreenEffectData.js');
+var CanvasFade = require('@core/canvasFade/CanvasFade.js');
+var CanvasFadeData = require('@core/canvasFade/CanvasFadeData.js');
 
 module.exports = function(screenEffect) {
 
@@ -12,6 +14,21 @@ module.exports = function(screenEffect) {
     let moduleData = {
         fileName: "ScreenBehaviour.js"
     };
+
+    let ready = false;
+    let src = null;
+    let image = null;
+    let imagePos = null;
+    let imageOffset = null;
+    //let canvasFade      = null;
+
+    let fadeIn = null;
+    let fadeOut = null;
+
+    let withCreateInstantFadeIn = false;
+    let withRemoveInstantFadeOut = false;
+
+
 
     //this.alwaysDraw = true;
     let alwaysDraw;
@@ -86,9 +103,33 @@ module.exports = function(screenEffect) {
         if (data.repeat) setRepeat(data.repeat);
         if (data.duration) setDuration(data.duration);
 
+        if (data.withCreateInstantFadeIn) {
+            setWithCreateInstantFadeIn(true)
+        }
+
+        if (data.withRemoveInstantFadeOut) {
+            setWithRemoveInstantFadeOut(true)
+        }
+
         setMaxLifeTime(duration);
 
         updateDataByMode(data);
+    };
+
+    const setFadeIn = (_fadeIn) => {
+        fadeIn = _fadeIn;
+    };
+
+    const setFadeOut = (_fadeOut) => {
+        fadeOut = _fadeOut;
+    };
+
+    const setWithCreateInstantFadeIn = (_withCreateInstantFadeIn) => {
+        withCreateInstantFadeIn = _withCreateInstantFadeIn
+    };
+
+    const setWithRemoveInstantFadeOut = (_withRemoveInstantFadeOut) => {
+        withRemoveInstantFadeOut = _withRemoveInstantFadeOut;
     };
 
     const updateDataByMode = (data) => {
@@ -99,6 +140,9 @@ module.exports = function(screenEffect) {
             case ScreenEffectData.mode.STATIC:
                 updateStaticData(data);
                 break;
+            case ScreenEffectData.mode.IMAGE:
+                updateImageData(data);
+                break;
             default:
                 errorReport(moduleData.fileName, "updateDataByMode", `undefined mode ${mode}`, data);
         }
@@ -107,20 +151,95 @@ module.exports = function(screenEffect) {
     const updateStaticData = (data) => {
         setStaticColor(data.data.color);
         setStaticHolesToDraw(data.data.holes)
+
+        setReady(true);
     };
+
+    const updateImageData = (data) => {
+
+        //if (!withCreateInstantFadeIn) {
+        //    setFadeIn(createCanvasFade(CanvasFadeData.action.FADE_IN))
+        //}
+
+        setImagePos(
+            data.horizontal ? data.horizontal : ScreenEffectData.position.LEFT,
+            data.vertical ? data.vertical : ScreenEffectData.position.TOP
+        );
+
+        setImageOffset(
+            data.offsetX ? data.offsetX : 0,
+            data.offsetY ? data.offsetY : 0
+        );
+
+        loadImage(data.url);
+        //setImagePos(data.position);
+
+        startBehavior();
+    };
+
+    const setImageOffset = (offsetX, offsetY) => {
+        imageOffset = [offsetX, offsetY];
+    }
 
     const updateTransitionData = (data) => {
         setColorFromTransition(data);
         setTransitionHoles(data.data.holes)
+
+        setReady(true);
     };
 
     const setTransitionHoles = (holes) => {
         for (let k in holes) {
             transitionHoles.push(holes[k]);
         }
-    }
+    };
+
+    const setImagePos = (_imagePosVertical, _imagePosHorizontal) => {
+        imagePos = [_imagePosVertical, _imagePosHorizontal];
+    };
+
+    const setSrc = (_src) => {
+        src = _src
+    };
+
+    const setImage = (_image) => {
+        image = _image;
+    };
+
+    const loadImage = (url) => {
+
+        let fullUrl = CFG.a_rajGraphics + url;
+
+        setSrc(fullUrl);
+
+        Engine.imgLoader.onload(fullUrl, false, false, (i) => {
+
+            let _img;
+            setImage(i);
+            //updateFilterImage();
+
+            //if (color)          _img = getImageColorMask(image);
+            //else                _img = image;
+
+            //setImage(_img);
+
+            self.fw = image.width;
+            self.fh = image.height;
+            self.halffw = self.fw / 2;
+
+            setReady(true);
+        });
+    };
+
+    const setReady = (_ready) => {
+        ready = _ready;
+    };
 
     const update = (dt) => {
+
+        if (!ready) {
+            return;
+        }
 
         increaseActualLifeTime(dt);
 
@@ -130,11 +249,40 @@ module.exports = function(screenEffect) {
         }
 
         if (mode == ScreenEffectData.mode.TRANSITION) manageTransition();
+        if (mode == ScreenEffectData.mode.IMAGE) manageImage(dt);
     };
 
     const manageTransition = () => {
         manageDrawColorWithTransition();
         managedrawHolesWithTransition();
+    };
+
+    const startBehavior = () => {
+        clearCanvasFade();
+        if (!withCreateInstantFadeIn) {
+            setFadeIn(createCanvasFade(CanvasFadeData.action.FADE_IN))
+        }
+    };
+
+    const manageImage = (dt) => {
+
+        //if (canvasFade) {
+        //    canvasFade.update(dt);
+        //}
+
+        if (fadeIn) {
+            fadeIn.update(dt);
+        }
+
+        if (fadeOut) {
+            fadeOut.update(dt);
+        }
+
+
+        if (!withRemoveInstantFadeOut && !fadeOut && actualLifeTime + 2 > maxLifeTime) {
+            setFadeOut(createCanvasFade(CanvasFadeData.action.FADE_OUT));
+        }
+
     };
 
     const managedrawHolesWithTransition = () => {
@@ -175,7 +323,7 @@ module.exports = function(screenEffect) {
         for (let k in holes) {
             drawHoles.push(holes[k]);
         }
-    }
+    };
 
     const setStaticColor = (color) => {
         setRChannel(color.r);
@@ -205,7 +353,7 @@ module.exports = function(screenEffect) {
 
     const getPassedLifeTime = () => {
         return actualLifeTime - maxLifeTime;
-    }
+    };
 
     const checkRepeatIsOver = () => {
         if (repeat === true) return false;
@@ -220,6 +368,7 @@ module.exports = function(screenEffect) {
         let passedLifeTime = getPassedLifeTime();
 
         if (!checkRepeatIsOver()) {
+            startBehavior();
             setActualLifeTime(passedLifeTime);
             //setActualLifeTime(0);
             return;
@@ -228,13 +377,113 @@ module.exports = function(screenEffect) {
         onFinish(passedLifeTime);
     };
 
+    const clearCanvasFade = () => {
+        //canvasFade = null;
+
+        if (fadeIn) {
+            //fadeIn = null;
+            setFadeIn(null);
+        }
+
+        if (fadeOut) {
+            //fadeOut = null;
+            setFadeOut(null);
+        }
+    };
+
     const onFinish = (passedLifeTime) => {
         screenEffect.setNextBehaviour(passedLifeTime);
+
+
+        if (!Engine.screenEffectsManager.checkEffectExist(screenEffect.getId())) {
+            return
+        }
+
+        startBehavior();
+    };
+
+    const drawImage = (ctx) => {
+
+        let helpCanvas = screenEffect.getHelpCanvas();
+        let w = helpCanvas.width;
+        let h = helpCanvas.height;
+        let left = null;
+        let top = null;
+
+
+        let horizontal = imagePos[0];
+        let vertical = imagePos[1];
+
+        switch (horizontal) {
+            case ScreenEffectData.position.LEFT:
+                left = 0;
+                break;
+            case ScreenEffectData.position.CENTER:
+                left = w / 2 - image.width / 2;
+                break;
+            case ScreenEffectData.position.RIGHT:
+                left = w - image.width;
+                break;
+        }
+
+        switch (vertical) {
+            case ScreenEffectData.position.TOP:
+                top = 0;
+                break;
+            case ScreenEffectData.position.CENTER:
+                top = h / 2 - image.height / 2;
+                break;
+            case ScreenEffectData.position.BOTTOM:
+                top = h - image.height;
+                break;
+        }
+
+        left += imageOffset[0];
+        top += imageOffset[1];
+
+        if (fadeIn) {
+            ctx.globalAlpha = fadeIn.getFadeValue();
+        }
+
+        if (fadeOut) {
+            ctx.globalAlpha = fadeOut.getFadeValue();
+        }
+
+        ctx.drawImage(image, left, top);
+
+        ctx.globalAlpha = 1;
+    };
+
+    const createCanvasFade = (action) => {
+        let data = {
+            action: action,
+            finishAlpha: 1,
+            callback: () => {
+                clearCanvasFade()
+            }
+        };
+
+        let canvasFade = new CanvasFade();
+
+        canvasFade.init();
+        canvasFade.updateData(data);
+
+        return canvasFade
     };
 
     const draw = (ctx) => {
 
         //if (drawColor.a == 0) return;
+
+        if (!ready) {
+            return
+        }
+
+        if (image) {
+            drawImage(ctx);
+            return
+        }
+
 
         let helpCanvas = screenEffect.getHelpCanvas();
         let helpCtx = screenEffect.getHelpCtx();
@@ -242,7 +491,7 @@ module.exports = function(screenEffect) {
         let w = helpCanvas.width;
         let h = helpCanvas.height;
 
-        helpCtx.save();
+        //helpCtx.save();
 
         let mapShift = Engine.mapShift.getShift();
 
@@ -253,7 +502,7 @@ module.exports = function(screenEffect) {
 
         let tileSize = CFG.tileSize;
 
-        if (getEngine().map.config.getIsQuestFogEnabled()) {
+        if (getEngine().map.config.getQuestFog()) {
             leftEffect = (Engine.map.offset[0] - mapShift[0]) * -1;
             topEffect = (Engine.map.offset[1] - mapShift[1]) * -1;
             wEffect = Engine.map.size.x * tileSize;
@@ -279,7 +528,7 @@ module.exports = function(screenEffect) {
 
         if (!drawHoles.length) {
 
-            helpCtx.restore();
+            //helpCtx.restore();
             ctx.drawImage(helpCanvas, 0, 0);
 
             return
@@ -303,7 +552,8 @@ module.exports = function(screenEffect) {
             screenEffect.getFramesWithHoles().drawOneHole(holeData, helpCtx);
         }
 
-        helpCtx.restore();
+        //helpCtx.restore();
+        helpCtx.globalCompositeOperation = 'source-over';
         ctx.drawImage(helpCanvas, 0, 0);
 
     };

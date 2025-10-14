@@ -2,9 +2,9 @@
  * Created by lukasz on 2015-01-13.
  */
 
-var Tpl = require('core/Templates');
-var TutorialData = require('core/tutorial/TutorialData');
-//var Items = require('core/items/ItemsManager');
+var Tpl = require('@core/Templates');
+var TutorialData = require('@core/tutorial/TutorialData');
+//var Items = require('@core/items/ItemsManager');
 module.exports = new(function() {
     var self = this;
     var alertBagShow = false;
@@ -134,6 +134,15 @@ module.exports = new(function() {
             if (isset(i._cachedStats["reqp"]) && i._cachedStats["reqp"].indexOf(Engine.hero.d.prof) == -1) {
                 wrap.addClass('cant-must');
             }
+
+            //if (i.issetReqpStat()) {
+            //	let reqpStat = i.getReqpStat();
+            //
+            //	if (reqpStat.indexOf(Engine.hero.d.prof) == -1) {
+            //		wrap.addClass('cant-must');
+            //	}
+            //}
+
         }
         self.bagAlert();
 
@@ -209,7 +218,7 @@ module.exports = new(function() {
 
     this.newMsgSound = function() {
         var sm = Engine.soundManager;
-        if (!sm.getStateSoundNotifById(0)) sm.createNotifSound(0);
+        if (sm.getStateSoundNotifById(0)) sm.createNotifSound(0);
     };
 
     this.getNameAndAvatar = function(id) {
@@ -322,7 +331,7 @@ module.exports = new(function() {
 
     this.groupLootSound = function() {
         var sm = Engine.soundManager;
-        if (Engine.party && !sm.getStateSoundNotifById(5) && self.wnd.$.is(':visible')) {
+        if (Engine.party && sm.getStateSoundNotifById(5) && self.wnd.$.is(':visible')) {
             sm.createNotifSound(7);
         }
     };

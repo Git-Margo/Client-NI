@@ -1,39 +1,51 @@
-var Dialogue = require('core/dialogue/Dialogue');
-var Loot = require('core/Loot');
-var Shop = require('core/shop/Shop');
-var Loader = require('minigames/Loader');
-var MailsManager = require('core/mails/MailsManager');
-var RecoveryItems = require('core/RecoveryItems');
-let SocietyData = require('core/society/SocietyData');
-var Society = require('core/society/Society');
-var Party = require('core/Party');
-var Trade = require('core/Trade');
-var WantedController = require('core/wanted/WantedController');
-var Registration = require('core/Registration');
-var Depo = require('core/Depo');
-var Clan = require('core/clan/Clan');
-var EventCalendar = require('core/EventCalendar');
-var Book = require('core/Book');
-var Motel = require('core/Motel');
-var GoldShop = require('core/shop/GoldShop');
-var Skills = require('core/skills/Skills');
-var QuestsManager = require('core/quest/QuestsManager');
-var LogOff = require('core/LogOff');
-var Chests = require('core/Chests');
-var Promo = require('core/Promo');
-var AuctionManager = require('core/auction/AuctionManager');
-var LootPreview = require('core/LootPreview');
-var News = require('core/news/News');
-var TpScroll = require('core/TpScroll');
-var RewardsCalendar = require('core/RewardsCalendar');
-var Barter = require('core/barter/Barter');
-var ConquerStats = require('core/ConquerStats');
-var ChooseOutfit = require('core/ChooseOutfit');
-const BonusSelectorWindow = require('core/BonusSelectorWindow');
-const BonusReselectWindow = require('core/BonusReselectWindow');
-const BattlePass = require('core/battlePass/BattlePass.js');
-let ThemeData = require('core/themeController/ThemeData');
-let CodeMessageData = require('core/codeMessage/CodeMessageData');
+var Dialogue = require('@core/dialogue/Dialogue');
+var Loot = require('@core/Loot');
+var Shop = require('@core/shop/Shop');
+// var Loader = require('@minigames/Loader');
+var MailsManager = require('@core/mails/MailsManager');
+var RecoveryItems = require('@core/RecoveryItems');
+let SocietyData = require('@core/society/SocietyData');
+var Society = require('@core/society/Society');
+var Party = require('@core/Party');
+var Trade = require('@core/Trade');
+var WantedController = require('@core/wanted/WantedController');
+var Registration = require('@core/Registration');
+var Depo = require('@core/depo/Depo');
+var Clan = require('@core/clan/Clan');
+var EventCalendar = require('@core/EventCalendar');
+var Book = require('@core/Book');
+var Motel = require('@core/Motel');
+var GoldShop = require('@core/shop/GoldShop');
+var Skills = require('@core/skills/Skills');
+var QuestsManager = require('@core/quest/QuestsManager');
+var LogOff = require('@core/LogOff');
+var Chests = require('@core/Chests');
+var Promo = require('@core/Promo');
+var AuctionManager = require('@core/auction/AuctionManager');
+var LootPreview = require('@core/LootPreview');
+var News = require('@core/news/News');
+var TpScroll = require('@core/TpScroll');
+var RewardsCalendar = require('@core/RewardsCalendar');
+var Barter = require('@core/barter/Barter');
+var ConquerStats = require('@core/ConquerStats');
+var ChooseOutfit = require('@core/ChooseOutfit');
+const BonusSelectorWindow = require('@core/BonusSelectorWindow');
+const BonusReselectWindow = require('@core/BonusReselectWindow');
+const BattlePass = require('@core/battlePass/BattlePass.js');
+let ThemeData = require('@core/themeController/ThemeData');
+let CodeMessageData = require('@core/codeMessage/CodeMessageData');
+let SettingsStorage = require('@core/settings/SettingsStorage');
+let CharacterReset = require('@core/characterReset/CharacterReset');
+var RajData = require('@core/raj/RajData');
+const MCAddon = require('./MCAddon');
+var Storage = require('@core/Storage');
+const CharacterList = require("@core/CharacterList");
+const {
+    Preview
+} = require('@core/preview/PreviewManager');
+const {
+    previewType
+} = require('@core/preview/PrevievData');
 
 module.exports = function() {
     var self = this;
@@ -354,7 +366,7 @@ module.exports = function() {
     };
 
     this.initWebSocket = () => {
-
+        let unload = false;
         let sub = location.hostname.split('.')[0];
         let r = new RegExp('local$|local([0-9]+)$', "g");
         let isLocal = sub.match(r);
@@ -362,12 +374,24 @@ module.exports = function() {
         // let tld         = getMainDomain()
         let tld = location.origin.split('.').pop();
         sub = isLocal ? 'dev' : sub;
-        //sub           = 'experimental';
+
+        //if (sub == 'tabaluga' && mobileCheck()) {
+        //	let serverName = Storage.easyGet("CURRENT_SEVER");
+        //
+        //	if (serverName) {
+        //		sub = serverName
+        //	}
+        //}
+
+
+        //sub           = 'tabaluga';
         //tld 		  = 'com';
 
         let url = protocol + '://' + sub + '.margonem.' + tld + '/ws-engine';
         //let url = protocol + '://beluga.margonem.com/ws-engine';
         //console.log('testBeluga');
+
+        addEventListener("unload", () => unload = true);
 
         webSocket = new WebSocket(url);
         webSocket.onopen = function(evt) {
@@ -376,9 +400,11 @@ module.exports = function() {
 
         webSocket.onclose = function(evt) {
             debugger;
+            console.log(unload)
             setTimeout(() => { // for FF
-                location.reload();
-            }, 300);
+                //location.reload();
+                pageReload();
+            }, 500);
         };
 
         webSocket.onmessage = function(evt) {
@@ -453,7 +479,10 @@ module.exports = function() {
     Engine.communication.setStateTestJSONData('BUILDS_CHANGE_ICON')
     Engine.communication.setStateTestJSONData('BUILDS_BUY_BUILD')
     Engine.communication.setStateTestJSONData('BUILDS_LEVEL_UP_OR_SKILL_SPEND')
+    Engine.communication.setStateTestJSONData('SETTINGS_INIT')
     Engine.communication.setStateTestJSONData('FIGHT_BEHAVIOR_DYNAMIC_LIGHT')
+    Engine.communication.setStateTestJSONData('FIGHT5')
+    Engine.communication.setStateTestJSONData('TO_FIGHT_5')
     */
 
 
@@ -2029,6 +2058,232 @@ module.exports = function() {
                 }
             }
         },
+        FIGHT5: {
+            state: false,
+            getJSON: function() {
+                return {
+                    "f": {
+                        "init": "1",
+                        "auto": "0",
+                        "battleground": "034.jpg",
+                        "skills_disabled": [58],
+                        "skills_combo_max": [],
+                        "skills": ["-1", "", "", "", "", "", "", "", "", "", "-2", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "58", "Lodowy pocisk", "5", "9", "2", "Wzmocnienie krysztaï¿½u energii zimna w broni sprawia, ï¿½e spowolnienie celu zostaje zwiï¿½kszone, a lodowy pocisk ma szansï¿½ zamroziï¿½ przeciwnika.", "reqp=m;reqw=frost;lvl=25", "1/10", "slowfreeze_per=30@2;freeze=10;mana=24;combo-skill=1;frostbon=0.1 ", ""],
+                        "w": {
+                            [Engine.hero.getId()]: {
+                                "originalId": Engine.hero.getId(),
+                                "name": "Yakuz",
+                                "lvl": 300,
+                                "operationLevel": 300,
+                                "prof": "m",
+                                "gender": "m",
+                                "npc": 0,
+                                "hpp": 100,
+                                "team": 1,
+                                "y": 4,
+                                "icon": "/kuf/kuf_krolo-snieg.gif",
+                                "mana": 0,
+                                "energy": 2000,
+                                "mana0": 0,
+                                "energy0": 2000,
+                                "fast": 0,
+                                "ac": {
+                                    "cur": 0,
+                                    "bonus": 0,
+                                    "destroyed": 1
+                                },
+                                "resfire": {
+                                    "cur": 0,
+                                    "bonus": 0
+                                },
+                                "resfrost": {
+                                    "cur": 0,
+                                    "bonus": 0
+                                },
+                                "reslight": {
+                                    "cur": 0,
+                                    "bonus": 0
+                                },
+                                "act": {
+                                    "cur": 0,
+                                    "bonus": 0
+                                },
+                                "buffs": 0,
+                                "cooldowns": [],
+                                "doublecastcost": [],
+                                "combo": 0
+                            },
+                            "-198229": {
+                                "originalId": 198229,
+                                "name": "Klon Hydrokora Chimeryczna",
+                                "lvl": 25,
+                                "operationLevel": 25,
+                                "prof": "h",
+                                "gender": "x",
+                                "npc": 1,
+                                "wt": 12,
+                                "hpp": 100,
+                                "team": 2,
+                                "y": 5,
+                                "icon": "kol/hydrokora.gif",
+                                "ac": {
+                                    "cur": 147,
+                                    "bonus": 0
+                                },
+                                "resfire": {
+                                    "cur": 42,
+                                    "bonus": 0
+                                },
+                                "resfrost": {
+                                    "cur": 42,
+                                    "bonus": 0
+                                },
+                                "reslight": {
+                                    "cur": 42,
+                                    "bonus": 0
+                                },
+                                "act": {
+                                    "cur": 280,
+                                    "bonus": 0
+                                },
+                                "buffs": 0
+                            }
+                        },
+                        "myteam": 1,
+                        "move": 10,
+                        "start_move": 15,
+                        "current": Engine.hero.getId(),
+                        "turns_warriors": {
+                            "3": Engine.hero.getId(),
+                            "4": Engine.hero.getId(),
+                            "5": Engine.hero.getId(),
+                            "6": Engine.hero.getId(),
+                            "7": Engine.hero.getId(),
+                            "8": Engine.hero.getId(),
+                            "9": Engine.hero.getId(),
+                            "10": Engine.hero.getId(),
+                            "11": -198229,
+                            "12": Engine.hero.getId()
+                        },
+                        "m": ["-198229=100;0;surpass_bonus_total=40", Engine.hero.getId() + "=25;0;poison_lowdmg_per-enemies=8", Engine.hero.getId() + "=1;0;hp_per-allies=10"],
+                        "mi": [0, 1, 2]
+                    }
+                }
+            }
+        },
+        FIGHT6: {
+            state: false,
+            getJSON: function() {
+                return {
+                    "f": {
+                        "init": "1",
+                        "auto": "0",
+                        "battleground": "034.jpg",
+                        "skills_disabled": [58],
+                        "skills_combo_max": [],
+                        "skills": ["-1", "", "", "", "", "", "", "", "", "", "-2", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "58", "Lodowy pocisk", "5", "9", "2", "Wzmocnienie krysztaï¿½u energii zimna w broni sprawia, ï¿½e spowolnienie celu zostaje zwiï¿½kszone, a lodowy pocisk ma szansï¿½ zamroziï¿½ przeciwnika.", "reqp=m;reqw=frost;lvl=25", "1/10", "slowfreeze_per=30@2;freeze=10;mana=24;combo-skill=1;frostbon=0.1 ", ""],
+                        "w": {
+                            [Engine.hero.getId()]: {
+                                "originalId": Engine.hero.getId(),
+                                "name": "Yakuz",
+                                "lvl": 300,
+                                "operationLevel": 300,
+                                "prof": "m",
+                                "gender": "m",
+                                "npc": 0,
+                                "hpp": 100,
+                                "team": 1,
+                                "y": 4,
+                                "icon": "/kuf/kuf_krolo-snieg.gif",
+                                "mana": 0,
+                                "energy": 2000,
+                                "mana0": 0,
+                                "energy0": 2000,
+                                "fast": 0,
+                                "ac": {
+                                    "cur": 0,
+                                    "bonus": 0,
+                                    "destroyed": 1
+                                },
+                                "resfire": {
+                                    "cur": 0,
+                                    "bonus": 0
+                                },
+                                "resfrost": {
+                                    "cur": 0,
+                                    "bonus": 0
+                                },
+                                "reslight": {
+                                    "cur": 0,
+                                    "bonus": 0
+                                },
+                                "act": {
+                                    "cur": 0,
+                                    "bonus": 0
+                                },
+                                "buffs": 0,
+                                "cooldowns": [],
+                                "doublecastcost": [],
+                                "combo": 0
+                            },
+                            "-198229": {
+                                "originalId": 198229,
+                                "name": "Klon Hydrokora Chimeryczna",
+                                "lvl": 25,
+                                "operationLevel": 25,
+                                "prof": "h",
+                                "gender": "x",
+                                "npc": 1,
+                                "wt": 12,
+                                "hpp": 100,
+                                "team": 2,
+                                "y": 5,
+                                "icon": "kol/hydrokora.gif",
+                                "ac": {
+                                    "cur": 147,
+                                    "bonus": 0
+                                },
+                                "resfire": {
+                                    "cur": 42,
+                                    "bonus": 0
+                                },
+                                "resfrost": {
+                                    "cur": 42,
+                                    "bonus": 0
+                                },
+                                "reslight": {
+                                    "cur": 42,
+                                    "bonus": 0
+                                },
+                                "act": {
+                                    "cur": 280,
+                                    "bonus": 0
+                                },
+                                "buffs": 0
+                            }
+                        },
+                        "myteam": 1,
+                        "move": 10,
+                        "start_move": 15,
+                        "current": Engine.hero.getId(),
+                        "turns_warriors": {
+                            "3": Engine.hero.getId(),
+                            "4": Engine.hero.getId(),
+                            "5": Engine.hero.getId(),
+                            "6": Engine.hero.getId(),
+                            "7": Engine.hero.getId(),
+                            "8": Engine.hero.getId(),
+                            "9": Engine.hero.getId(),
+                            "10": Engine.hero.getId(),
+                            "11": -198229,
+                            "12": Engine.hero.getId()
+                        },
+                        "m": ["-198229=100;0;surpass_bonus_total=40", Engine.hero.getId() + "=57;0;legbon_holytouch_heal=2833", Engine.hero.getId() + "=1;0;hp_per-allies=10", Engine.hero.getId() + "=91;0;heal_per-enemies=-15", Engine.hero.getId() + "=86;0;heal_per-allies=15", Engine.hero.getId() + "=1;0;hp_per-allies=10", Engine.hero.getId() + "=25;0;poison_lowdmg_per-enemies=8", Engine.hero.getId() + "=83;" + Engine.hero.getId() + "=42;+dmg=7828;+acdmg=53;legbon_lastheal=17611,MÄÅ¼czyzna Gra(42%);-dmg=7240"],
+                        "mi": [0, 1, 2]
+                    }
+                }
+            }
+        },
         FIGHT_BEHAVIOR_DYNAMIC_LIGHT: {
             state: false,
             getJSON: function() {
@@ -2271,10 +2526,103 @@ module.exports = function() {
                 }
             }
         },
+        HERO_STATS: {
+            state: false,
+            getJSON: function() {
+                return {
+                    "h": {
+                        "legbon_holytouch": [
+                            100,
+                            2833
+                        ],
+                        "passive_stats": {
+                            "after_heal": {
+                                "chance": 60,
+                                "power": 8000
+                            }
+                        },
+                        "heal": 12345
+                    }
+                }
+            }
+        },
         ASD0: {
             state: false,
             getJSON: function() {
                 return {}
+            }
+        },
+        BOOK: {
+            state: false,
+            getJSON: function() {
+                return {
+                    "book": {
+                        content: 'asdasdas',
+                        author: "dsadsa",
+                        title: "zxczxc"
+                    }
+                }
+            }
+        },
+        CALENDAR: {
+            state: false,
+            getJSON: function() {
+                return {
+                    "rewards_calendar": {
+                        "start_ts": 0,
+                        //"end_ts": 1540025899,
+                        "end_ts": 1541116800,
+                        "name_event": 'advent',
+                        "background_img": "advent-background.png",
+                        "day_img": "advent-windows.png",
+                        "max_closed": 1,
+                        "extra_opening": {
+                            "price": 13,
+                            "max": 2,
+                            "cur": 0
+                        },
+                        "days": [
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [],
+                            [1, 1]
+                        ]
+                    }
+                }
             }
         },
         BUILDS_ABBYSS: {
@@ -2429,6 +2777,324 @@ module.exports = function() {
                 }
             }
         },
+        SETTINGS_INIT: {
+            state: false,
+            getJSON: () => {
+                return {
+                    "settings": {
+                        "action": "INIT",
+                        "list": [{
+                                "id": 1,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 6,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 3,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 5,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 21,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 2,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 14,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 9,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 15,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 18,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+
+                            {
+                                "id": 8,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 7,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 16,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 11,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 23,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 24,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 17,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 26,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 19,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 13,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 12,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 4,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 25,
+                                "d": {
+                                    "v": true
+                                }
+                            },
+                            {
+                                "id": 27,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 28,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 29,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 30,
+                                "d": {
+                                    "v": {
+                                        "autoAccept": {
+                                            "v": true
+                                        },
+                                        "minLootV": {
+                                            "v": 50,
+                                            "min": 0,
+                                            "max": 100
+                                        },
+                                        "minlifeFluidV": {
+                                            "v": 50,
+                                            "min": 0,
+                                            "max": 100
+                                        },
+                                        "unique": {
+                                            "v": true
+                                        },
+                                        "key": {
+                                            "v": true
+                                        },
+                                        "bag": {
+                                            "v": true
+                                        },
+                                        "gold": {
+                                            "v": true
+                                        },
+                                        "bless": {
+                                            "v": true
+                                        },
+                                        "tp": {
+                                            "v": true
+                                        },
+                                        "necless": {
+                                            "v": true
+                                        },
+                                        "quests": {
+                                            "v": true
+                                        },
+                                        "neutral": {
+                                            "v": true
+                                        }
+                                    }
+                                }
+                            }
+
+                        ]
+                    }
+                }
+            }
+        },
+        SETTINGS_UPDATE_DATA: {
+            state: false,
+            getJSON: () => {
+                return {
+                    "settings": {
+                        "action": "UPDATE_DATA",
+                        "list": [{
+                                "id": 1,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 6,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 3,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 5,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 21,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 2,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 14,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 9,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 15,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 18,
+                                "d": {
+                                    "v": false
+                                }
+                            },
+                            {
+                                "id": 30,
+                                "d": {
+                                    "v": {
+                                        "autoAccept": {
+                                            "v": false
+                                        }
+                                    }
+                                }
+                            }
+
+                        ]
+                    }
+                }
+            }
+        },
+        SETTINGS_UPDATE_DATA_2: {
+            state: false,
+            getJSON: () => {
+                return {
+                    "settings": {
+                        "action": "UPDATE_DATA",
+                        "list": [{
+                                35: {
+                                    solo_auto_accept_loot: {
+                                        v: 0
+                                    },
+                                    v: true
+                                }
+                            }
+
+                        ]
+                    }
+                }
+            }
+        },
         BUILDS_INIT: {
             state: false,
             getJSON: () => {
@@ -2462,21 +3128,21 @@ module.exports = function() {
                                 id: 3,
                                 cost: {
                                     gold: 250000,
-                                    sl: 25
+                                    credits: 25
                                 }
                             },
                             {
                                 id: 4,
                                 cost: {
                                     gold: 500000,
-                                    sl: 50
+                                    credits: 50
                                 }
                             },
                             {
                                 id: 5,
                                 cost: {
                                     gold: 1000000,
-                                    sl: 75
+                                    credits: 75
                                 }
                             }
                         ]
@@ -2517,42 +3183,42 @@ module.exports = function() {
                                 id: 3,
                                 cost: {
                                     gold: 250000,
-                                    sl: 25
+                                    credits: 25
                                 }
                             },
                             {
                                 id: 4,
                                 cost: {
                                     gold: 500000,
-                                    sl: 50
+                                    credits: 50
                                 }
                             },
                             {
                                 id: 5,
                                 cost: {
                                     gold: 1000000,
-                                    sl: 75
+                                    credits: 75
                                 }
                             },
                             {
                                 id: 6,
                                 cost: {
                                     gold: 250000,
-                                    sl: 25
+                                    credits: 25
                                 }
                             },
                             {
                                 id: 7,
                                 cost: {
                                     gold: 500000,
-                                    sl: 50
+                                    credits: 50
                                 }
                             },
                             {
                                 id: 8,
                                 cost: {
                                     gold: 1000000,
-                                    sl: 75
+                                    credits: 75
                                 }
                             }
                         ]
@@ -2693,13 +3359,73 @@ module.exports = function() {
         }
     };
 
+    //this.manageSrajAfterSuccessRespond = () => {
+    //	Engine.rajController.setAddSrajToQueue(false);
+    //	Engine.rajController.callSrajQueue()
+    //	Engine.rajController.clearRajQueue();
+    //}
+
     //var lag = null;
     this.parseJSON = function(data) {
+
+        let reload = false;
 
         manageTestJSONAData(data);
 
         self.setFirstCallEv(data);
+        /*														// next time  #54862
+        		if (checkFistTReload(data)) {
+        			reload = true;
+        			callReloadProcedure();
 
+        			const action = Engine.windowsData.windowCloseConfig.RELOAD;
+        			Engine.windowCloseManager.callWindowCloseConfig(action);
+
+        			if (data.e) {
+        				callEProcedure(data.e);
+        			}
+        		}
+        */
+        Engine.rajController.manageSrajBeforeSuccessRespond();
+
+        //for (var i in data) {
+        //	var fun = 'before_on_' + i;
+        //	if (data.hasOwnProperty(i) && typeof(this.dispatcher[fun]) == 'function') {
+        //		self.dispatcher[fun](data[i], data);
+        //	}
+        //}
+        //
+        //for (var i in data) {
+        //
+        //	if (i == "ev") continue;
+        //	var fun = 'on_' + i;
+        //	if (data.hasOwnProperty(i) && typeof(this.dispatcher[fun]) == 'function') {
+        //		self.dispatcher[fun](data[i], data);
+        //	}
+        //}
+        //
+        //for (var i in data) {
+        //	var fun = 'after_on_' + i;
+        //	if (data.hasOwnProperty(i) && typeof(this.dispatcher[fun]) == 'function') {
+        //		self.dispatcher[fun](data[i], data);
+        //	}
+        //}
+
+        if (!reload) {
+            callDispacher(data);
+        }
+
+        if (Engine.getInitLvl() != 4) {
+            //self.manageSrajAfterSuccessRespond();
+            Engine.rajController.manageSrajAfterSuccessRespond();
+        }
+
+        //let lag = ts() - Engine.ats;
+        //Engine.interface.heroElements.updateLag(lag);
+        Engine.interface.heroElements.endLag();
+    };
+
+    const callDispacher = (data) => {
         for (var i in data) {
             var fun = 'before_on_' + i;
             if (data.hasOwnProperty(i) && typeof(this.dispatcher[fun]) == 'function') {
@@ -2722,11 +3448,7 @@ module.exports = function() {
                 self.dispatcher[fun](data[i], data);
             }
         }
-
-        //let lag = ts() - Engine.ats;
-        //Engine.interface.heroElements.updateLag(lag);
-        Engine.interface.heroElements.endLag();
-    };
+    }
 
     this.setFirstCallEv = (data) => {
         //if (!Engine.ev && data.ev) {
@@ -2735,6 +3457,29 @@ module.exports = function() {
         }
     };
 
+    const checkFistTReload = (data) => {
+        return data.t && data.t == "reload"
+    }
+
+    const callReloadProcedure = () => {
+        Engine.reload = true;
+        Engine.onClear();
+        Engine.map.setDrawable(false);
+        Engine.map.setOffsetIsSet(false);
+        Engine.map.setUnlock(false);
+        if (Engine.logOff) {
+            Engine.stop();
+            Engine.logOff.out();
+            return;
+        }
+        Engine.reCallInitQueue();
+    };
+
+    const callEProcedure = (v) => {
+        if (v != 'ok') {
+            error(v);
+        }
+    };
 
     this.dispatcher = {
         on_town: function(v) {
@@ -2746,6 +3491,24 @@ module.exports = function() {
         //after_on_commercials: function (v) {
         //	Engine.commercials.updateData(v)
         //},
+        before_on_sraj_tpl: function(data) {
+            getEngine().srajStore.updateData(data);
+        },
+        after_on_sraj: function(data) {
+            if (Engine.getInitLvl() == 2) {
+                //let srajData = Engine.srajStore.getSrajTemplate(data[0].id, "APPEAR");
+                //Engine.map.setSraj(JSON.parse(srajData));
+                //Engine.map.callMapSraj(true);
+                return
+            }
+            getEngine().rajController.callSrajFromEngine(data, "APPEAR");
+        },
+        after_on_sraj_cancel: function(data) {
+            if (Engine.getInitLvl() == 2) {
+                return
+            }
+            getEngine().rajController.callSrajFromEngine(data, "CANCEL");
+        },
         after_on_raj: function(data) {
             if (elementIsArray(data)) {
                 for (let k in data) {
@@ -2759,6 +3522,7 @@ module.exports = function() {
         },
         on_h: function(v, allData) {
             Engine.hero.updateDATA(v, allData);
+            Engine.hero.setHeroAlreadyInitialised();
             //API.callEvent('heroUpdate', Engine.hero);
             API.callEvent(Engine.apiData.HERO_UPDATE, Engine.hero);
         },
@@ -2820,7 +3584,9 @@ module.exports = function() {
             //	if (!bS.youDie) Engine.battle.close(true);
             //}
             //if (v.init == 1 &&  Engine.battle && Engine.battle.show) Engine.battle.close(true);
-            if (v.init == 1 && Engine.battle.getShow()) Engine.battle.close(v);
+            if (v.init == 1 && Engine.battle.getShow()) {
+                Engine.battle.close(v, true);
+            }
 
             //if (!Engine.battle) {
             //	Engine.battle = new Battle();
@@ -2931,17 +3697,21 @@ module.exports = function() {
 
                     //if (d.n == "Done.<br>" || d.hasOwnProperty('dead')) Engine.reloadStats = false;
 
-                    Engine.reload = true;
-                    Engine.onClear();
-                    Engine.map.setDrawable(false);
-                    Engine.map.setOffsetIsSet(false);
-                    Engine.map.setUnlock(false);
-                    if (Engine.logOff) {
-                        Engine.stop();
-                        Engine.logOff.out();
-                        return;
-                    }
-                    Engine.reCallInitQueue();
+                    //Engine.reload = true;
+                    //Engine.onClear();
+                    //Engine.map.setDrawable(false);
+                    //Engine.map.setOffsetIsSet(false);
+                    //Engine.map.setUnlock(false);
+                    //if (Engine.logOff) {
+                    //	Engine.stop();
+                    //	Engine.logOff.out();
+                    //	return;
+                    //}
+                    //Engine.reCallInitQueue();
+                    callReloadProcedure();
+                    break;
+                case 'force_reload':
+                    pageReload();
                     break;
             }
 
@@ -2952,7 +3722,8 @@ module.exports = function() {
             warn(v);
         },
         on_e: function(v) {
-            if (v != 'ok') error(v);
+            //if (v != 'ok') error(v);
+            callEProcedure(v);
         },
         //on_clientver: function (v) {
         //	Engine.clientVer = v;
@@ -2984,6 +3755,10 @@ module.exports = function() {
             if (timer === 0) delete(Engine.loots);
         },
         on_shop: function(v) {
+            if (isset(v.sellAction) || isset(v.buyAction)) {
+                if (Engine.shop) Engine.shop.sellOrBuyAction(v);
+                return;
+            }
             var superMarket = 479;
             var chestId = isPl() ? 436 : '';
             var promoId = 190;
@@ -3019,7 +3794,10 @@ module.exports = function() {
             Engine.chooseOutfit.update(v);
         },
         on_game: function(v) {
-            Loader.initGame(v);
+            if (Engine.getInitLvl() == 4 && Engine.interface.getAlreadyInitialised()) {
+                return;
+            }
+            getEngine().miniGames.initGame(v)
         },
         after_on_mails: function(v) {
             if (!Engine.mails) {
@@ -3182,6 +3960,27 @@ module.exports = function() {
         // 	Engine.auction.updateData(v, AuctionData.UPDATE_PAGES);
         // 	API.callEvent('ah_ahp_update');
         // },
+        after_on_depo_opentabs: function(v) {
+            if (!getEngine().depo) {
+                return
+            }
+
+            let depo = getEngine().depo;
+            let depoOpenTabs = depo.getDepoOpenTabs();
+            let beforeFirstUpdate = depoOpenTabs.getBeforeFirstUpdate();
+
+            depoOpenTabs.updateData(v);
+            depo.updateNotLoadedItemsCards();
+            depo.hideLoadItemsOverlay();
+            depo.searchDepoItem();
+            depo.appendItemGrid();
+            depo.manageMultiZeroZero();
+
+            if (beforeFirstUpdate) {
+                let tabToShow = depoOpenTabs.getTabToShow(v);
+                depo.setVisible(tabToShow);
+            }
+        },
         on_depo: function(v) {
             if (!Engine.depo) {
                 Engine.depo = new Depo(false);
@@ -3285,6 +4084,15 @@ module.exports = function() {
         // 	}
         // 	Engine.adventCalendar.updateData(v);
         // },
+        on_player_reset: function(v) {
+            if (Engine.characterReset) {
+                Engine.characterReset.onClear();
+            }
+
+            Engine.characterReset = new CharacterReset();
+            Engine.characterReset.init();
+            Engine.characterReset.updateData(v);
+        },
         on_book: function(v) {
             if (!Engine.book) {
                 Engine.book = new Book();
@@ -3324,6 +4132,10 @@ module.exports = function() {
         on_skills_learnt: function(v) {
             if (!Engine.skills) Engine.skills = new Skills();
             Engine.skills.updateSkillsLearnt(v);
+        },
+        on_skills_total: function(v) {
+            if (!Engine.skills) Engine.skills = new Skills();
+            Engine.skills.updateSkillsTotal(v);
         },
         on_selectedskills: function(v) {
             Engine.skills.updateSelectedSkills(v);
@@ -3436,6 +4248,12 @@ module.exports = function() {
 
             Engine.crafting.open('recipes', v);
         },
+        before_on_settings: function(v) {
+            Engine.settingsStorage.updateData(v);
+        },
+        on_settings: function(v) {
+            Engine.settings.updateData();
+        },
         on_enhancement: function(v) {
             if (Engine.crafting && Engine.crafting.enhancement) {
                 Engine.crafting.enhancement.update(v);
@@ -3511,16 +4329,23 @@ module.exports = function() {
             Engine.matchmaking.summary.updateSummary(v);
         },
         on_loot_preview: function(v) {
-            if (Engine.lootPreview) Engine.lootPreview.close();
-            Engine.lootPreview = new LootPreview('lootbox');
-            Engine.lootPreview.init();
-            Engine.lootPreview.update(v);
+            if (Engine.preview) Engine.preview.close();
+            Engine.preview = new Preview(previewType.LOOTBOX);
+            Engine.preview.update(v);
+
+            // if (Engine.lootPreview) Engine.lootPreview.close();
+            // Engine.lootPreview = new LootPreview('lootbox');
+            // Engine.lootPreview.init();
+            // Engine.lootPreview.update(v);
         },
         on_recipe_preview: function(v) {
-            if (Engine.lootPreview) Engine.lootPreview.close();
-            Engine.lootPreview = new LootPreview('recipe');
-            Engine.lootPreview.init();
-            Engine.lootPreview.update(v);
+            if (Engine.preview) Engine.preview.close();
+            Engine.preview = new Preview(previewType.RECIPE);
+            Engine.preview.update(v);
+            // if (Engine.lootPreview) Engine.lootPreview.close();
+            // Engine.lootPreview = new LootPreview('recipe');
+            // Engine.lootPreview.init();
+            // Engine.lootPreview.update(v);
         },
         on_match_main: function(v) {
             Engine.matchmaking.warningPoints(v.warnings_cur, v.warnings_max);
@@ -3555,8 +4380,17 @@ module.exports = function() {
 
         },
         on_rewards_calendar_active: function(v) {
-            Engine.rewardsCalendarActive = true;
-            Engine.widgetManager.addRewardCalendarWidgetIfNotExist();
+            if (!Engine.interface.getAlreadyInitialised()) {
+                Engine.rewardsCalendarActive = true;
+            } else {
+
+                if (!Engine.rewardsCalendarActive) {
+                    Engine.rewardsCalendarActive = true;
+                    Engine.widgetManager.rebuildWidgetButtons();
+                }
+            }
+
+            //Engine.widgetManager.addRewardCalendarWidgetIfNotExist();
         },
         on_battle_pass_active: function(v) {
             Engine.battlePassActive = true;
@@ -3625,10 +4459,13 @@ module.exports = function() {
         on_worldConfig: (v) => {
             Engine.tutorialManager.tutorialStart(CFG.LANG.PL, 53);
             //Engine.tutorialManager.tutorialStart(CFG.LANG.EN, 53);
-            Engine.tutorialManager.tutorialStart(CFG.LANG.PL, 1);
+            if (!mobileCheck()) {
+                Engine.tutorialManager.tutorialStart(CFG.LANG.PL, 1);
+            }
             //Engine.tutorialManager.tutorialStart(CFG.LANG.EN, 1);
 
             if (Engine.worldConfig.getPrivWorld() == 1) Engine.globalAddons.setVisibleOfTurnOnOffAddonButton(true);
+            if (!Engine.characterList) Engine.characterList = new CharacterList.default();
         },
         on_play: (v) => {
             if (isset(v.path)) {
@@ -3644,6 +4481,43 @@ module.exports = function() {
         on_handheld_minimap: (v) => {
             if (isset(v.hero_localizations) && v.hero_localizations.length > 0) {
                 Engine.heroesRespManager.updateData(v.hero_localizations)
+            }
+        },
+        on_chatModerator: (v) => {
+            if (isset(v.open)) {
+                if (!Engine.mcAddon) {
+                    Engine.mcAddon = new MCAddon();
+                    Engine.mcAddon.init();
+                }
+                Engine.mcAddon.update(v.open);
+            }
+        },
+        on_activities: (v) => {
+            if (isset(v.show)) {
+                Engine.worldWindow.open('activities', v.show);
+            }
+            if (isset(v.observed)) {
+                Engine.activityObserve.update(v.observed);
+            }
+        },
+        on_socket: (v) => {
+            if (Engine.crafting.socket_enchantment && (isset(v.injectPreview) || isset(v.inject))) {
+                Engine.crafting.socket_enchantment.update(v);
+            }
+            if (Engine.crafting.socket_extraction && (isset(v.extractPreview) || isset(v.extract))) {
+                Engine.crafting.socket_extraction.update(v);
+            }
+            if (Engine.crafting.socket_composition && (isset(v.composePreview) || isset(v.compose))) {
+                Engine.crafting.socket_composition.update(v);
+            }
+        },
+        before_on_socket: (v) => {
+            if (isset(v.composePreviewRecipes)) {
+                if (Engine.preview) Engine.preview.close();
+                Engine.preview = new Preview(previewType.SOCKET_RECIPE);
+                Engine.preview.update({
+                    socketRecipes: [...v.composePreviewRecipes]
+                });
             }
         }
     };

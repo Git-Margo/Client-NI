@@ -1,10 +1,11 @@
-//var wnd = require('core/Window');
-var tpl = require('core/Templates');
+//var wnd = require('@core/Window');
+var tpl = require('@core/Templates');
 module.exports = function(Par) {
     var self = this;
     var content;
     var prepareToSort;
     var lastSortChoice = 'invertrank';
+    const sortNamesList = ['name', 'lvl', 'rank', 'status'];
 
     this.createTabHeaderMemberList = function() {
         var charInf = Par.getCharInf();
@@ -21,15 +22,15 @@ module.exports = function(Par) {
 
     this.update = function(v) {
         this.clearTable();
-        for (var i = 0; i < v.length; i += 10) {
-            var sliceD = v.slice(i, i + 10);
+        for (var i = 0; i < v.length; i += 11) {
+            var sliceD = v.slice(i, i + 11);
             var $tr = Par.createOneMember(sliceD, true, true);
             var id = sliceD[0];
             var memberList = Par.getMemberList();
             prepareToSort.push($tr);
             memberList[id] = sliceD;
         }
-        this.createMembersListTable('invertrank');
+        this.createMembersListTable(lastSortChoice);
     };
 
     this.clearTable = function() {
@@ -67,38 +68,36 @@ module.exports = function(Par) {
         for (var i = 0; i < 4; i++) {
             this.clickSort($firstTr, i);
         }
+        const {
+            index,
+            isInvert
+        } = this.getLastSort();
+        self.setArrows(index, !isInvert);
     };
 
     this.clickSort = function($firstTr, i) {
-        var t = ['name', 'lvl', 'rank', 'status'];
         var $e = $firstTr.children().eq(i);
-        if (i === 2) self.setArrows(i, false);
         $e.click(function() {
-            var choice = t[i];
+            var choice = sortNamesList[i];
             var bool = lastSortChoice == choice;
             if (bool) lastSortChoice = 'invert' + choice;
             else lastSortChoice = choice;
-            self.createClanListTable(lastSortChoice);
+            self.createMembersListTable(lastSortChoice);
             self.setArrows(i, !bool);
         });
     };
 
-    this.createClanListTable = function(type) {
-        var header = this.createTabHeaderMemberList();
-        var $tableHeader = content.find('.clan-members-table-header');
-        var $table = $('<table>').addClass('clan-members-table table-content');
-        var sortedArray = this.getSortedTable(type);
-        this.deleteTable();
-        for (var k in sortedArray) {
-            var $tr = sortedArray[k];
-            $table.append($tr);
-        }
+    this.getLastSort = () => {
+        let isInvert = false;
+        if (lastSortChoice.includes('invert')) isInvert = true;
+        const finalType = lastSortChoice.replace('invert', '');
+        const index = sortNamesList.indexOf(finalType)
 
-        $tableHeader.html(header);
-        content.find('.scroll-pane').append($table);
-        this.createHeaderSortButtons();
-        $('.scroll-wrapper', content).trigger('update');
-    };
+        return {
+            index,
+            isInvert
+        }
+    }
 
     this.getSortedTable = function(type) {
         switch (type) {
@@ -178,8 +177,8 @@ module.exports = function(Par) {
         for (var k in o)
             array[k] = o[k];
         array.sort(function(a, b) {
-            var nA = parseInt(a.find(selector).html());
-            var nB = parseInt(b.find(selector).html());
+            var nA = parseInt(a.find(selector).attr("val-to-amount-sort"));
+            var nB = parseInt(b.find(selector).attr("val-to-amount-sort"));
             if (invert) return nB - nA;
             else return nA - nB;
         });

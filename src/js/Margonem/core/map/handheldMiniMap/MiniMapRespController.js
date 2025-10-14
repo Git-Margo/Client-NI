@@ -1,6 +1,6 @@
-//let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObjectNew');
-let MiniMapObject = require('core/map/handheldMiniMap/MiniMapObject');
-let HandHeldMiniMapData = require('core/map/handheldMiniMap/HandHeldMiniMapData');
+//let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObjectNew');
+let MiniMapObject = require('@core/map/handheldMiniMap/MiniMapObject');
+let HandHeldMiniMapData = require('@core/map/handheldMiniMap/HandHeldMiniMapData');
 
 module.exports = function() {
 
@@ -10,6 +10,7 @@ module.exports = function() {
 
     let heroesRest = {};
     let heroesEventRest = {};
+    let titanRest = {};
 
     let resp = {};
 
@@ -20,6 +21,7 @@ module.exports = function() {
     function clearAllLists() {
         heroesRest = {};
         heroesEventRest = {};
+        titanRest = {};
 
         resp = {};
     }
@@ -30,6 +32,8 @@ module.exports = function() {
                 return heroesRest;
             case HandHeldMiniMapData.KIND.HEROES_RESP_E:
                 return heroesEventRest;
+            case HandHeldMiniMapData.KIND.TITAN_RESP:
+                return titanRest;
             default:
                 errorReport(moduleData.fileName, "getListByKind", 'incorrect kind', kind)
         }
@@ -77,19 +81,13 @@ module.exports = function() {
 
         let npc = miniMapObject.getRef();
 
-        // if (!npc.getOnloadProperImg()) {
-        //    setTimeout(function () {
-        //        createTipToResp(miniMapObject, kind);
-        //    }, 1000);
-        //    return
-        // }
-
         // const icon 	= getIcon(CFG.a_npath + npc.getIcon(), npc.getFrameAmount(), npc.fw, npc.fh, 190);
         const t = Engine.npcs.getTip(npc.getData());
         const respTime = `${_t('resp-time')}: <span class="nowrap">${npc.getPreparedResp()}</span><br>`;
-        const visibility = `${_t('visibility')}: <span class="nowrap">${npc.getPreparedLvlRanges()}</span>`;
+        const lvlRanges = npc.getPreparedLvlRanges();
+        const visibility = lvlRanges ? `${_t('visibility')}: <span class="nowrap">${lvlRanges}</span>` : '';
         // const tip = _t('possible-resp-place') + ':<br><br>' + t + icon + '<br>' + respTime + visibility;
-        const tip = _t('possible-resp-place') + ':<br><br>' + t + '<br><br>' + respTime + visibility;
+        const tip = _t('possible-resp-place') + ':<br><br>' + t + '<br>' + respTime + visibility;
 
         miniMapObject.setTip(tip, "t_npc");
     }
@@ -135,12 +133,15 @@ module.exports = function() {
 
     function findKind(obj) {
         const kind = obj.getKind();
+        const npcClass = obj.getClass();
+        if (npcClass === 'TITAN') return HandHeldMiniMapData.KIND.TITAN_RESP; // TITAN & EVENT TITAN are in the same list
+
         switch (kind) {
             case 0:
             case 2: // it's exception for Mietek Å»ul :(
-                return HandHeldMiniMapData.KIND.HEROES_RESP;
+                return HandHeldMiniMapData.KIND[`${npcClass}_RESP`];
             case 1:
-                return HandHeldMiniMapData.KIND.HEROES_RESP_E;
+                return HandHeldMiniMapData.KIND[`${npcClass}_RESP_E`];
             default:
                 errorReport(moduleData.fileName, "findKind", 'incorrect kind', kind)
         }
@@ -162,26 +163,27 @@ module.exports = function() {
 
         let respLvl = respObj.getLvl();
         let respKind = respObj.getKind();
-        let heroLvl = Engine.hero.d.lvl;
+        let respClass = respObj.getClass();
+        let heroLvl = getHeroLevel();
         let dropDestroyLvl = Engine.worldConfig.getDropDestroyLvl();
 
-        return showResp(respLvl, respKind, heroLvl, dropDestroyLvl)
+        return showResp(respLvl, respKind, respClass, heroLvl, dropDestroyLvl)
     }
 
-    function showResp(respLvl, respKind, heroLvl, dropDestroyLvl) {
+    function showResp(respLvl, respKind, respClass, heroLvl, dropDestroyLvl) {
+        if (respClass === 'TITAN') return true;
 
-        if (respKind === 0) {
-
-            if (respLvl >= 250) return heroLvl + 50 >= respLvl;
-
-            if (respLvl >= 100) return respLvl + dropDestroyLvl >= heroLvl && heroLvl + 50 >= respLvl;
-
-            return heroLvl >= Math.floor(respLvl / 2) && respLvl + dropDestroyLvl >= heroLvl
-
+        switch (respKind) {
+            case 0:
+                if (respLvl >= 250) return heroLvl + 50 >= respLvl;
+                if (respLvl >= 100) return respLvl + dropDestroyLvl >= heroLvl && heroLvl + 50 >= respLvl;
+                return heroLvl >= Math.floor(respLvl / 2) && respLvl + dropDestroyLvl >= heroLvl
+            case 1:
+            case 2: // it's exception for Mietek Å»ul :(
+                return heroLvl >= Math.floor(respLvl / 2);
+            default:
+                errorReport(moduleData.fileName, "findKind", 'incorrect kind', kind)
         }
-
-        if (respKind === 1 || respKind === 2) return heroLvl >= Math.floor(respLvl / 2);
-
         return false;
     }
 

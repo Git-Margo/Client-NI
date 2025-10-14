@@ -1,6 +1,6 @@
-let RajActionData = require('core/raj/rajAction/RajActionData');
-let RajActionManager = require('core/raj/rajAction/RajActionManager');
-let RajProgrammerData = require('core/raj/rajProgrammer/RajProgrammerData');
+let RajActionData = require('@core/raj/rajAction/RajActionData');
+let RajActionManager = require('@core/raj/rajAction/RajActionManager');
+let RajProgrammerData = require('@core/raj/rajProgrammer/RajProgrammerData');
 
 module.exports = function() {
 
@@ -242,7 +242,9 @@ module.exports = function() {
             let srajData = weekDays[weekDayLabel][kind][timeLabel];
 
             const WEEK_DAY = RajProgrammerData.WEEK_DAY;
-            devConsoleLog(['callWeekDaysProgrammer', srajData])
+            if (getDebug(CFG.DEBUG_KEYS.SRAJ)) {
+                devConsoleLog(['callWeekDaysProgrammer', srajData])
+            }
 
             setActiveEventWithEndInLoop(srajData, state, WEEK_DAY);
             serverRayControllerData(srajData)

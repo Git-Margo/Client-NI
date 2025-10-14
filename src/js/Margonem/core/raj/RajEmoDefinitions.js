@@ -35,7 +35,14 @@ module.exports = function() {
             priority: priority
         };
 
-        if (params.offset) definitionList[name].offset = params.offset
+        //if (params.offset) definitionList[name].offset = params.offset
+
+        if (params.offsetX || params.offsetY) {
+            definitionList[name].offset = [
+                params.offsetX ? params.offsetX : 0,
+                params.offsetY ? params.offsetY : 0,
+            ]
+        }
 
     };
 
@@ -70,7 +77,7 @@ module.exports = function() {
             errorReport(moduleData.fileName, "isDefinitionCorrect", "data.params.action not exist in emoDefinition!", oneData);
             return false;
         } else {
-            let action = ['OnSelf'];
+            let action = ['OnSelf', "StickToMap"];
             if (!action.includes(oneData.params.action)) {
                 errorReport(moduleData.fileName, "isDefinitionCorrect", "data.params.action can be CREATE or REMOVE value only!", oneData);
                 return false;

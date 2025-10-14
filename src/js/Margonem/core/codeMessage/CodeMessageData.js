@@ -113,6 +113,9 @@ o.CODE_MESSAGE = {
     1001018: {
         [NAME]: 'ItemIsRequiredInQuest'
     },
+    1001019: {
+        [NAME]: 'IngredientsLimitError'
+    },
     1002001: {
         [NAME]: 'ItemUpgraded'
     },
@@ -441,6 +444,98 @@ o.CODE_MESSAGE = {
         [NAME]: 'ItemGroundTakeLimit'
     },
 
+
+    //characterReset
+    5101002: {
+        [NAME]: 'PlayerResetOptions_Level',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 1
+        }
+    },
+    5101003: {
+        [NAME]: 'PlayerResetOptions_FreeLevel'
+    },
+    5101004: {
+        [NAME]: 'PlayerResetOptions_FreeProf',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 1
+        }
+    },
+    5101005: {
+        [NAME]: 'PlayerResetOptions_Prof',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 2
+        }
+    },
+    5101006: {
+        [NAME]: 'PlayerResetOptions_FreeLvlProf',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 1
+        }
+    },
+    5101007: {
+        [NAME]: 'PlayerResetOptions_LvlProf',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 2
+        }
+    },
+    5101008: {
+        [NAME]: 'PlayerResetOptions_FreeSex',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 1
+        }
+    },
+    5101009: {
+        [NAME]: 'PlayerResetOptions_Sex',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 2
+        }
+    },
+    5101010: {
+        [NAME]: 'PlayerResetOptions_FreeLevelSex',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 1
+        }
+    },
+    5101011: {
+        [NAME]: 'PlayerResetOptions_LevelSex',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 2
+        }
+    },
+    5101012: {
+        [NAME]: 'PlayerResetOptions_FreeProfSex',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 2
+        }
+    },
+    5101013: {
+        [NAME]: 'PlayerResetOptions_ProfSex',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 3
+        }
+    },
+    5101014: {
+        [NAME]: 'PlayerResetOptions_FreeLevelProfSex',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 2
+        }
+    },
+    5101015: {
+        [NAME]: 'PlayerResetOptions_LevelProfSex',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 3
+        }
+    },
+
+    //activities
+    5201001: {
+        [NAME]: 'ActivitiesObserveLimitError',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+
     //chat
     2803001: {
         [NAME]: 'InvitationParty',
@@ -532,6 +627,9 @@ o.CODE_MESSAGE = {
     },
     4501019: {
         [NAME]: 'EChatBroadcastError_LowLvl'
+    },
+    4501020: {
+        [NAME]: 'EChatBroadcastError_ChatIsDisabledForGuest'
     },
     4501006: {
         [NAME]: 'EChatBroadcastError_Spam'
@@ -800,6 +898,106 @@ o.CODE_MESSAGE = {
     101201001: {
         [NAME]: 'AddTabDepositConfirmation'
     },
+    101301001: {
+        [NAME]: 'TargetClassError',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    100302002: {
+        [NAME]: 'LowreqError_SocketComponentLvlIsNotCompatible',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    100702002: {
+        [NAME]: 'UpglvlError_SocketComponentLvlIsNotCompatible',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    100602002: {
+        [NAME]: 'UndoupgError_SSocketComponentIsInjected',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5301001: {
+        [NAME]: 'SocketComposeConfirmation'
+    },
+    5302001: {
+        [NAME]: 'SocketComposeError_MissingRecipe'
+    },
+    5311001: {
+        [NAME]: 'SocketInjectConfirmation'
+    },
+    5312001: {
+        [NAME]: 'ESocketContentInjectError_InvalidItem',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5312002: {
+        [NAME]: 'ESocketContentInjectError_InvalidEnhancer',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5312003: {
+        [NAME]: 'ESocketContentInjectError_ItemIsBindable',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5312004: {
+        [NAME]: 'ESocketContentInjectError_ItemNotContainsSocket',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5312005: {
+        [NAME]: 'ESocketContentInjectError_ItemSocketIsBusy',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5312006: {
+        [NAME]: 'ESocketContentInjectError_InvalidEnhancerTargetLvl',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5312007: {
+        [NAME]: 'ESocketContentInjectError_NotCompatibleWithLowreqLvl',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5312008: {
+        [NAME]: 'ESocketContentInjectError_NotCompatibleWithLvlAdjust',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5322001: {
+        [NAME]: 'SocketExtractError_ItemNotContainsSocket',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5322002: {
+        [NAME]: 'SocketExtractError_SocketIsEmpty',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: ALERT
+        }
+    },
+    5321001: {
+        [NAME]: 'SocketExtractConfirmation_Gold'
+    },
+    5321002: {
+        [NAME]: 'SocketExtractConfirmation_Credits'
+    },
+
     4801001: {
         [NAME]: 'ArtisanshipItemIsModifiedConfirmation'
     },
@@ -899,6 +1097,18 @@ o.CODE_MESSAGE = {
         [NAME]: 'LSHOP_TTL_PROLONGED',
         [VIEW_PARAMS]: {
             [CHAT]: CHAT_SYSTEM_MESSAGE
+        }
+    },
+    3503001: {
+        [NAME]: 'CEventShopCreditsConfirmation_ShopSpendCreditsConfirmation',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 1
+        }
+    },
+    5001001: {
+        [NAME]: 'CEventBarterCreditsConfirmation_BarterSpendCreditsConfirmation',
+        [TEXT_PARAMS]: {
+            [GROUP_PARAMS_AMOUNT]: 1
         }
     },
     3302001: {

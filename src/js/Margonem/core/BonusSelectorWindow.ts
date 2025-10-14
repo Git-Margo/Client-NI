@@ -1,6 +1,6 @@
 import BonusSelector from './crafting/enhancement/BonusSelector';
 
-const Tpl = require('core/Templates');
+const Tpl = require('@core/Templates');
 
 declare const _t: any;
 declare const _g: any;

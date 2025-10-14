@@ -1,4 +1,5 @@
-var tpl = require('core/Templates');
+var tpl = require('@core/Templates');
+const Tabs = require('../components/Tabs');
 module.exports = function(Par) {
     var self = this;
     var content;
@@ -7,17 +8,59 @@ module.exports = function(Par) {
     this.initTab = function() {
         card = [
             'clan-official-page',
-            'clan_other-members',
-            'clan_other-recruit'
+            // 'clan_other-members',
+            // 'clan_other-recruit'
+            'clan-other-members',
+            'clan-other-recruit'
         ];
     };
 
     this.initAllCards = function() {
-        var $menu = content.find('.header-menu');
-        for (var i = 0; i < card.length; i++)
-            Par.createCard('showcase', $menu, card[i]);
-        content.find('.card').eq(0).addClass('active');
+        // var $menu = content.find('.header-menu');
+        // for (var i = 0; i < card.length; i++)
+        // 	Par.createCard('showcase', $menu, card[i]);
+        // content.find('.card').eq(0).addClass('active');
+
+        let cards = {
+            [card[0]]: {
+                name: Par.tLang(card[0]),
+                initAction: () => cardCallback(card[0])
+            },
+            [card[1]]: {
+                name: Par.tLang("clan_other-members"),
+                initAction: () => {
+                    cardCallback(card[1]);
+                    let otherClan = Engine.clan.getOtheClanModule()
+                    if (otherClan) {
+                        otherClan.updateScroll();
+                    }
+                }
+            },
+            [card[2]]: {
+                name: Par.tLang("clan_other-recruit"),
+                initAction: () => cardCallback(card[2])
+            }
+        };
+
+        const tabsOptions = {
+            tabsEl: {
+                navEl: content[0].querySelector('.header-menu')
+            }
+        };
+
+        this.tabsInstance = new Tabs.default(cards, tabsOptions);
     };
+
+    const cardCallback = (slug) => {
+        this.tabsInstance.activateCard(slug);
+
+        let $cardContent = content.find(".card-content");
+        $cardContent.find(`.${card[0]}-content`).css('display', "none")
+        $cardContent.find(`.${card[1]}-content`).css('display', "none")
+        $cardContent.find(`.${card[2]}-content`).css('display', "none")
+
+        $cardContent.find(`.${slug}-content`).css('display', "block")
+    }
 
     this.updateInfo = function(v) {
         if (!v) return;

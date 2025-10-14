@@ -3,166 +3,178 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-let apiData = require('api/ApiData');
-let fetchData = require('core/items/data/FetchData');
-let viewData = require('core/items/data/ViewData');
-let movedData = require('core/items/data/MovedData');
-let disableData = require('core/items/data/DisableData');
-var Console = require('core/Console');
-let SettingsOptions = require('core/SettingsOptions.js');
-var RequestCorrect = require('core/RequestCorrect');
-let GlobalAddons = require('core/GlobalAddons');
-var ServerStorage = require('core/storage/ServerStorage');
-var ServerStorageData = require('core/storage/ServerStorageData');
-var ThemeController = require('core/themeController/ThemeController');
-var ZoomManager = require('core/ZoomManager');
-var RajZoomManager = require('core/raj/rajZoom/RajZoomManager');
-var Map = require('core/map/Map');
-var MapGoMark = require('core/map/MapGoMark');
-var MapAreaCordTriggerManager = require('core/map/mapAreaCordTrigger/MapAreaCordTriggerManager');
-var MapShift = require('core/map/MapShift');
-var EarthQuakeManager = require('core/weather/EarthQuakeManager');
-var Hero = require('core/characters/Hero');
-var BuildsManager = require('core/builds/BuildsManager');
-var CanvasMultiGlow = require('core/tutorial/CanvasMultiGlow');
-var HtmlMultiGlow = require('core/tutorial/HtmlMultiGlow');
-var CanvasFocus = require('core/tutorial/CanvasFocus');
-var HtmlFocus = require('core/tutorial/HtmlFocus');
-var LowHealthCanvas = require('core/LowHealthCanvas');
-var ColorInterfaceNotificationManager = require('core/colorInterfaceNotification/ColorInterfaceNotificationManager');
-var ColorInterfaceNotificationData = require('core/colorInterfaceNotification/ColorInterfaceNotificationData');
-var SpecificAnimationManager = require('core/specificAnimation/SpecificAnimationManager.js');
-let WidgetNoticeManager = require('core/interface/widgets/WidgetNoticeManager');
-var HeroEquipment = require('core/items/HeroEquipment');
-var StepsToSend = require('core/StepsToSend');
-var Lock = require('core/Lock');
-var BrowserCardManager = require('core/BrowserCardManager');
-var IdleJSON = require('core/IdleJSON');
-var CanvasTip = require('core/CanvasTip');
-var Loader = require('core/Loader');
-var Communication = require('core/Communication');
-var CodeMessageManager = require('core/codeMessage/CodeMessageManager');
-var Interface = require('core/interface/Interface');
-var WidgetManager = require('core/interface/widgets/WidgetManager');
-var WraithCharacterManager = require('core/wraith/WraithCharacterManager');
-var WraithObjectManager = require('core/wraith/WraithObjectManager');
-var TargetsManager = require('core/targets/TargetsManager');
-var HeroesRespManager = require('core/characters/HeroesRespManager');
-var NpcIconManager = require('core/characters/NpcIconManager');
-var NpcTplManager = require('core/characters/NpcTplManager');
-var NpcManager = require('core/characters/NpcManager');
-var FakeNpcManager = require('core/characters/FakeNpcManager');
-var OthersManager = require('core/characters/OthersManager');
-var WhoIsHere = require('core/whoIsHere/WhoIsHere');
-var EmotionsManager = require('core/emotions/EmotionsManager');
-//var Commercials = require('core/commercials2/Commercials');
-var Chat = require('core/Chat.js');
-var BusinessCardManager = require('core/businessCards/BusinessCardsManager.js');
-var ChatController = require('core/chat/ChatController.js');
-var Items = require('core/items/ItemsManager');
-var ChatLinkedItemsManager = require('core/items/ChatLinkedItemsManager');
-var InterfaceItems = require('core/items/InterfaceItems');
-var Tpls = require('core/items/TplsManager');
-var Renderer = require('core/Renderer');
-var Collider = require('core/collider/EventCollider');
-var Reconnect = require('core/Reconnect');
-var Loot = require('core/Loot');
-//var MPos = require('core/MPos');
-var WeatherMgr = require('core/weather/WeatherManager');
-var MapFilter = require('core/weather/MapFilter');
-//var MiniMap = require('core/map/MiniMap');
-var HotKeys = require('core/hotKeys/HotKeys');
-// var Sound = require('core/sound/Sound');
-var Sound = require('core/sound/Sound2');
-var PadController = require('core/PadController');
-//var LootFilter = require('core/LootFilter');
-var MiniMapController = require('core/map/MiniMapController');
-var Matchmaking = require('core/Matchmaking');
-var MatchmakingTutorial = require('core/MatchmakingTutorial');
-//var QuestTracking = require('core/quest/QuestTracking');
-var NewQuestTracking = require('core/quest/NewQuestTracking');
-var StickyTips = require('core/StickyTips');
-var Captcha = require('core/captcha/Captcha');
-var Poll = require('core/Poll');
-var WarShadow = require('core/WarShadow');
-var ItemsMarkManager = require('core/items/ItemsMarkManager');
-var ItemsMovedManager = require('core/items/ItemsMovedManager');
-var DisableItemsManager = require('core/items/DisableItemsManager');
-var QuestObserve = require('core/quest/QuestObserve');
-var GA = require('core/GA');
-var Storage = require('core/Storage');
-var TutorialManager = require('core/tutorial/TutorialManager');
+let apiData = require('@api/ApiData');
+let fetchData = require('@core/items/data/FetchData');
+let ItemStatsData = require('@core/items/data/ItemStatsData');
+let viewData = require('@core/items/data/ViewData');
+let movedData = require('@core/items/data/MovedData');
+let disableData = require('@core/items/data/DisableData');
+var Console = require('@core/Console');
+var CanvasFilter = require('@core/CanvasFilter');
+let SettingsOptions = require('@core/settings/SettingsOptions');
+var RequestCorrect = require('@core/RequestCorrect');
+let GlobalAddons = require('@core/GlobalAddons');
+var ServerStorage = require('@core/storage/ServerStorage');
+var ServerStorageData = require('@core/storage/ServerStorageData');
+var ThemeController = require('@core/themeController/ThemeController');
+var ZoomManager = require('@core/ZoomManager');
+var RajZoomManager = require('@core/raj/rajZoom/RajZoomManager');
+var RajCanvasFilter = require('@core/raj/RajCanvasFilter');
+var Map = require('@core/map/Map');
+var MapGoMark = require('@core/map/MapGoMark');
+var MapAreaCordTriggerManager = require('@core/map/mapAreaCordTrigger/MapAreaCordTriggerManager');
+var MapShift = require('@core/map/MapShift');
+var EarthQuakeManager = require('@core/weather/EarthQuakeManager');
+var Hero = require('@core/characters/Hero');
+var BuildsManager = require('@core/builds/BuildsManager');
+var CanvasMultiGlow = require('@core/tutorial/CanvasMultiGlow');
+var HtmlMultiGlow = require('@core/tutorial/HtmlMultiGlow');
+var CanvasFocus = require('@core/tutorial/CanvasFocus');
+var HtmlFocus = require('@core/tutorial/HtmlFocus');
+var LowHealthCanvas = require('@core/LowHealthCanvas');
+var ColorInterfaceNotificationManager = require('@core/colorInterfaceNotification/ColorInterfaceNotificationManager');
+var ColorInterfaceNotificationData = require('@core/colorInterfaceNotification/ColorInterfaceNotificationData');
+var SpecificAnimationManager = require('@core/specificAnimation/SpecificAnimationManager');
+let WidgetNoticeManager = require('@core/interface/widgets/WidgetNoticeManager');
+var HeroEquipment = require('@core/items/HeroEquipment');
+var StepsToSend = require('@core/StepsToSend');
+var Lock = require('@core/Lock');
+var BrowserCardManager = require('@core/BrowserCardManager');
+var IdleJSON = require('@core/IdleJSON');
+var CanvasTip = require('@core/CanvasTip');
+var Loader = require('@core/Loader');
+var Communication = require('@core/Communication');
+var CodeMessageManager = require('@core/codeMessage/CodeMessageManager');
+var Interface = require('@core/interface/Interface');
+var WidgetManager = require('@core/interface/widgets/WidgetManager');
+var WraithCharacterManager = require('@core/wraith/WraithCharacterManager');
+var WraithObjectManager = require('@core/wraith/WraithObjectManager');
+var TargetsManager = require('@core/targets/TargetsManager');
+var HeroesRespManager = require('@core/characters/HeroesRespManager');
+var NpcIconManager = require('@core/characters/NpcIconManager');
+var NpcTplManager = require('@core/characters/NpcTplManager');
+var NpcManager = require('@core/characters/NpcManager');
+var FakeNpcManager = require('@core/characters/FakeNpcManager');
+var OthersManager = require('@core/characters/OthersManager');
+var WhoIsHere = require('@core/whoIsHere/WhoIsHere');
+var EmotionsManager = require('@core/emotions/EmotionsManager');
+//var Commercials = require('@core/commercials2/Commercials');
+//var Chat = require('@core/Chat');
+var BusinessCardManager = require('@core/businessCards/BusinessCardsManager');
+var ChatController = require('@core/chat/ChatController');
+var Items = require('@core/items/ItemsManager');
+var ChatLinkedItemsManager = require('@core/items/ChatLinkedItemsManager');
+var InterfaceItems = require('@core/items/InterfaceItems');
+var Tpls = require('@core/items/TplsManager');
+var Renderer = require('@core/Renderer');
+var Collider = require('@core/collider/EventCollider');
+var Reconnect = require('@core/Reconnect');
+var Loot = require('@core/Loot');
+//var MPos = require('@core/MPos');
+var WeatherMgr = require('@core/weather/WeatherManager');
+var MapFilter = require('@core/weather/MapFilter');
+//var MiniMap = require('@core/map/MiniMap');
+var HotKeys = require('@core/hotKeys/HotKeys');
+var MusicPanel = require('@core/sound/MusicPanel');
+// var Sound = require('@core/sound/Sound');
+var Sound = require('@core/sound/Sound2');
+var PadController = require('@core/PadController');
+//var LootFilter = require('@core/LootFilter');
+var MiniMapController = require('@core/map/MiniMapController');
+var Matchmaking = require('@core/Matchmaking');
+//var MatchmakingTutorial = require('@core/MatchmakingTutorial');
+//var QuestTracking = require('@core/quest/QuestTracking');
+var NewQuestTracking = require('@core/quest/NewQuestTracking');
+var StickyTips = require('@core/StickyTips');
+var Captcha = require('@core/captcha/Captcha');
+var Poll = require('@core/Poll');
+var WarShadow = require('@core/WarShadow');
+var ItemsMarkManager = require('@core/items/ItemsMarkManager');
+var ItemsMovedManager = require('@core/items/ItemsMovedManager');
+var DisableItemsManager = require('@core/items/DisableItemsManager');
+var QuestObserve = require('@core/quest/QuestObserve');
+var GA = require('@core/GA');
+var Storage = require('@core/Storage');
+var TutorialManager = require('@core/tutorial/TutorialManager');
 const {
     getStatsForTips
-} = require('core/skills/SkillsParser');
-const CrossStorage = require('core/CrossStorage');
-const Crafting = require('core/crafting/Crafting');
-const WindowCloseManager = require('core/window/WindowCloseManager.js');
-const windowsData = require('core/window/WindowsData.js');
-const widgetsData = require('core/interface/widgets/WidgetsData');
-var WindowManager = require('core/window/WindowManager.js');
-//var NightController = require('core/night/NightController2.js');
-var NightController = require('core/night/NightController.js');
-var OverrideDayNightCycle = require('core/raj/OverrideDayNightCycle.js');
-var AddonsPanel = require('core/addons/AddonsPanel');
-var Settings = require('core/Settings');
+} = require('@core/skills/SkillsParser');
+const CrossStorage = require('@core/CrossStorage');
+const Crafting = require('@core/crafting/Crafting');
+const WindowCloseManager = require('@core/window/WindowCloseManager');
+const windowsData = require('@core/window/WindowsData');
+const widgetsData = require('@core/interface/widgets/WidgetsData');
+var WindowManager = require('@core/window/WindowManager');
+//var NightController = require('@core/night/NightController2');
+var NightController = require('@core/night/NightController');
+var OverrideDayNightCycle = require('@core/raj/OverrideDayNightCycle');
+var AddonsPanel = require('@core/addons/AddonsPanel');
+var Settings = require('@core/settings/Settings');
 
-var InterfaceTimerManager = require('core/interfaceTimer/InterfaceTimerManager.js');
+var InterfaceTimerManager = require('@core/interfaceTimer/InterfaceTimerManager');
 
-var FloatForegroundManager = require('core/floatForeground/FloatForegroundManager.js');
-var FloatObjectManager = require('core/floatObject/FloatObjectManager.js');
-//var FogController = require('core/FogController.js');
-var ImgLoader = require('core/ImgLoader.js');
-const WorldWindow = require('core/worldWindow/WorldWindow');
-const DeadController = require('core/DeadController');
-const RajController = require('core/raj/RajController.js');
-const RajPreloadImage = require('core/raj/RajPreloadImage.js');
-const RajSequenceManager = require('core/raj/rajSequence/RajSequenceManager.js');
-const RajRandomCallerManager = require('core/raj/rajRandomCaller/RajRandomCallerManager.js');
-const RajAreaTriggerManager = require('core/raj/rajAreaTrigger/RajAreaTriggerManager.js');
-const RajSoundManager = require('core/raj/rajSound/RajSoundManager.js');
-const RajMapMusicManager = require('core/raj/rajMapMusic/RajMapMusicManager.js');
-const RajEmoActions = require('core/raj/RajEmoActions.js');
-const ScreenEffectsManager = require('core/screenEffects/ScreenEffectsManager.js');
-const RajEmoDefinitions = require('core/raj/RajEmoDefinitions.js');
-//const RajCase = require('core/raj/RajCase.js');
-const RajCase = require('core/raj/RajCase2.js');
-const RajDialogue = require('core/raj/RajDialogue.js');
-const RajProgrammer = require('core/raj/rajProgrammer/RajProgrammer.js');
-const RajExtraLight = require('core/raj/RajExtraLight.js');
-const DynamicLightsManager = require('core/night/DynamicLightsManager.js');
-const DynamicDirCharacterLightsManager = require('core/night/DynamicDirCharacterLightsManager.js');
-const BehaviorDynamicLightsManager = require('core/night/BehaviorDynamicLightsManager.js');
-const RajCamera = require('core/raj/RajCamera.js');
-const RajTracking = require('core/raj/RajTracking.js');
-const RajCharacterHide = require('core/raj/RajCharacterHide.js');
-const RajMassObjectHide = require('core/raj/rajMassObjectHide/RajMassObjectHide.js');
-const CharacterEffectsManager = require('core/characterEffects/CharacterEffectsManager');
-const CharacterEffectsMapManager = require('core/characterEffects/CharacterEffectsMapManager');
-const CharacterEffectsBattleManager = require('core/characterEffects/CharacterEffectsBattleManager');
-//const CharacterEffectsChainManager = require('core/characterEffects/CharacterEffectsChainManager');
-const CanvasCharacterWrapperManager = require('core/characters/CanvasCharacterWrapperManager.js');
-const ShowEqManager = require('core/showEq/ShowEqManager');
-const IframeWindowManager = require('core/iframeWindow/IframeWindowManager');
-const RajBattleEvents = require('core/raj/rajBattleEvents/RajBattleEvents.js');
-const RajYellowMessage = require('core/raj/RajYellowMessage.js');
-const RajCharacterImageChangerManager = require('core/raj/rajCharacterImageChanger/RajCharacterImageChangerManager.js');
-const RajMapEvents = require('core/raj/rajMapEvents/RajMapEvents.js');
-const RajWindowEvents = require('core/raj/rajWindowEvents/RajWindowEvents.js');
-const Battle = require('core/battle/Battle');
-//const BattleNight = require('core/battle/BattleNight');
-// const MagicInput = require('core/MagicInput');
-//const MagicInput = require('core/MagicInput2');
-//const ChatInputWrapper = require('core/ChatInputWrapper');
-const HeroDirectionData = require('core/characters/HeroDirectionData');
-const WorldConfig = require('core/WorldConfig');
-const Resolution = require('core/resolution/Resolution.js');
-const ResolutionData = require('core/resolution/ResolutionData.js');
-//const RenderConnectedImage = require('core/raj/RenderConnectedImage.js');
-const QuestMapBorderManager = require('core/questMapBorder/QuestMapBorderManager.js');
+var FloatForegroundManager = require('@core/floatForeground/FloatForegroundManager');
+var FloatObjectManager = require('@core/floatObject/FloatObjectManager');
+//var FogController = require('@core/FogController');
+var ImgLoader = require('@core/ImgLoader');
+const WorldWindow = require('@core/worldWindow/WorldWindow');
+const DeadController = require('@core/DeadController');
+const SrajStore = require('@core/raj/SrajStore');
+const RajController = require('@core/raj/RajController');
+const RajPreloadImage = require('@core/raj/RajPreloadImage');
+const RajSequenceManager = require('@core/raj/rajSequence/RajSequenceManager');
+const RajRandomCallerManager = require('@core/raj/rajRandomCaller/RajRandomCallerManager');
+const RajAreaTriggerManager = require('@core/raj/rajAreaTrigger/RajAreaTriggerManager');
+const RajSoundManager = require('@core/raj/rajSound/RajSoundManager');
+const RajMapMusicManager = require('@core/raj/rajMapMusic/RajMapMusicManager');
+const RajEmoActions = require('@core/raj/RajEmoActions');
+const ScreenEffectsManager = require('@core/screenEffects/ScreenEffectsManager');
+const RajEmoDefinitions = require('@core/raj/RajEmoDefinitions');
+//const RajCase = require('@core/raj/RajCase');
+const CssLoader = require('@core/CssLoader');
+const RajCase = require('@core/raj/RajCase2');
+const RajWindowManager = require('@core/raj/rajWindow/RajWindowManager');
+const RajDialogue = require('@core/raj/RajDialogue');
+const RajProgrammer = require('@core/raj/rajProgrammer/RajProgrammer');
+const RajExtraLight = require('@core/raj/RajExtraLight');
+const DynamicLightsManager = require('@core/night/DynamicLightsManager');
+const DynamicDirCharacterLightsManager = require('@core/night/DynamicDirCharacterLightsManager');
+const BehaviorDynamicLightsManager = require('@core/night/BehaviorDynamicLightsManager');
+const RajCamera = require('@core/raj/RajCamera');
+const RajTracking = require('@core/raj/RajTracking');
+const RajCharacterHide = require('@core/raj/RajCharacterHide');
+const RajMassObjectHide = require('@core/raj/rajMassObjectHide/RajMassObjectHide');
+const CharacterEffectsManager = require('@core/characterEffects/CharacterEffectsManager');
+const CharacterEffectsMapManager = require('@core/characterEffects/CharacterEffectsMapManager');
+const CharacterEffectsBattleManager = require('@core/characterEffects/CharacterEffectsBattleManager');
+//const CharacterEffectsChainManager = require('@core/characterEffects/CharacterEffectsChainManager');
+const CanvasCharacterWrapperManager = require('@core/characters/CanvasCharacterWrapperManager');
+const ShowEqManager = require('@core/showEq/ShowEqManager');
+const IframeWindowManager = require('@core/iframeWindow/IframeWindowManager');
+const RajBattleEvents = require('@core/raj/rajBattleEvents/RajBattleEvents');
+const RajYellowMessage = require('@core/raj/RajYellowMessage');
+const RajCharacterImageChangerManager = require('@core/raj/rajCharacterImageChanger/RajCharacterImageChangerManager');
+const RajMapEvents = require('@core/raj/rajMapEvents/RajMapEvents');
+const RajWindowEvents = require('@core/raj/rajWindowEvents/RajWindowEvents');
+const Battle = require('@core/battle/Battle');
+//const BattleNight = require('@core/battle/BattleNight');
+// const MagicInput = require('@core/MagicInput');
+//const MagicInput = require('@core/MagicInput2');
+//const ChatInputWrapper = require('@core/ChatInputWrapper');
+const HeroDirectionData = require('@core/characters/HeroDirectionData');
+const WorldConfig = require('@core/WorldConfig');
+const Resolution = require('@core/resolution/Resolution');
+const ResolutionData = require('@core/resolution/ResolutionData');
+//const RenderConnectedImage = require('@core/raj/RenderConnectedImage');
+const MapBorderManager = require('@core/mapBorder/MapBorderManager');
+const MiniGames = require('@minigames/Loader');
+const SettingsStorage = require('@core/settings/SettingsStorage');
+
 const {
     isMobileApp
-} = require('core/HelpersTS.ts');
+} = require('@core/HelpersTS');
+const LootFilter = require("@core/lootFilter/LfManager");
+const ActivityObserve = require("@core/ActivityObserve");
 
 module.exports = function() {
     var self = this;
@@ -206,8 +218,11 @@ module.exports = function() {
     //};
 
     this.init = function() {
-
         this.resetEvAndLastEv();
+
+
+        this.settingsStorage = new SettingsStorage();
+        this.settingsStorage.init();
 
         this.resolution = new Resolution();
         this.resolution.init();
@@ -229,15 +244,20 @@ module.exports = function() {
         //this.chatInputWrapper.init();
 
         this.apiData = apiData;
+        this.itemStatsData = ItemStatsData;
         this.itemsFetchData = fetchData;
         this.itemsViewData = viewData;
         this.itemsMovedData = movedData;
         this.itemsDisableData = disableData;
 
+        this.srajStore = new SrajStore();
+        this.srajStore.init();
         this.rajController = new RajController();
         this.rajController.init();
         this.rajZoomManager = new RajZoomManager();
         this.rajZoomManager.init();
+        this.rajCanvasFilter = new RajCanvasFilter();
+        this.rajCanvasFilter.init();
 
         this.mapAreaCordTriggerManager = new MapAreaCordTriggerManager();
         this.mapAreaCordTriggerManager.init();
@@ -256,8 +276,12 @@ module.exports = function() {
         this.rajRandomCallerManager.init();
         this.rajYellowMessage = new RajYellowMessage();
         this.rajYellowMessage.init();
+        this.cssLoader = new CssLoader();
+        this.cssLoader.init();
         this.rajCase = new RajCase();
         this.rajCase.init();
+        this.rajWindowManager = new RajWindowManager();
+        this.rajWindowManager.init();
         this.rajEmoActions = new RajEmoActions();
         this.rajEmoActions.init();
         //this.mapAreaCordTriggerManager = new MapAreaCordTriggerManager();
@@ -298,6 +322,13 @@ module.exports = function() {
         this.windowManager.init();
         this.interface = new Interface();
         this.interface.init();
+        //this.interface.setInterfaceLightMode(mobileCheck());
+        //this.interface.setInterfaceLightMode(false);
+        if (isMobileApp()) {
+            this.interface.setLighModeByDataInStorage();
+        } else {
+            this.interface.setInterfaceLightMode(false);
+        }
 
 
         this.colorInterfaceNotificationManager = new ColorInterfaceNotificationManager();
@@ -313,6 +344,9 @@ module.exports = function() {
         this.widgetManager.init();
         this.console = new Console();
         this.console.init();
+        this.canvasFilter = new CanvasFilter();
+        this.canvasFilter.init();
+
         this.globalAddons = new GlobalAddons();
         this.globalAddons.init();
         //this.initMapCanvasContext();
@@ -509,9 +543,9 @@ module.exports = function() {
         this.bonusSelector = false;
         this.hotKeys = new HotKeys();
         this.hotKeys.init();
-        this.musicPanel = null;
-        this.crafting = new Crafting();
-        this.crafting.init();
+        this.musicPanel = new MusicPanel();
+        this.musicPanel.init();
+        this.crafting = new Crafting.default();
         //this.lootFilter = new LootFilter();
         this.loggedPrice = null;
         this.addons = null;
@@ -525,6 +559,7 @@ module.exports = function() {
         this.showEqManager = new ShowEqManager();
         this.iframeWindowManager = new IframeWindowManager();
         this.changePlayer = null;
+        this.characterList = null;
         this.changeOutfit = null;
         this.chooseOutfit = null;
         this.conquerStats = false;
@@ -541,11 +576,12 @@ module.exports = function() {
         this.padController = mobileCheck() ? new PadController() : false;
         this.matchmaking = new Matchmaking();
         this.matchmaking.init();
-        this.matchmakingTutorial = new MatchmakingTutorial();
-        this.matchmakingTutorial.init();
+        //this.matchmakingTutorial = new MatchmakingTutorial();
+        //this.matchmakingTutorial.init();
         this.lootPreview = null;
         this.questsObserve = new QuestObserve();
         this.questsObserve.init();
+        this.activityObserve = new ActivityObserve.default();
 
         this.disableItemsManager = new DisableItemsManager();
         this.disableItemsManager.init();
@@ -611,8 +647,10 @@ module.exports = function() {
 
         //this.renderConnectedImage = new RenderConnectedImage();
         //this.renderConnectedImage.init();
-        this.questMapBorderManager = new QuestMapBorderManager();
-        this.questMapBorderManager.init();
+        this.mapBorderManager = new MapBorderManager();
+        this.mapBorderManager.init();
+
+        this.miniGames = new MiniGames();
 
         //Engine.interface.preloadImages();
         Engine.imgLoader.preLoadImages();
@@ -643,6 +681,8 @@ module.exports = function() {
                 self.crazy();
             }, 5000)
         }
+
+        // Engine.communication.setStateTestJSONData('SETTINGS_INIT')
     };
 
     this.crazy = () => {}
@@ -700,6 +740,7 @@ module.exports = function() {
         Engine.chatController.getChatDataUpdater().setDataFromServerStorage();
 
         initSettings();
+        this.lootFilter = new LootFilter.default();
         initAddons();
 
         //let v = Engine.handHeldMiniMapController.getAmountElementFromStorage('width-data-drawer');
@@ -857,7 +898,7 @@ module.exports = function() {
 
         if (!battleWindowActive) {
             self.renderer.add(self.map, self.mapGoMark, self.hero);
-            self.renderer.add.apply(self.renderer, self.questMapBorderManager.getDrawableList());
+            self.renderer.add.apply(self.renderer, self.mapBorderManager.getDrawableList());
             self.renderer.add.apply(self.renderer, self.warShadow.getWarShadow());
             //self.renderer.add.apply(self.renderer, self.fogController.getFog());
             self.renderer.add.apply(self.renderer, self.screenEffectsManager.getDrawableList());
@@ -1040,7 +1081,8 @@ module.exports = function() {
 
     this.onResize = function() {
         if (Engine.mobile != getMobile()) {
-            location.reload();
+            //location.reload();
+            pageReload();
             return
         }
 
@@ -1108,7 +1150,7 @@ module.exports = function() {
         //	$(this).data().updatePos();
         //});
 
-        let LayersData = require('core/interface/LayersData');
+        let LayersData = require('@core/interface/LayersData');
 
         // Engine.windowManager.updatePosOfWindowsInSpecificLayer(0);
         // Engine.windowManager.updatePosOfWindowsInSpecificLayer(1);
@@ -1389,6 +1431,10 @@ module.exports = function() {
                     }
                 },
                 function(data) {
+                    if (data.wait_for) {
+                        self.setBlockSendNextInit(true);
+                        self.setFirstLoadInit1(true);
+                    }
                     if (data.t == 'stop') return;
                     if (initLvl == 1 && Engine.blockSendNextInit) return;
 
@@ -1421,17 +1467,14 @@ module.exports = function() {
     }
 
     this.afterAllInitData = () => {
-        //Engine.nightController.nightManage();
-        //return;
-        // Engine.map.serveRayControllerData();
-        //     Engine.npcs.serveRayControllerData();
-        Engine.fakeNpcs.serveRayControllerData();
-        Engine.questTracking.startTrackingIfActiveTrackingQuestExist();
+        this.questTracking.startTrackingIfActiveTrackingQuestExist();
+        this.map.callMapSraj();
+        this.rajController.manageSrajAfterSuccessRespond();
+
         if (!isset(this.worldWindow)) {
             this.worldWindow = new WorldWindow.default();
             this.worldWindow.init();
         }
-        //Engine.commercials.showCommercials();
 
     };
 
@@ -1470,10 +1513,11 @@ module.exports = function() {
     };
 
     this.onClear = function() {
-        // console.log('onClear')
+        devConsoleLog(['onClear']);
         this.rajCharacterImageChangerManager.onClear()
         this.rajZoomManager.onClear();
-        this.questMapBorderManager.onClear();
+        this.rajCanvasFilter.onClear();
+        this.mapBorderManager.onClear();
         this.rajCamera.onClear();
         this.rajTracking.onClear();
         this.rajCharacterHide.onClear();
@@ -1510,6 +1554,7 @@ module.exports = function() {
         this.behaviorDynamicLightsManager.onClear();
         this.floatForegroundManager.onClear();
         this.floatObjectManager.onClear();
+        this.rajWindowManager.onClear();
         //this.fogController.onClear();
         //if (this.shop) this.shop.close();
         //if (this.showMiniature) this.showMiniature.close();
@@ -1533,6 +1578,10 @@ module.exports = function() {
         this.rajBattleEvents.onClear();
         this.rajMapEvents.onClear();
         this.rajWindowEvents.onClear();
+
+        if (this.characterReset) {
+            this.characterReset.onClear();
+        }
 
         Engine.tutorialManager.checkCanFinishAndFinish(CFG.LANG.PL, 10);
     };

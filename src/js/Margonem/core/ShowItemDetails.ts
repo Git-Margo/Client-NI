@@ -2,8 +2,8 @@ import {
     copyToClipboard
 } from './HelpersTS';
 
-const tpl = require('core/Templates');
-const ItemLocation = require('core/items/ItemLocation');
+const tpl = require('@core/Templates');
+const ItemLocation = require('@core/items/ItemLocation');
 
 declare const CFG: any;
 declare const _t: any;

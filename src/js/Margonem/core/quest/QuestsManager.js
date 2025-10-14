@@ -1,4 +1,4 @@
-const Quests = require('core/quest/Quests');
+const Quests = require('@core/quest/Quests');
 
 module.exports = function() {
     this.update = (questsObj, allData) => {
@@ -47,7 +47,8 @@ module.exports = function() {
     };
 
     const updateDataSetTrack = (v) => {
-        getEngine().questTracking.saveActiveQuestTrackingInStorage(v);
+        //getEngine().questTracking.saveActiveQuestTrackingInStorage(v);
+        getEngine().questTracking.setActiveServerTrackingQuest(v);
     };
 
     this.setTrack = (v) => {

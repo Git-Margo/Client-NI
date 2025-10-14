@@ -1,4 +1,4 @@
-var Finder = require('core/searchPath/finder/Finder');
+var Finder = require('@core/searchPath/finder/Finder');
 
 var PathFinder = function(source, destinations) {
     Finder.call(this);
