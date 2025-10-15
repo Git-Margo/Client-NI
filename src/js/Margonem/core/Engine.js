@@ -10,6 +10,7 @@ let viewData = require('@core/items/data/ViewData');
 let movedData = require('@core/items/data/MovedData');
 let disableData = require('@core/items/data/DisableData');
 var Console = require('@core/Console');
+var StartFightBlockade = require('@core/StartFightBlockade');
 var CanvasFilter = require('@core/CanvasFilter');
 let SettingsOptions = require('@core/settings/SettingsOptions');
 var RequestCorrect = require('@core/RequestCorrect');
@@ -367,6 +368,8 @@ module.exports = function() {
         this.idleJSON = new IdleJSON();
         this.loader = new Loader();
         this.lock = new Lock();
+        this.startFightBlockade = new StartFightBlockade();
+        this.startFightBlockade.init();
         this.canvasTip = new CanvasTip();
         this.canvasTip.init();
         this.stepsToSend = new StepsToSend();
@@ -1514,6 +1517,7 @@ module.exports = function() {
 
     this.onClear = function() {
         devConsoleLog(['onClear']);
+        this.startFightBlockade.onClear()
         this.rajCharacterImageChangerManager.onClear()
         this.rajZoomManager.onClear();
         this.rajCanvasFilter.onClear();

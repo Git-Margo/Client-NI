@@ -11,6 +11,7 @@ module.exports = function() {
         this.list = {};
         this.initWindow();
         this.initMargin();
+        this.initScrollbar();
     };
 
     this.initWindow = function() {
@@ -74,8 +75,14 @@ module.exports = function() {
         this.wnd.hide();
     };
 
+    this.initScrollbar = () => {
+        this.wnd.$.find('.scroll-wrapper').addScrollBar({
+            track: true
+        });
+    }
+
     this.updateScroll = () => {
-        $('.scroll-wrapper', this.wnd.$).trigger('update');
+        this.wnd.$.find('.scroll-wrapper').trigger('update');
     };
 
     this.checkCanObserve = () => {
@@ -155,6 +162,7 @@ module.exports = function() {
         //console.log('idToChangeQuestOnNotObserve', idToChangeQuestOnNotObserve);
 
         this.manageEmpty();
+        this.updateScroll();
     };
 
     this.setStatesOfObserveInQuestLog = (arrayIdToChange, state) => {
@@ -176,13 +184,13 @@ module.exports = function() {
         }).tip(_t('detach_from_observe'));
 
         if (replaceWithExist) {
-            let $replaceWith = this.wnd.$.find('.scroll-pane').find('.quest-observe-' + id);
+            let $replaceWith = this.wnd.$.find('.quest-observe-list').find('.quest-observe-' + id);
             if (!$replaceWith.length) {
                 console.warn('[QuestObserve.js, createOneQuestObserve] $replaceWith not exist! Id: ', id);
                 return
             }
             $replaceWith.replaceWith($oneObserve);
-        } else this.wnd.$.find('.scroll-pane').find('.quest-observe-list').append($oneObserve);
+        } else this.wnd.$.find('.quest-observe-list').append($oneObserve);
     };
 
     this.updateOneQuestObserve = (id) => {
@@ -192,7 +200,7 @@ module.exports = function() {
     };
 
     this.deleteOneObserveQuest = (id) => {
-        this.wnd.$.find('.scroll-pane').find('.quest-observe-' + id).remove();
+        this.wnd.$.find('.quest-observe-list').find('.quest-observe-' + id).remove();
     };
 
     this.manageEmpty = () => {

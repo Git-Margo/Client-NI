@@ -384,7 +384,7 @@ module.exports = function() {
         //}
 
 
-        //sub           = 'tabaluga';
+        // sub           = 'tabaluga';
         //tld 		  = 'com';
 
         let url = protocol + '://' + sub + '.margonem.' + tld + '/ws-engine';
@@ -3720,6 +3720,9 @@ module.exports = function() {
         },
         on_w: function(v) {
             warn(v);
+        },
+        on_walking: function(v) {
+            getEngine().startFightBlockade.updateData(v);
         },
         on_e: function(v) {
             //if (v != 'ok') error(v);

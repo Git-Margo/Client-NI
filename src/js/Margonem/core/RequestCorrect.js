@@ -585,7 +585,7 @@ module.exports = function() {
                     return isIntValOrEmpty(v)
                 },
                 time: (v) => {
-                    return isIntVal(v)
+                    return isIntValOrEmpty(v)
                 },
                 is_featured: (v) => {
                     return isIntVal(v)

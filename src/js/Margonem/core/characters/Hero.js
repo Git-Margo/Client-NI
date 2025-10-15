@@ -162,14 +162,30 @@ var Hero = function() {
         return idleTime;
     }
 
+    const checkCanCallCenterMapOnHero = () => {
+        if (getEngine().startFightBlockade.checkBlockade()) {
+            return true
+        }
+
+        return !Engine.lock.check();
+    }
+
     this.update = function(dt) {
 
         if (!Engine.allInit) return
 
         this.changeWarShadowOpacity(dt);
         this.calculateNextStep();
-        let lock = Engine.lock.check();
-        if (!lock) Engine.map.centerOn(this.rx, this.ry);
+        // let lock = Engine.lock.check();
+        // if (!lock) Engine.map.centerOn(this.rx, this.ry);
+
+        let centerMapOnHer = checkCanCallCenterMapOnHero();
+
+        if (centerMapOnHer) {
+            Engine.map.centerOn(this.rx, this.ry);
+        }
+
+
         this.animate(dt);
 
         if (this.rx != this.d.x || this.ry != this.d.y) {
@@ -197,7 +213,11 @@ var Hero = function() {
         if (isset(this.pet)) this.pet.update(dt);
         if (isset(this.whoIsHereGlow)) this.whoIsHereGlow.update();
         //if (Engine.questTrack && Engine.questTrack.activeTrack) Engine.questTrack.drawArrow(dt);
-        if (!lock) Engine.map.centerOn(this.rx, this.ry);
+        // if (!lock) Engine.map.centerOn(this.rx, this.ry);
+
+        if (centerMapOnHer) {
+            Engine.map.centerOn(this.rx, this.ry);
+        }
 
         if (self.wanted) {
             self.wanted.update();
