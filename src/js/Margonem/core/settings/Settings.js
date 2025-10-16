@@ -132,17 +132,19 @@ module.exports = function() {
     const initSliders = () => {
         let $scrollPane = tpl.find('.notifications-config').find('.scroll-pane');
 
-        for (let k in configSliders) {
+        for (let type in configSliders) {
             let $soundVolumeBar = Templates.get("sound-volume-bar");
-            let oneSliderConfig = configSliders[k];
+            let oneSliderConfig = configSliders[type];
 
 
-            $soundVolumeBar.find('.loudly-panel-txt').html(configSliders[k].text);
+            $soundVolumeBar.find('.loudly-panel-txt').html(configSliders[type].text);
 
-            createOneSlider(oneSliderConfig, $soundVolumeBar);
+            let slider = createOneSlider(oneSliderConfig, $soundVolumeBar);
+
+            loudlyIconButton(slider, $soundVolumeBar, oneSliderConfig);
 
             if (oneSliderConfig.testBtnF) {
-                createTestButton(oneSliderConfig, $soundVolumeBar);
+                createTestButton(type, oneSliderConfig, $soundVolumeBar);
             }
 
             if (oneSliderConfig.attachToSlider) {
@@ -154,13 +156,27 @@ module.exports = function() {
 
     }
 
-    const createTestButton = (oneSliderConfig, $soundVolumeBar) => {
+    const loudlyIconButton = (slider, $soundVolumeBar, oneSliderData) => {
+        $soundVolumeBar.find('.loudly-icon').on('click', () => {
+            slider.setValue(0);
+            oneSliderData.setCurrentF(0);
+        });
+    }
+
+
+    const createTestButton = (type, oneSliderConfig, $soundVolumeBar) => {
         var $btn = Templates.get('button').addClass('small green');
         $btn.find('.label').html('Test');
 
         $soundVolumeBar.find('.loudly-panel-buttons').append($btn).addClass('test-sound');
 
         $btn.click(() => {
+
+            if (getEngine().soundManager.checkMute(type)) {
+                // message("MUTE");
+                return
+            }
+
             oneSliderConfig.testBtnF();
         });
     }
@@ -270,6 +286,8 @@ module.exports = function() {
         if (oneSliderData.labelTip) $oneConfigOption.find('.loudly-panel-txt').tip(oneSliderData.labelTip);
         $oneConfigOption.find('.slider-wrapper').append($(slider.getElement()));
 
+
+        return slider;
     }
 
     const createChangeSlidedTimeout = (setCurrentF, value) => {

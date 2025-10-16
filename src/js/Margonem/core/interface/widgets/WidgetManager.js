@@ -30,6 +30,8 @@ module.exports = function() {
 
     //let widgetSize = null;
 
+    let widgetSizeFactor = null;
+
     let widgetSizeData = null;
     let widgetVerticalOrientationData = null;
     let widgetBarStaticPositionData = null;
@@ -39,6 +41,7 @@ module.exports = function() {
     let self = this;
 
     this.init = () => {
+        setWidgetSizeFactor(1);
         initWidgetSizeData();
         initWidgetVerticalOrientationData();
         initWidgetBarStaticPositionData();
@@ -471,9 +474,18 @@ module.exports = function() {
         //	return  null;
         //}
 
-        return widgetSizeData[pos]
+        if (getEngine().interface.getInterfaceLightMode() && mobileCheck()) {
+            return widgetSizeData[pos] * widgetSizeFactor
+        } else {
+            return widgetSizeData[pos]
+        }
+
+
     };
 
+    const setWidgetSizeFactor = (v) => {
+        widgetSizeFactor = v;
+    }
 
 
     //this.setWidgetSize = (_widgetSize) => {
@@ -1223,20 +1235,31 @@ module.exports = function() {
     };
 
     const refreshContextMenu = () => {
+        // let menu = [
+        // 	[_t('refresh', null, "mails"), 	function () {pageReload()}],
+        // 	[self.tLang('full-screen'), 	function () {Engine.interface.clickFullScreen()}],
+        // 	[_t('clickLogout'), 			function () {getEngine().changePlayer.logout()}],
+        // 	[_t('iconconsole'), 			function () {getEngine().console.open()}]
+        // ];
+
         let menu = [
             [_t('refresh', null, "mails"), function() {
                 pageReload()
-            }],
-            [self.tLang('full-screen'), function() {
-                Engine.interface.clickFullScreen()
-            }],
-            [_t('clickLogout'), function() {
-                getEngine().changePlayer.logout()
-            }],
-            [_t('iconconsole'), function() {
-                getEngine().console.open()
             }]
         ];
+
+        if (!isMobileApp()) {
+            menu.push([self.tLang('full-screen'), function() {
+                Engine.interface.clickFullScreen()
+            }]);
+        }
+
+        menu.push([_t('clickLogout'), function() {
+            getEngine().changePlayer.logout()
+        }])
+        menu.push([_t('iconconsole'), function() {
+            getEngine().console.open()
+        }])
 
         return menu
     }
@@ -2223,9 +2246,9 @@ module.exports = function() {
 
         for (let pos in widgetBarVisibilityToggleData) {
             if (widgetBarVisibilityToggleData[pos]) {
-                let index = getLastIndexOfWidget(pos);
+                // let index 	= getLastIndexOfWidget(pos);
                 let $bar = getBar(pos);
-                let $btn = createVisibleBarButton($bar, pos, index);
+                let $btn = createVisibleBarButton($bar, pos);
 
                 $bar.append($btn)
 
@@ -2233,28 +2256,34 @@ module.exports = function() {
         }
     };
 
-    const createVisibleBarButton = ($bar, pos, index) => {
+    const createVisibleBarButton = ($bar, pos) => {
         const POS = Engine.widgetsData.pos;
         const $widgetBarVisibleBtn = $('<div>').addClass('widget-bar-visible-btn');
         const $icon = $('<div>').addClass('icon');
         const widgetSize = getWidgetSize(pos);
-        const cssVal = (widgetSize + getWidgetMargin()) * (index + 1);
+        // const cssVal 				= (widgetSize + getWidgetMargin()) * (index + 1);
         const state = getWidgetVisibilityFromStorage(pos);
 
+
         let cssDirection = null;
+        let index = null;
 
         switch (pos) {
             case POS.TOP_LEFT:
             case POS.BOTTOM_LEFT:
             case POS.BOTTOM_LEFT_ADDITIONAL:
                 cssDirection = 'left';
+                index = getLastIndexOfWidget(pos) + 1;
                 break;
             case POS.TOP_RIGHT:
             case POS.BOTTOM_RIGHT:
             case POS.BOTTOM_RIGHT_ADDITIONAL:
+                index = Math.abs((getFirstIndexOfWidget(pos)) - 7);
                 cssDirection = 'right';
                 break;
         }
+
+        const cssVal = (widgetSize + getWidgetMargin()) * index;
 
         $icon.addClass(cssDirection + "-arrow");
 
@@ -2381,6 +2410,34 @@ module.exports = function() {
             _index = parseInt(_index);
 
             if (index === null || _index > index) {
+                index = _index;
+            }
+
+        }
+
+        return index
+    };
+
+    const getFirstIndexOfWidget = (pos) => {
+        let index = null;
+
+        for (let widgetName in attachWidgetList) {
+            let widget = self.getAttachWidgetByName(widgetName);
+
+            if (widget.getPos() != pos) {
+                continue;
+            }
+
+            let _index = widget.getIndex();
+
+            if (!isInt(_index)) {
+                errorReport(moduleData.fileName, "getLastIndexOfWidget", "widget index is not integer!", _index);
+                return null;
+            }
+
+            _index = parseInt(_index);
+
+            if (index === null || _index < index) {
                 index = _index;
             }
 

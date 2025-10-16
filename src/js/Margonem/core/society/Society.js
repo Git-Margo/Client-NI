@@ -69,6 +69,13 @@ module.exports = function() {
     this.initWindow = function() {
         content = tpl.get('friend-enemy-list');
 
+        let position = mobileCheck() ? {
+            position: Engine.windowsData.position.CENTER
+        } : {
+            'x': 245,
+            'y': 62
+        }
+
         Engine.windowManager.add({
             content: content,
             title: _t('society'),
@@ -76,10 +83,7 @@ module.exports = function() {
             widget: Engine.widgetsData.name.COMMUNITY,
             objParent: this,
             nameRefInParent: 'wnd',
-            managePosition: {
-                'x': 245,
-                'y': 62
-            },
+            managePosition: position,
             startVH: 60,
             cssVH: 60,
             onclose: () => {

@@ -333,7 +333,7 @@ module.exports = function() {
 
             },
             checkHttps(val) {
-                if (!val.startsWith('https://')) {
+                if (!val.startsWith('https://') || val == 'https://') {
                     message(_t('https_alert', null, 'item_frames'));
                     return false;
                 }

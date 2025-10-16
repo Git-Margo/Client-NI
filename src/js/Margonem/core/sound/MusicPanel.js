@@ -36,13 +36,22 @@ module.exports = function() {
         createToggleBtn(str3, $wrap1, data.quality == SOUND_DATA.QUALITY.HQ ? 1 : 0, hdOption);
 
         createToogleBckBut($wrap2, data.shuffle == true ? 1 : 0, ['random', 'queue'], random);
-        createToogleBckBut($wrap3, data.play == true ? 1 : 0, ['play', 'pause'], musicPlayToggle);
+        createToogleBckBut($wrap3, data.play == true ? 1 : 0, ['play', 'pause'], musicPlayToggle, checkCanToggleOnPlay);
 
         $settingWindow.find(".loudly-panel-buttons").remove();
         $settingWindow.find('.middle').append($musicManager);
     };
 
-    const createToogleBckBut = ($par, bool, cl, clb) => {
+    const checkCanToggleOnPlay = () => {
+        if (getEngine().soundManager.checkMute(SOUND_DATA.TYPE.MUSIC)) {
+            // message("MUTE");
+            return false
+        }
+
+        return true;
+    };
+
+    const createToogleBckBut = ($par, bool, cl, clb, checkCanToggleOnSecondElement) => {
         var $btn = Templates.get('button').addClass('green small');
 
         $btn.append($('<div>').addClass('add-bck'));
@@ -54,6 +63,15 @@ module.exports = function() {
             bool = !bool;
             var opt = bool ? 1 : 0;
             var bck = $btn.find('.add-bck');
+
+            if (opt == 1 && checkCanToggleOnSecondElement) {
+                let result = checkCanToggleOnSecondElement();
+
+                if (result == false) {
+                    return;
+                }
+            }
+
             bck.removeClass(cl.join(' '));
             $btn.find('.add-bck').addClass(cl[opt]);
             $btn.tip(_t('music_' + cl[opt]));

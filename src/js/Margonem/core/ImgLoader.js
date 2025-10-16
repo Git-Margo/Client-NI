@@ -16,6 +16,8 @@ function ImgLoader() {
 
     let yellowCanvas;
 
+    let graphicBlackList = {};
+
     this.init = () => {
         initYellowCanvas();
     };
@@ -262,9 +264,28 @@ function ImgLoader() {
     //    r.send();
     //};
 
+    const addToBlackList = (path) => {
+        if (!isset(graphicBlackList[path])) {
+            graphicBlackList[path] = 0;
+        }
+
+        graphicBlackList[path]++;
+    }
+
+    const getAmountOfPathInBlackList = (path) => {
+        return graphicBlackList[path] || 0;
+    }
+
     const manage429Status = (path, gifReaderData, beforeOnloadCallback, afterOnloadCallback, onError) => {
         let randomTime = Math.floor(Math.random() * 100)
         let self = this;
+
+        if (getAmountOfPathInBlackList(path) > 10) {
+            return;
+        }
+
+        addToBlackList(path);
+
         warningReport(moduleData.fileName, "manage429Status", `429 status. Try download again after ${randomTime}`, path);
         setTimeout(function() {
             self.onload(path, gifReaderData, beforeOnloadCallback, afterOnloadCallback, onError, true)
@@ -351,6 +372,10 @@ function ImgLoader() {
 
                     return;
                 }
+
+                // if (xhr.getResponseHeader("Retry-After")) {
+                //   console.error("Too much request");
+                // }
 
                 manage429Status(path, null, beforeOnloadCallback, afterOnloadCallback, onError);
             };

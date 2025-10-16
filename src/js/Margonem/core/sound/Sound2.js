@@ -381,6 +381,10 @@ module.exports = function() {
         let id = getFreeId(type);
         let sound = createSound(id, type, newKey, url);
 
+        if (!sound) {
+            return
+        }
+
         addToPlaySound(sound, type)
 
         // console.log('createMusic:', newKey)
@@ -578,9 +582,17 @@ module.exports = function() {
         autoPlayFix(o);
     };
 
+    const checkMute = (type) => {
+        return dataSettings.mainVolume == 0 || volumeSoundsList[type] == 0
+    }
+
     const createSound = (id, type, soundKey, url, additionalData) => {
 
         if (!checkAvailableSoundType(type)) return
+
+        if (checkMute(type)) {
+            return
+        }
 
         let o = {
             type: type,
@@ -917,6 +929,10 @@ module.exports = function() {
             rajSound: rajSound
         });
 
+        if (!sound) {
+            return
+        }
+
         //rajSound.setSoundId(id);
 
         addToPlaySound(sound, type);
@@ -949,6 +965,10 @@ module.exports = function() {
         if (url == null) return;
 
         let sound = createSound(id, type, newKey, url);
+
+        if (!sound) {
+            return
+        }
 
         addToPlaySound(sound, type);
         autoPlayFix(sound);
@@ -987,6 +1007,10 @@ module.exports = function() {
         let id = getFreeId(type);
         let sound = createSound(id, type, newKey, url);
 
+        if (!sound) {
+            return
+        }
+
         addToPlaySound(sound, type)
         autoPlayFix(sound);
     }
@@ -1001,6 +1025,10 @@ module.exports = function() {
 
         let id = 0; // always 0 - only one sound
         let sound = createSound(id, type, newKey, url);
+
+        if (!sound) {
+            return
+        }
 
         addToPlaySound(sound, type)
         autoPlayFix(sound);
@@ -1028,6 +1056,10 @@ module.exports = function() {
 
         let id = getFreeId(type);
         let sound = createSound(id, type, newKey, url);
+
+        if (!sound) {
+            return
+        }
 
         addToPlaySound(sound, type)
         autoPlayFix(sound);
@@ -1173,6 +1205,9 @@ module.exports = function() {
 
     };
 
+
+
+    this.checkMute = checkMute;
 
 
     this.finishPlayingItemSound = finishPlayingItemSound;
