@@ -178,15 +178,28 @@ module.exports = function() {
     };
 
     this.showElements = function(name) {
+        const lightMode = getEngine().interface.getInterfaceLightMode();
+
+        if (!lightMode) {
+            Engine.battle.showLightModeManaAndEnergyBars(false)
+        }
+
+
         switch (name) {
             case 'battle':
                 $battleBars.show();
+                if (lightMode) {
+                    Engine.battle.showLightModeManaAndEnergyBars(true);
+                }
                 if (!heroHasEndGameLevel()) {
                     $expBars.hide();
                 }
                 break;
             case 'game':
                 $battleBars.hide();
+                if (lightMode) {
+                    Engine.battle.showLightModeManaAndEnergyBars(false);
+                }
                 $expBars.show();
                 break;
         }

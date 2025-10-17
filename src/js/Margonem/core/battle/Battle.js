@@ -1842,6 +1842,15 @@ module.exports = function() {
         }
     }
 
+    const showLightModeManaAndEnergyBars = (state) => {
+        let $energy = getEnergyBarLightMode()
+        let $mana = getManaBarLightMode();
+        let display = state ? 'block' : 'none';
+
+        $energy.css('display', display)
+        $mana.css('display', display)
+    }
+
     const initHamburgerButton = () => {
         if (!mobileCheck()) {
             return;
@@ -2568,7 +2577,7 @@ module.exports = function() {
         //self.deleteOldLoots();
         Engine.interface.get$GAME_CANVAS().css('display', 'none');
         $battleController.css('display', 'block');
-        self.setSizeOfBattlePanel();
+        // self.setSizeOfBattlePanel();
         Engine.interface.heroElements.showElements('battle');
         if (!Engine.dead) {
             self.hideInterfaceItems();
@@ -2577,6 +2586,7 @@ module.exports = function() {
         $('body').addClass('in-battle');
         if (self.isAuto) self.show = true;
 
+        self.setSizeOfBattlePanel();
         showHideWidget(true);
     };
 
@@ -2586,7 +2596,18 @@ module.exports = function() {
 
     this.showBattleLog = function() {
         $battleController.css('display', 'block');
-        const displayClass = $battleController.hasClass('with-skills') ? 'flex' : 'inline-block';
+
+        let displayClass = null;
+
+        if (getEngine().interface.getInterfaceLightMode()) {
+            displayClass = 'inline-block';
+        } else {
+            displayClass = $battleController.hasClass('with-skills') ? 'flex' : 'inline-block'
+        }
+
+        self.setSizeOfBattlePanel();
+
+        // const displayClass = $battleController.hasClass('with-skills') ? 'flex' : 'inline-block';
         $battleController.find('.close-battle-logs').css('display', displayClass);
         $battleController.find('.close-battle-ground').css('display', 'none');
         Engine.widgetManager.manageClassOfWidget(Engine.widgetsData.name.BATTLE_LOG, true);
@@ -2929,7 +2950,16 @@ module.exports = function() {
     };
 
     this.setsmallSize = function() {
-        $battleController.find('.left-column').css('display', 'none');
+
+        let display = null
+
+        if (getEngine().interface.getInterfaceLightMode() && !$('body').hasClass('in-battle')) {
+            display = 'block';
+        } else {
+            display = 'none';
+        }
+
+        $battleController.find('.left-column').css('display', display);
         $battleController.find('.right-column').css('display', 'none');
         $battleController.find('.buffs-wrapper').css('display', 'none');
         $battleController.find('.buttons-wrapper').css('display', 'block');
@@ -2951,5 +2981,6 @@ module.exports = function() {
     this.getBattleTop = getBattleTop;
     this.getEnergyBarLightMode = getEnergyBarLightMode;
     this.getManaBarLightMode = getManaBarLightMode;
+    this.showLightModeManaAndEnergyBars = showLightModeManaAndEnergyBars;
 
 };

@@ -221,6 +221,9 @@ module.exports = new(function() {
                 }
             }).bind('touchmove', function(e) {
                 if (!e.target.classList.contains('c-slider__input')) e.preventDefault();
+                if (e.target.classList.contains('ui-draggable')) {
+                    return
+                }
                 var currentY = e.originalEvent.touches[0].clientY;
                 var goUp = touchMoveGoUp(currentY);
                 var power = calculateTouchPower(currentY) / Engine.zoomFactor;
