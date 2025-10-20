@@ -904,6 +904,12 @@ o.CODE_MESSAGE = {
             [MESSAGE]: ALERT
         }
     },
+    101401001: {
+        [NAME]: 'TargetMinMaxLevelError',
+        [VIEW_PARAMS]: {
+            [MESSAGE]: YELLOW_MESSAGE
+        }
+    },
     100302002: {
         [NAME]: 'LowreqError_SocketComponentLvlIsNotCompatible',
         [VIEW_PARAMS]: {

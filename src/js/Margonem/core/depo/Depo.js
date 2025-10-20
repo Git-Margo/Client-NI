@@ -887,7 +887,7 @@ module.exports = function(clan) {
                     }, 'depo'),
                     hotkeyClass: '',
                     callback: function() {
-                        _g('clan&a=depo&op=upgrade&pay=z');
+                        _g('clan&a=depo&op=upgrade&pay=gold');
                         return true;
                     }
                 }, {
@@ -896,7 +896,7 @@ module.exports = function(clan) {
                     }, 'depo') + ' ' + _t('sl', null, 'clan'),
                     hotkeyClass: '',
                     callback: function() {
-                        _g('clan&a=depo&op=upgrade&pay=s');
+                        _g('clan&a=depo&op=upgrade&pay=credits');
                         return true;
                     }
                 }, {
@@ -1246,8 +1246,8 @@ module.exports = function(clan) {
 
         if (!clan) {
             gReq = [
-                'depo&pay=z&time=1',
-                'depo&pay=s&time=1'
+                'depo&pay=gold&time=1',
+                'depo&pay=credits&time=1'
             ];
             var bool = typePay == 'Prolong';
             if (bool) {

@@ -63,6 +63,7 @@ export class PreviewWindow {
     }
 
     close(): void {
+        this.clear();
         this.wnd.remove();
         this.onClose();
     }

@@ -897,8 +897,6 @@ module.exports = function(i, d, kind) {
         menu.push([_t('show', null, 'item'), function() {
             const id = isset(self.tpl) ? self.tpl : self.id;
             _g(`moveitem&st=2&tpl=${id}`);
-            Engine.tpls.deleteMessItemsByLoc('p');
-            Engine.tpls.deleteMessItemsByLoc('s');
         }]);
     };
 

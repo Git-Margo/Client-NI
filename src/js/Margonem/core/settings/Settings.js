@@ -129,13 +129,24 @@ module.exports = function() {
         };
     };
 
+    const updateMuteClass = (value, $oneConfigOption) => {
+        let $loudlyIcon = $oneConfigOption.find('.loudly-icon');
+
+        if (value == 0) {
+            $loudlyIcon.addClass('interface-element-sound-speaker-mute');
+            $loudlyIcon.removeClass('interface-element-sound-speaker');
+        } else {
+            $loudlyIcon.addClass('interface-element-sound-speaker')
+            $loudlyIcon.removeClass('interface-element-sound-speaker-mute')
+        }
+    }
+
     const initSliders = () => {
         let $scrollPane = tpl.find('.notifications-config').find('.scroll-pane');
 
         for (let type in configSliders) {
-            let $soundVolumeBar = Templates.get("sound-volume-bar");
+            let $soundVolumeBar = Templates.get('sound-volume-bar');
             let oneSliderConfig = configSliders[type];
-
 
             $soundVolumeBar.find('.loudly-panel-txt').html(configSliders[type].text);
 
@@ -148,18 +159,19 @@ module.exports = function() {
             }
 
             if (oneSliderConfig.attachToSlider) {
-                oneSliderConfig.attachToSlider($soundVolumeBar)
+                oneSliderConfig.attachToSlider($soundVolumeBar);
             }
 
             $scrollPane.append($soundVolumeBar);
         }
-
-    }
+    };
 
     const loudlyIconButton = (slider, $soundVolumeBar, oneSliderData) => {
         $soundVolumeBar.find('.loudly-icon').on('click', () => {
             slider.setValue(0);
             oneSliderData.setCurrentF(0);
+
+            updateMuteClass(0, $soundVolumeBar);
         });
     }
 
@@ -278,10 +290,12 @@ module.exports = function() {
                 if (changeSliderTimeout) {
                     clearChangeSliderTimeout();
                 }
-                createChangeSlidedTimeout(setCurrentF, value)
+                createChangeSlidedTimeout(setCurrentF, value, $oneConfigOption)
 
             }
         });
+
+        updateMuteClass(current, $oneConfigOption);
 
         if (oneSliderData.labelTip) $oneConfigOption.find('.loudly-panel-txt').tip(oneSliderData.labelTip);
         $oneConfigOption.find('.slider-wrapper').append($(slider.getElement()));
@@ -290,9 +304,10 @@ module.exports = function() {
         return slider;
     }
 
-    const createChangeSlidedTimeout = (setCurrentF, value) => {
+    const createChangeSlidedTimeout = (setCurrentF, value, $oneConfigOption) => {
         changeSliderTimeout = setTimeout(function() {
             setCurrentF(value);
+            updateMuteClass(value, $oneConfigOption);
             afterChangeSlider();
             clearChangeSliderTimeout();
         }, 10);

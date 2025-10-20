@@ -756,7 +756,7 @@ var Npc = function() {
 
     const isHeroesColossusTitan = () => {
         let wt = this.d.wt;
-        return isBetween(wt, 80, 87) || isBetween(wt, 90, 95) || isBetween(wt, 100, 105);
+        return isBetween(wt, 30, 37) || isBetween(wt, 80, 87) || isBetween(wt, 90, 95) || isBetween(wt, 100, 105);
     }
 
     const checkAggressive = () => {
