@@ -21,7 +21,8 @@ export abstract class BasePreviewStrategy implements PreviewStrategy {
     abstract createAllRecords(): HTMLElement;
 
     protected getItem(tplId: number): PreviewItem {
-        return this.engine.tpls.getTplByIdAndLoc(tplId, this.engine.itemsFetchData.NEW_TPL_PREVIEW.loc) ?? this.engine.itemsFetchData.NEW_OPEN_TPL.loc;
+        return this.engine.tpls.getTplByIdAndLoc(tplId, this.engine.itemsFetchData.NEW_TPL_PREVIEW.loc) ??
+            this.engine.tpls.getTplByIdAndLoc(tplId, this.engine.itemsFetchData.NEW_OPEN_TPL.loc);
     }
 
     protected getItemView(tplId: number): HTMLElement {
