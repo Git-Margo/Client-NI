@@ -8,5 +8,6 @@ module.exports = {
     GATEWAY: 'GATEWAY',
     MAP: "MAP",
     HEROES_RESP: "HEROES_RESP",
+    RIP: "RIP",
     FLOAT_OBJECT: "FLOAT_OBJECT"
 }

@@ -449,6 +449,7 @@ module.exports = function() {
                 case CanvasObjectTypeData.GATEWAY:
                 case CanvasObjectTypeData.OTHER:
                 case CanvasObjectTypeData.M_ITEM:
+                case CanvasObjectTypeData.RIP:
                     return false;
             }
         }

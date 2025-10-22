@@ -1,6 +1,9 @@
 /**
  * Created by Michnik on 2015-11-24.
  */
+
+let CanvasObjectTypeData = require('@core/CanvasObjectTypeData');
+
 module.exports = function(map) {
     var rips = [];
     let ripList = {};
@@ -72,6 +75,10 @@ module.exports = function(map) {
 
     var ripObejct = function(R) {
         var s = this;
+
+        this.canvasObjectType = CanvasObjectTypeData.RIP;
+
+
 
         this.init = function(v) {
             this.slugifiedNick = slugify(v[0]);
@@ -219,5 +226,12 @@ module.exports = function(map) {
                 s.setLeft();
             });
         };
+
+        const getCanvasObjectType = () => {
+            return this.canvasObjectType
+        }
+
+
+        this.getCanvasObjectType = getCanvasObjectType
     }
 };

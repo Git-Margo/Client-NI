@@ -39,6 +39,7 @@ module.exports = new(function() {
         let $menuArrow = null;
         let tmp = null;
         let bck = null;
+        let removeClickEvent = null;
 
 
         function checkCorrectMenuData() {
@@ -295,14 +296,19 @@ module.exports = new(function() {
                         $scroll_wrapper.trigger("setScroll", [(selected[0].offsetTop - 3)]);
                     }
                     $(self).on("close", hideNow);
-                    $(window).on("mousedown", function(e) {
-                        if (!checkElementIsOption(e.target)) hide();
-                    });
+                    // $(window).on("mousedown", function (e) {
+                    // 	if (!checkElementIsOption(e.target)) hide();
+                    // });
+                    $(window).on("mousedown", hideSlow);
                     $(window).on("mousewheel", hideNow);
                     $(window).on("resize", recalcPos);
                 },
                 complete: recalcPos
             });
+        }
+
+        function hideSlow(e) {
+            if (!checkElementIsOption(e.target)) hide();
         }
 
         function hide(event) {
@@ -669,7 +675,7 @@ module.exports = new(function() {
         }
 
         function removeEventListeners() {
-            $(window).off("mousedown", hide);
+            $(window).off("mousedown", hideSlow);
             $(window).off("mousewheel", hideNow);
             $(window).off("resize", recalcPos);
         }

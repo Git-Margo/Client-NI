@@ -310,6 +310,8 @@ module.exports = function() {
                 return false;
             case CanvasObjectTypeData.HEROES_RESP:
                 return false;
+            case CanvasObjectTypeData.RIP:
+                return false;
             default:
                 errorReport(moduleData.fileName, "checkHideObject", "undefined kind!", kind);
         }
@@ -338,6 +340,8 @@ module.exports = function() {
             case CanvasObjectTypeData.MAP:
                 return true;
             case CanvasObjectTypeData.HEROES_RESP:
+                return true;
+            case CanvasObjectTypeData.RIP:
                 return true;
             default:
                 errorReport(moduleData.fileName, "checkShowTip", "undefined kind!", kind);
@@ -416,6 +420,8 @@ module.exports = function() {
                 return true;
             case CanvasObjectTypeData.HEROES_RESP:
                 return true;
+            case CanvasObjectTypeData.RIP:
+                return true;
             default:
                 errorReport(moduleData.fileName, "checkShowTip", "undefined kind!", kind);
         }
@@ -444,6 +450,8 @@ module.exports = function() {
             case CanvasObjectTypeData.MAP:
                 return false;
             case CanvasObjectTypeData.HEROES_RESP:
+                return false;
+            case CanvasObjectTypeData.RIP:
                 return false;
             default:
                 errorReport(moduleData.fileName, "checkDisplayEmo", "undefined kind!", kind);

@@ -65,8 +65,8 @@ module.exports = function() {
 
         if (width == 0 && height == 0) return;
 
-        mainNightCanvas.width = width;
-        mainNightCanvas.height = height;
+        mainNightCanvas.width = Math.round(width);
+        mainNightCanvas.height = Math.round(height);
     };
 
     const resizeMainCanvas = () => {
