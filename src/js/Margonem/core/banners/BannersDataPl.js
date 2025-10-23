@@ -243,42 +243,42 @@ export const BannersDataPl = {
         }]
     },
     57: {
-        lvl: [69, 108],
+        lvl: [100, 139],
         btn: [{
             title: _t('check'),
             clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514732&ps=0#post45724289')
         }]
     },
     58: {
-        lvl: [100, 139],
+        lvl: [69, 108],
         btn: [{
             title: _t('check'),
             clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514732&ps=0#post45724288')
         }]
     },
     59: {
-        lvl: [130, 169],
+        lvl: [153, 192],
         btn: [{
             title: _t('check'),
             clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514732&ps=0#post45724292')
         }]
     },
     60: {
-        lvl: [153, 192],
+        lvl: [130, 169],
         btn: [{
             title: _t('check'),
             clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514732&ps=0#post45724291')
         }]
     },
     61: {
-        lvl: [176, 225],
+        lvl: [176, 215],
         btn: [{
             title: _t('check'),
             clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514732&ps=0#post45724293')
         }]
     },
     62: {
-        lvl: [211, 250],
+        lvl: [199, 238],
         btn: [{
             title: _t('check'),
             clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514732&ps=0#post45724295')
@@ -481,52 +481,52 @@ export const BannersDataPl = {
         }]
     },
     91: {
-        lvl: [180, 210],
+        lvl: [195, 227],
         btn: [{
             title: _t('check'),
-            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727533')
+            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727535')
         }]
     },
     92: {
-        lvl: [190, 223],
+        lvl: [185, 218],
         btn: [{
             title: _t('check'),
             clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727534')
         }]
     },
     93: {
-        lvl: [210, 240],
+        lvl: [215, 244],
         btn: [{
             title: _t('check'),
-            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727535')
+            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727537')
         }]
     },
     94: {
         lvl: [230, 255],
         btn: [{
             title: _t('check'),
-            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727537')
+            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727540')
         }]
     },
     95: {
         lvl: [240, 500],
         btn: [{
             title: _t('check'),
-            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727540')
+            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post46104324')
         }]
     },
     96: {
         lvl: [255, 500],
         btn: [{
             title: _t('check'),
-            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post46104324')
+            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post46501291')
         }]
     },
     97: {
         lvl: [265, 500],
         btn: [{
             title: _t('check'),
-            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post46501291')
+            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post46737884')
         }]
     },
     102: {
@@ -660,6 +660,13 @@ export const BannersDataPl = {
         btn: [{
             title: _t('check'),
             clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727527')
+        }]
+    },
+    131: {
+        lvl: [175, 207],
+        btn: [{
+            title: _t('check'),
+            clb: () => Engine.banners.openLink('https://forum.margonem.pl/?task=forum&show=posts&id=514740&ps=0#post45727533')
         }]
     },
 };
