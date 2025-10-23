@@ -24,7 +24,7 @@ module.exports = function() {
     const initClick = () => {
         let $buildsInterface = getEngine().interface.get$buildsInterface();
 
-        $buildsInterface.on('click', function() {
+        $buildsInterface.on(getClickEventName(), function() {
             Engine.buildsManager.getBuildsWindow().managePanelVisible();
         })
     };

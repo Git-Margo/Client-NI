@@ -455,7 +455,12 @@ module.exports = new(function(options) {
                 //}
 
                 if (!canShopTipByTipType(e)) {
-                    return
+                    return;
+                }
+
+                if (checkTipOfWidgetAndPadControllerIsShow(e)) {
+                    e.stopPropagation();
+                    break;
                 }
 
                 t._in(e);
@@ -467,6 +472,7 @@ module.exports = new(function(options) {
                 break;
             case 'touchend':
             case 'mouseleave':
+
                 var eqI = t.checkCanShowEqTip();
                 t._out(e);
                 //if (Engine.opt(25)) break; //if no auto cmp
@@ -508,13 +514,13 @@ module.exports = new(function(options) {
         }
     });
 
-    const canShowTipByMobile = () => {
-        if (mobileCheck() && Engine && Engine.padController && Engine.padController.isShow()) {
-            return false
-        }
-
-        return true;
-    }
+    // const canShowTipByMobile = () => {
+    // 	if (mobileCheck() && Engine && Engine.padController && Engine.padController.isShow()) {
+    // 		return false
+    // 	}
+    //
+    // 	return true;
+    // }
 
     const canShopTipByTipType = (e) => {
         let $target = $(e.currentTarget);
@@ -528,6 +534,19 @@ module.exports = new(function(options) {
         }
 
         return true
+    }
+
+    const checkTipOfWidgetAndPadControllerIsShow = (e) => {
+        if (!Engine.padController) {
+            return false;
+        }
+
+        let target = e.target;
+        if (!target) {
+            return false
+        }
+
+        return e.target.classList.contains('widget-button') && Engine.padController.isShow()
     }
 
     this.checkTipExist = () => {

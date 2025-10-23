@@ -128,10 +128,12 @@ module.exports = function() {
         $rightTop.width(size);
         $rightTop.height(size);
 
-        $leftTop.on('click', () => {
+        let eventName = getClickEventName();
+
+        $leftTop.on(eventName, () => {
             return Engine.interface.clickChat();
         });
-        $rightTop.on('click', () => {
+        $rightTop.on(eventName, () => {
             return Engine.interface.clickEqColumnShow();
         });
     };
@@ -2292,7 +2294,8 @@ module.exports = function() {
 
         setVisibleWidgetWidgetBar(state, $icon, $bar, $widgetBarVisibleBtn, cssDirection, cssVal);
 
-        $widgetBarVisibleBtn.on('click', function() {
+
+        $widgetBarVisibleBtn.on(getClickEventName(), function() {
 
             let _state = !getWidgetVisibilityFromStorage(pos);
 
@@ -2608,8 +2611,8 @@ module.exports = function() {
         btn.find('.icon').addClass(clName);
         self.set$BtnWidgetSize(btn, widgetSize);
 
-        btn.bind('click', () => {
-
+        // btn.bind('click', () => {
+        btn.bind(getClickEventName(), () => {
             const widgetData = Object.assign(bData, {
                 index,
                 pos

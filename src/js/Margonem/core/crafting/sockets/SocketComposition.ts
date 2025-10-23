@@ -181,7 +181,7 @@ export default class SocketComposition {
             clearSlotBeforeAppend: false,
             correctItemCheck: (item: Item) => this.checkCorrectIngredientItem(item),
             onClick: (item: Item) => this.onClickInventoryItem(item),
-            onDelete: () => this.clearAll(),
+            // onDelete: () => this.clearAll(),
             onSuccess: () => {
                 this.selectedIngredientItems.push(itemId);
             }

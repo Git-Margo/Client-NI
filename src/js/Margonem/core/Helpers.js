@@ -96,6 +96,11 @@ var Helpers = new(function() {
         $el.tip(text, "overflow-text-with-several-rows");
     }
 
+    window.getClickEventName = function() {
+        // return mobileCheck() ? 'touchstart' : "click";
+        return "click";
+    }
+
     //window.createOtherContextMenu = (e, player) => {
     //	const contextMenu = [];
     //

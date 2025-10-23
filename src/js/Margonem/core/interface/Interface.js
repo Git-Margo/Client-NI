@@ -1758,7 +1758,8 @@ module.exports = function() {
             $pvp.addClass('fight');
         }
 
-        $pvp.click(function() {
+
+        $pvp.bind(getClickEventName(), function() {
             $(this).removeClass('fight');
             Engine.hero.d.pvp = Engine.hero.d.pvp ? 0 : 1;
             if (Engine.hero.d.pvp) {
