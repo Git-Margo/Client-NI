@@ -1093,6 +1093,9 @@ var Map = function() {
 
     var mousedownAt = -1;
     this.onclick = function(e) {
+        if (Engine.padController && Engine.padController.isShow()) {
+            return;
+        }
 
         let zoomFactor = Engine.zoomFactor;
         let zoom = Engine.zoomManager.getActualZoom();

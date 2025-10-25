@@ -325,7 +325,8 @@ module.exports = function() {
         this.interface.init();
         //this.interface.setInterfaceLightMode(mobileCheck());
         //this.interface.setInterfaceLightMode(false);
-        if (isMobileApp()) {
+        // if (isMobileApp()) {
+        if (mobileCheck()) {
             this.interface.setLighModeByDataInStorage();
         } else {
             this.interface.setInterfaceLightMode(false);
@@ -355,7 +356,7 @@ module.exports = function() {
 
         this.mobile = getMobile();
 
-        if (isMobileApp()) {
+        if (mobileCheck() || isMobileApp()) {
             setFramePerSecond(30)
         }
 
