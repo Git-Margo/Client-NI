@@ -334,7 +334,6 @@ module.exports = function(data) {
         if (isset(json.party.partygrpkill)) self.setPartyGrpKill(json.party.partygrpkill);
 
         newMembers = self.getIds(members);
-        wnd.$.find('.party').height(lengthObject(newMembers) * 25 - 25);
         Engine.whoIsHere.comparePartyMembers(oldMembers, newMembers);
         this.updateAmountOnWidget();
     };
@@ -384,20 +383,6 @@ module.exports = function(data) {
             }
         });
     };
-
-    //this.correctPosition = function (e) {
-    //	var windowW = $(window).width();
-    //	var w = wnd.$.position().left + 80;
-    //
-    //	if (w + 250 > windowW) 	e.clientX = w - 163;
-    //	else 			 		e.clientX = w + 220;
-    //
-    //	if (e.clientY < 100) e.clientY = 100;
-    //	else {
-    //		var h = $(window).height();
-    //		if (h < e.clientY + 110)  e.clientY = h - 110;
-    //	}
-    //};
 
     this.setHoverSelector = function(id, show) {
 
@@ -474,6 +459,8 @@ module.exports = function(data) {
         wnd.hide();
         wnd.addToAlertLayer();
         wnd.updatePos();
+
+        wnd.$.find('.players-number').tip(_t('amount', null, 'party'));
         // if (Storage.get('party/state')) wnd.show();
         if (StorageFuncWindow.getShowWindow(Engine.windowsData.name.PARTY)) wnd.show();
     };

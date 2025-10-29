@@ -78,19 +78,19 @@ module.exports = function() {
 
     const initWindow = () => {
         let sizeArray = [{
-                w: 235,
+                w: 232,
                 h: 200
             },
             {
-                w: 235,
+                w: 232,
                 h: 325
             },
             {
-                w: 235,
+                w: 232,
                 h: 450
             },
             {
-                w: 235,
+                w: 232,
                 h: 600
             },
             {
@@ -119,7 +119,10 @@ module.exports = function() {
             manageOpacity: 3,
             manageSize: {
                 sizeArray: sizeArray,
-                callback: updateScrollbar
+                callback: updateScrollbar,
+                options: {
+                    setSizeOnContent: true
+                }
             },
             managePosition: {
                 x: '251',
@@ -141,23 +144,6 @@ module.exports = function() {
         $crazyWndScrollbar.addScrollBar({
             track: true
         });
-
-        wnd.$.find('.inner-content').css({
-            'margin-top': '5px'
-        });
-        wnd.$.find('.content').css({
-            margin: '-17px -22px -18px'
-        });
-        //content.css({
-        //    height: 350
-        //});
-        $crazyWndScrollbar.css('height', '100%');
-
-        wnd.$.find('.scrollbar-wrapper').css({
-            top: -13,
-            bottom: -6
-        })
-
         hide();
     }
 

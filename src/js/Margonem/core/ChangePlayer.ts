@@ -31,7 +31,7 @@ export default class ChangePlayer {
         w ? : number,
         h ? : number
     } [] = [{
-            w: 235
+            w: 242
         },
         {
             w: 330
@@ -112,6 +112,7 @@ export default class ChangePlayer {
                 x: '0',
                 y: '58'
             },
+            twPadding: 'md',
             onclose: () => {
                 this.managePanelVisible();
             },
@@ -123,11 +124,10 @@ export default class ChangePlayer {
     }
 
     windowResizeCallback() {
-        const contentEl = this.wndEl.querySelector('.relogger') as HTMLElement;
         const targetWidth = this.sizeArray[0].w;
-        const isAtTargetWidth = contentEl.offsetWidth === targetWidth;
+        const isAtTargetWidth = this.wndEl.offsetWidth === targetWidth;
 
-        contentEl.classList.toggle('relogger--bigger', !isAtTargetWidth);
+        this.wndEl.classList.toggle('relogger--bigger', !isAtTargetWidth);
         this.updateScroll();
     }
 

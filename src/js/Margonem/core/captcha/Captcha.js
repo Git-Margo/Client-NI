@@ -250,6 +250,7 @@ module.exports = function() {
             title: _t('captcha'),
             addClass: 'captcha-window',
             closeable: false,
+            twPadding: 'md',
             onclose: () => {
                 this.close();
             }

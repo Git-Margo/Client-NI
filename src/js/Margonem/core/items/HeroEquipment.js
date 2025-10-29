@@ -83,6 +83,13 @@ module.exports = function() {
             self.clearItemOverBagTimeout();
         },
         drag: function(e) {
+            let niInterface = getEngine().interface;
+            let $popUpMenu = niInterface.getPopupMenu();
+
+            if ($popUpMenu) {
+                niInterface.removePopupMenu();
+            }
+
             allDragDistance += Math.abs(oldX - e.offsetX) + Math.abs(oldY - e.offsetY);
             self.saveOldXAndY(e.offsetX, e.offsetY);
         }
@@ -688,6 +695,10 @@ module.exports = function() {
 
             //if (i.st != 9) {
             if (!ItemState.isPurseSt(i.st)) {
+                if (itemIsDraggableNow($icon)) {
+                    return;
+                }
+
                 $icon.bind('contextmenu', (function(e, mE) {
                     var callback;
                     //if (i.st != 10) {
@@ -715,6 +726,10 @@ module.exports = function() {
             } else { // sakwa
 
                 $icon.bind('contextmenu', (function(e, mE) {
+                    if (itemIsDraggableNow($icon)) {
+                        return;
+                    }
+
                     if (itemIsDisabled($icon)) return;
                     i.createOptionMenu(getE(e, mE));
                 }));
@@ -734,6 +749,11 @@ module.exports = function() {
             });
 
             $icon.bind('contextmenu', (function(e, mE) {
+
+                if (itemIsDraggableNow($icon)) {
+                    return;
+                }
+
                 var callback = {
                     txt: _t('change_state'),
                     f: function() {
@@ -771,11 +791,20 @@ module.exports = function() {
 
             $icon.off('contextmenu'); // #17388 prevent to fire context menu X times after each move item
             $icon.on('contextmenu', function(e, mE) {
+
+                if (itemIsDraggableNow($icon)) {
+                    return;
+                }
+
                 self.afterRightClick(i, e, mE, $icon);
             });
 
         }
     };
+
+    const itemIsDraggableNow = ($icon) => {
+        return $icon.hasClass('when-item-is-clone-in-draggable')
+    }
 
     this.manageShowBagByItemOver = (i, $icon) => {
         //let stToOver  = [20, 21, 22, 26];

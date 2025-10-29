@@ -425,6 +425,7 @@ module.exports = function() {
                 'x': 251,
                 'y': 100
             },
+            twPadding: 'md',
             onclose: () => {
                 closeEdit();
             }
@@ -611,14 +612,6 @@ module.exports = function() {
     }
 
     const toggleAdd = () => {
-        //let $rowAdd = hwnd.$.find('.row-add');
-        //
-        //if ($rowAdd.css('display') == 'none') {
-        //	$rowAdd.css('display', 'block')
-        //} else {
-        //	$rowAdd.css('display', 'none')
-        //}
-
         edit();
     };
 
@@ -753,15 +746,6 @@ module.exports = function() {
     function initScroll() {
         hwnd.$.find('.scroll-wrapper').addScrollBar({
             track: true
-        });
-    }
-
-    function initChangeStyle() {
-        var $content = hwnd.$.find(".content");
-        var $swrapper = $content.find(".scrollbar-wrapper");
-        $swrapper.css({
-            top: -11,
-            bottom: 22
         });
     }
 
@@ -1131,19 +1115,8 @@ module.exports = function() {
     function initStyle() {
         $style = $(`
 		  <style>
-			.elite-timer .content{
-				padding: 0;
-				margin: -12px -20px -18px -20px;
-			}
-			.elite-timer .header{
-				display: none;
-			}
-			.elite-timer .scrollable .scrollbar-wrapper.is-input-show{
-				bottom: 47px !important;
-			}
 			/*list main window*/
 			.elite-timer .window-list{
-				padding-top: 5px;
 			}
 			.elite-timer .npc-list{
 				text-align: left;
@@ -1223,11 +1196,9 @@ module.exports = function() {
 			}
 			/*scroll main window*/
 			.elite-timer .scrollable .scroll-pane{
-				padding-right: 12px;
 			}
 			/*add main window*/
 			.elite-timer .window-controlls{
-				margin-top: 1px;
 			}
 			/*button add main window*/
 			.elite-timer .window-controlls .add{
@@ -1266,9 +1237,6 @@ module.exports = function() {
 				width: 15px;
 			}
 			/*edit window*/
-			.elite-timer-edit-window .content {
-		  		margin: -10px -11px 0;
-		  	}
 			.elite-timer-edit .all-options {
 				color: #fff;
 			}
@@ -1354,7 +1322,6 @@ module.exports = function() {
         initAddNewInp();
         initAddBtn();
         initScroll();
-        initChangeStyle();
 
         let {
             skippedDeads: nskippedDeads = [],

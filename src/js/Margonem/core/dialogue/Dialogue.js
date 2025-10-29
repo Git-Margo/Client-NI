@@ -147,7 +147,9 @@ module.exports = function() {
 
         windowManageSize = new WindowManageSize();
 
-        windowManageSize.init(null, DialogueData.DIALOGUE_WINDOW, self.$, self.$.find('.scroll-wrapper'), sizeArray, scrollUpdate);
+        windowManageSize.init(null, DialogueData.DIALOGUE_WINDOW, self.$, self.$.find('.scroll-wrapper'), sizeArray, scrollUpdate, {
+            setSizeOnContent: true
+        });
         windowManageSize.updateSizeWindow();
     };
 

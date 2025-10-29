@@ -142,6 +142,7 @@ module.exports = function() {
             },
             manageShow: false,
             addClass: addonKey + "-wnd",
+            twPadding: 'md',
             onclose: () => {
                 close();
             }
@@ -275,33 +276,19 @@ module.exports = function() {
         return `
 		<style id="${addonKey}-style">
 
-			.${addonKey}-wnd .content {
-			    margin-left: -15px;
-                margin-right: -15px;
-
-
-                #${addonKey} {
-                    height: 95px;
-                    margin-top: 6px;
-                    font-size:12px;
-
-                    .config-panel {
-                        color:white;
-                        margin-top: 12px;
-                        .one-config-option-character-blur {
-                        height: 30px;
-                            .name-option-wrapper,
-                            .slider-wrapper {
-                                width: 49%;
-                                display: inline-block;
-                            }
-                            .config-panel {
-                                color:white;
-                            }
-                        }
-                    }
-
-			    }
+			.${addonKey}-wnd {
+        #${addonKey} {
+          font-size:12px;
+          .config-panel {
+            color:white;
+            .one-config-option-character-blur {
+              height: 30px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+          }
+        }
 			}
 
 

@@ -49,8 +49,8 @@ let FakeNpc = function() {
     this.fw = null;
     this.fh = null;
 
-    this.halfFw = null;
-    this.halfFh = null;
+    this.halffw = null;
+    this.halffh = null;
 
     this.frame = 0;
     this.frames = null;
@@ -715,8 +715,8 @@ let FakeNpc = function() {
         self.fw = f.hdr.width / 4;
         self.fh = f.hdr.height / 4;
 
-        self.halfFw = this.fw / 2;
-        self.halfFh = this.fh / 2;
+        self.halffw = this.fw / 2;
+        self.halffh = this.fh / 2;
 
         self.frames = f.frames;
         self.activeFrame = 0;

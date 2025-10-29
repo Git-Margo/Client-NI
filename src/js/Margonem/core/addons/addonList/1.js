@@ -200,6 +200,7 @@ module.exports = function() {
                 'y': 60
             },
             manageShow: false,
+            twPadding: 'md',
             onclose: close
         });
 

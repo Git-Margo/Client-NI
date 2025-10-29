@@ -27,6 +27,7 @@ export default class LegendaryNotificatorWindow {
             },
             manageShow: false,
             addClass: `${LnData.SLUG}-options-window`,
+            twPadding: 'md',
             onclose: () => {
                 this.close();
             }

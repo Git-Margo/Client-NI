@@ -226,16 +226,16 @@ module.exports = function() {
     this.createDetailsWindow = function() {
         var $details = tpl.get('details-progress');
         $details.find('.details-txt').html(self.tLang('details_progress'));
-        $details.find('.details-header').html(self.tLang('details'));
 
         Engine.windowManager.add({
             content: $details,
-            //nameWindow        : 'detailsWndMatchmaking',
+            title: self.tLang('details'),
             nameWindow: Engine.windowsData.name.DETAILS_WND_MATCHMAKING,
             objParent: this,
             nameRefInParent: 'detailsWnd',
             type: Engine.windowsData.type.TRANSPARENT,
             addClass: 'mm-details-window',
+            twPadding: 'md',
             onclose: () => {
                 self.detailsWnd.hide();
             }

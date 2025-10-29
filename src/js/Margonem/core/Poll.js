@@ -228,6 +228,7 @@ module.exports = function() {
             objParent: this,
             title: _t('poll'),
             addClass: 'poll-window',
+            twPadding: 'md',
             onclose: () => {
                 this.close();
             }

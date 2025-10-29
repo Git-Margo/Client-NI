@@ -51,6 +51,7 @@ module.exports = function() {
                 y: '65'
             },
             addClass: 'greatmerchamp-window',
+            twPadding: 'md',
             onclose: () => {
                 this.close();
             }

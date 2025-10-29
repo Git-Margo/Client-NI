@@ -369,6 +369,7 @@ module.exports = function() {
                 'x': 251,
                 'y': 60
             },
+            twPadding: 'md',
             onclose: () => {
                 close();
             }
@@ -988,67 +989,51 @@ module.exports = function() {
 
         return `
 		<style id="${addonKey}-style">
-
-			.${addonKey}-wnd .content {
-			    margin-left: -15px;
-                margin-right: -15px;
-
-                .config-panel {
-                    pointer-events: none;
-                    opacity: 0.5;
-                }
-
-                .config-panel.window-mode-active {
-                    pointer-events: auto;
-                    opacity: 1;
-                }
-
+			.${addonKey}-wnd {
+        .config-panel {
+          pointer-events: none;
+          opacity: .5;
+        }
+        .config-panel.window-mode-active {
+          pointer-events: auto;
+          opacity: 1;
+        }
 			}
 
 			#${addonKey} {
-                height: 150px;
-                margin-top: 6px;
-                font-size:12px;
+        font-size:12px;
 			}
 
-            #${addonKey} input {
-                border: 1px solid grey;
-            }
+      #${addonKey} input {
+        border: 1px solid grey;
+      }
 
-            #${addonKey} .one-opt-record {
-                display: table;
-                width: 100%;
-                height: 30px;
-            }
+      #${addonKey} .one-opt-record {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 30px;
+      }
 
-            #${addonKey} .one-opt-record .description-opt {
-                color: white;
-                display: table-cell;
-                vertical-align: middle;
-            }
+      #${addonKey} .one-opt-record .description-opt {
+        color: white;
+      }
 
-            #${addonKey} .one-opt-record .input-opt  {
-                display: table-cell;
-                vertical-align: middle;
-                width: 60%;
-            }
+      #${addonKey} .one-opt-record .input-opt  {
+        width: 60%;
+      }
 
-
-			.main-checkBox-wrapper {
-			    margin-bottom: 10px;
-			}
-
-			.outside-chat-mode-checkBox-wrapper {
-			    margin-top: 10px;
-			}
-
+      .main-checkBox-wrapper {
+        margin-bottom: 10px;
+      }
+      
 			.window-mode-background-layer {
-			    pointer-events:none;
-			        //transform: scale(1.5);
+        pointer-events:none;
+        //transform: scale(1.5);
 			}
 
-            body[data-res="${RES._920_X_555}"],
-            body[data-res="${RES._1173_X_555}"],
+      body[data-res="${RES._920_X_555}"],
+      body[data-res="${RES._1173_X_555}"],
 			body[data-res="${RES._1024_X_768}"],
 			body[data-res="${RES._1277_X_768}"],
 			body[data-res="${RES._1366_X_768}"],

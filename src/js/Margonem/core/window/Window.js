@@ -281,7 +281,7 @@ module.exports = function(options) {
     };
 
     this.initClose = () => {
-        this.$.find('.close-button').click(function() {
+        this.$.find('.close-button').on(getClickEventName(), function() {
             options.onclose.call(self);
             $(this).tipHide();
         });

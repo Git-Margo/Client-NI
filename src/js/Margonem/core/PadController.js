@@ -9,6 +9,9 @@ module.exports = function() {
     var $pad;
     var $padBall;
     var zoom;
+
+    let touchEventId = null;
+
     const PAD_SIZE = 74;
 
     const init = () => {
@@ -60,19 +63,19 @@ module.exports = function() {
         return this.wnd.isShow()
     };
 
-    const touchstartEvent = (e) => {
-        e.preventDefault();
+    const touchstartEvent = (pagePos) => {
+        //e.preventDefault();
         zoom = 1 / Engine.zoomFactor;
-        self.calculateDir(e);
+        self.calculateDir(pagePos);
     };
 
-    const touchmoveEvent = (e) => {
-        e.preventDefault();
-        self.calculateDir(e);
+    const touchmoveEvent = (pagePos) => {
+        //e.preventDefault();
+        self.calculateDir(pagePos);
     };
 
-    const touchendEvent = (e) => {
-        e.preventDefault();
+    const touchendEvent = () => {
+        //e.preventDefault();
         Input.setMoveDirection(null);
     };
 
@@ -80,11 +83,15 @@ module.exports = function() {
         return PAD_SIZE;
     }
 
-    this.calculateDir = function(e) {
-        var touches = e.targetTouches[0];
+    this.calculateDir = function(pagePos) {
+        // var touches = e.targetTouches[0];
+        // var touches = e.targetTouches[0];
 
-        var pLeft = touches.pageX * zoom;
-        var pTop = touches.pageY * zoom;
+        // var pLeft = touches.pageX * zoom;
+        // var pTop = touches.pageY * zoom;
+
+        var pLeft = pagePos.pageX * zoom;
+        var pTop = pagePos.pageY * zoom;
         var pos = Engine.padController.wnd.$.position();
 
         var screenLeft = pos.left * zoom;
@@ -133,6 +140,14 @@ module.exports = function() {
         this.wnd.setYPos(y);
     };
 
+    const setTouchEventId = (id) => {
+        touchEventId = id
+    }
+
+    const getTouchEventId = () => {
+        return touchEventId;
+    }
+
     this.init = init;
     this.show = show;
     this.hide = hide;
@@ -142,4 +157,6 @@ module.exports = function() {
     this.touchstartEvent = touchstartEvent;
     this.touchmoveEvent = touchmoveEvent;
     this.touchendEvent = touchendEvent;
+    this.setTouchEventId = setTouchEventId;
+    this.getTouchEventId = getTouchEventId;
 };

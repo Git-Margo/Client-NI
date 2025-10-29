@@ -194,7 +194,7 @@ module.exports = function() {
         canvas.width = w;
         canvas.height = h;
 
-        wnd.$.find('.handheld-mini-map').css('height', parseInt(h));
+        // wnd.$.find('.handheld-mini-map').css('height', parseInt(h));
     }
 
     function initMouseEvent() {

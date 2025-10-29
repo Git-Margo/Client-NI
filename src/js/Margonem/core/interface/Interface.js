@@ -292,6 +292,7 @@ module.exports = function() {
 
         if (mobileCheck()) {
             initTouchEvent();
+            // initTouchEvent2();
         }
 
         this.initInterfaceTemplates();
@@ -367,12 +368,85 @@ module.exports = function() {
 
     const initTouchEvent = () => {
         let padTimeout = null;
+        /*
+            $GAME_CANVAS.on("pointerdown pointermove pointerup pointercancel", function (e) {
+              switch (e.type) {
+                case 'pointerdown': {
+
+                  let pos = getXYFromRealLeftTop(e.pageX, e.pageY);
+                  let list = Engine.renderer.getCollisionsAt(pos.x, pos.y);
+
+                  if (!checkCanCallPad(list)) {
+                    return;
+                  }
+
+                  padTimeout = setTimeout(function () {
+                    Engine.padController.show(e);
+
+                    let zoom = 1 / Engine.zoomFactor;
+                    let pLeft = e.pageX * zoom;
+                    let pTop = e.pageY * zoom;
+                    let padSize = Engine.padController.getPadSize();
+                    let margin = 4;
+                    let h = padSize + margin;
+
+                    pLeft = pLeft - h / 2;
+                    pTop = pTop - h / 2;
+
+                    Engine.padController.setPos(pLeft, pTop);
+                    Engine.padController.touchstartEvent(e);
+                    e.preventDefault();
+                  }, 200);
+                  break;
+                }
+
+                case 'pointermove': {
+                  if (Engine.padController.isShow()) {
+
+                    Engine.padController.touchmoveEvent(e);
+                  }
+                  e.preventDefault();
+                  break;
+                }
+
+                case 'pointerup':
+                case 'pointercancel': {
+                  // debugger;
+                  if (padTimeout) {
+                    clearTimeout(padTimeout);
+                    padTimeout = null;
+                  }
+                  if (Engine.padController.isShow()) {
+                    Engine.padController.touchendEvent();
+                    e.preventDefault();
+                    Engine.padController.hide();
+                  }
+                  break;
+                }
+              }
+            });
+        */
+
+
+
 
         $GAME_CANVAS.on("touchstart touchmove touchend", function(e) {
+            // $GAME_CANVAS.on("mousedown mousemove mouseup", function (e) {
+
+            let padISShow = Engine.padController.isShow();
+            let padEventId = Engine.padController.getTouchEventId();
+            let identifier = e.changedTouches[0].identifier
+
             switch (e.type) {
                 case 'touchstart':
+                    // case 'mousedown':
 
-                    let touches = e.targetTouches[0];
+                    if (padISShow && identifier != padEventId) {
+                        console.log('break touchstart')
+                        break;
+                    }
+
+                    let touches = e.changedTouches[0]
                     let pos = getXYFromRealLeftTop(touches.pageX, touches.pageY);
                     let list = Engine.renderer.getCollisionsAt(pos.x, pos.y);
 
@@ -384,39 +458,170 @@ module.exports = function() {
                     padTimeout = setTimeout(function() {
                         Engine.padController.show(e);
 
-                        touches = e.targetTouches[0];
+                        touches = e.changedTouches[0];
                         let zoom = 1 / Engine.zoomFactor;
                         let pLeft = touches.pageX * zoom;
                         let pTop = touches.pageY * zoom;
                         let padSize = Engine.padController.getPadSize();
                         let margin = 4;
                         let h = padSize + margin;
+                        let pagePos = e.changedTouches[0];
 
                         pLeft = pLeft - h / 2;
                         pTop = pTop - h / 2;
 
+                        Engine.padController.setTouchEventId(identifier);
                         Engine.padController.setPos(pLeft, pTop);
-                        Engine.padController.touchstartEvent(e);
+                        Engine.padController.touchstartEvent(pagePos);
+                        e.preventDefault();
                     }, 200);
                     break;
                 case 'touchmove':
-                    if (Engine.padController.isShow()) {
-                        Engine.padController.touchmoveEvent(e);
+                    // case 'mousemove':
+                    //   if (Engine.padController.isShow() && e.targetTouches[0].identifier != Engine.padController.getTouchEventId()) {
+                    //     console.log('break touchmove')
+                    //     break;
+                    //   }
+                    if (padISShow && identifier == padEventId) {
+                        let pagePos = e.changedTouches[0];
+                        Engine.padController.touchmoveEvent(pagePos);
+                        // e.preventDefault();
                     }
+                    e.preventDefault();
                     break;
                 case 'touchend':
+                    // case 'mouseup':
                     if (padTimeout) {
                         clearTimeout(padTimeout);
                         padTimeout = null;
                     }
-                    if (Engine.padController.isShow()) {
-                        Engine.padController.touchendEvent(e);
+
+                    // if (Engine.padController.isShow() && e.changedTouches[0].identifier != Engine.padController.getTouchEventId()) {
+                    //   console.log('break touchend')
+                    //   break;
+                    // }
+
+                    if (padISShow && identifier == padEventId) {
+                        Engine.padController.touchendEvent();
+                        e.preventDefault();
                         Engine.padController.hide();
                     }
                     break;
 
             }
         })
+
+
+
+    };
+
+    const initTouchEvent2 = () => {
+        let padTimeout = null;
+
+        // $GAME_CANVAS.on("touchstart touchmove touchend", function (e) {
+        $GAME_CANVAS.on("pointerdown pointermove pointerup", function(e) {
+            // $GAME_CANVAS.on("mousedown mousemove mouseup", function (e) {
+
+            let padISShow = Engine.padController.isShow();
+            let padEventId = Engine.padController.getTouchEventId();
+            let identifier = e.pointerId
+
+            switch (e.type) {
+                // case 'mousedown':
+                case 'pointerdown':
+                    // case 'mousedown':
+                    // $GAME_CANVAS[0].setPointerCapture(identifier);
+                    if (padISShow && identifier != padEventId) {
+                        console.log('break touchstart')
+                        break;
+                    }
+
+                    // let touches 	= e.changedTouches[0]
+                    let touches = {
+                        pageX: e.pageX,
+                        pageY: e.pageY
+                    }
+                    let pos = getXYFromRealLeftTop(touches.pageX, touches.pageY);
+                    let list = Engine.renderer.getCollisionsAt(pos.x, pos.y);
+
+
+                    if (!checkCanCallPad(list)) {
+                        return;
+                    }
+
+                    padTimeout = setTimeout(function() {
+                        Engine.padController.show(e);
+
+                        // touches 	  = e.changedTouches[0];
+                        touches = {
+                            pageX: e.pageX,
+                            pageY: e.pageY
+                        }
+                        let zoom = 1 / Engine.zoomFactor;
+                        let pLeft = touches.pageX * zoom;
+                        let pTop = touches.pageY * zoom;
+                        let padSize = Engine.padController.getPadSize();
+                        let margin = 4;
+                        let h = padSize + margin;
+                        let pagePos = {
+                            pageX: e.pageX,
+                            pageY: e.pageY
+                        }
+
+                        pLeft = pLeft - h / 2;
+                        pTop = pTop - h / 2;
+
+                        Engine.padController.setTouchEventId(identifier);
+                        Engine.padController.setPos(pLeft, pTop);
+                        Engine.padController.touchstartEvent(pagePos);
+                        // e.preventDefault();
+                    }, 200);
+                    break;
+                    // case 'touchmove':
+                case 'pointermove':
+                    // case 'mousemove':
+                    //   if (Engine.padController.isShow() && e.targetTouches[0].identifier != Engine.padController.getTouchEventId()) {
+                    //     console.log('break touchmove')
+                    //     break;
+                    //   }
+                    if (padISShow && identifier == padEventId) {
+                        // let pagePos = e.changedTouches[0];
+                        // $GAME_CANVAS[0].setPointerCapture(identifier);
+                        let pagePos = {
+                            pageX: e.pageX,
+                            pageY: e.pageY
+                        }
+                        Engine.padController.touchmoveEvent(pagePos);
+                        // e.preventDefault();
+                    }
+                    // e.preventDefault();
+                    break;
+                    // case 'touchend':
+                case 'pointerup':
+                    // case 'mouseup':
+                    if (padTimeout) {
+                        clearTimeout(padTimeout);
+                        padTimeout = null;
+                    }
+
+                    // if (Engine.padController.isShow() && e.changedTouches[0].identifier != Engine.padController.getTouchEventId()) {
+                    //   console.log('break touchend')
+                    //   break;
+                    // }
+
+                    if (padISShow && identifier == padEventId) {
+                        // $GAME_CANVAS[0].releasePointerCapture(identifier);
+                        Engine.padController.touchendEvent();
+                        // e.preventDefault();
+                        Engine.padController.hide();
+                    }
+                    break;
+
+            }
+        })
+
+
+
     };
 
     const checkCanCallPad = (collisionList) => {
@@ -986,10 +1191,15 @@ module.exports = function() {
 
     this.createZoomOverlay = function() {
         var $zL = $('.zoom-layer');
-        $zL.find('.plus').click(function() {
+
+        let eventName = getClickEventName();
+
+        // $zL.find('.plus').click(function () {
+        $zL.find('.plus').on(eventName, function() {
             self.clickIncreaseZoom();
         });
-        $zL.find('.minus').click(function() {
+        // $zL.find('.minus').click(function () {
+        $zL.find('.minus').on(eventName, function() {
             self.clickDecreaseZoom();
         });
         var $btn = Templates.get('button').addClass('green');

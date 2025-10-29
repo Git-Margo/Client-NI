@@ -85,7 +85,7 @@ module.exports = function() {
 
     function initWindow() {
         var istr = _t("intro", null, "auto_accept_party");
-        var $txt = $("<div>").addClass("intro").text(istr);
+        var $txt = $("<div>").addClass("intro mb-2").text(istr);
         var $aap = $("<div>").addClass("auto_accept_party");
 
         $aap.append($txt);
@@ -102,6 +102,7 @@ module.exports = function() {
                 'x': 251,
                 'y': 60
             },
+            twPadding: 'md',
             onclose: () => {
                 //hwnd.$.fadeOut(200);
                 hwnd.hide();
@@ -114,12 +115,6 @@ module.exports = function() {
         hwnd.$.addClass("auto_accept_party_wnd");
         hwnd.updatePos();
         hwnd.addToAlertLayer();
-    }
-
-    function initWindowStyle() {
-        hwnd.$.find(".content").css({
-            "padding-bottom": 7
-        });
     }
 
     function setWorkingState() {
@@ -239,7 +234,6 @@ module.exports = function() {
             settings[t] = tab[t];
         }
         initWindow();
-        initWindowStyle();
         initButtons();
         initTurnOnBtn();
 
@@ -248,15 +242,8 @@ module.exports = function() {
         // 	open = true;
         // }
         $style = $(`<style>
-			.auto_accept_party .intro{
-				margin-bottom: 12px;
-				margin-top: 2px;
-			}
 			.auto_accept_party{
 				color: white;
-			}
-			.auto_accept_party_wnd .window-controlls {
-				margin-top: 2px;
 			}
 		</style>`).appendTo("head");
 

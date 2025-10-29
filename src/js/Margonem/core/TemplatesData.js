@@ -3698,7 +3698,7 @@ TEMPLATES['table-scrollbar'] = `
 TEMPLATES['party'] = `<div class="party">
         <!--<div class="header"></div>-->
         <div class="players-number">
-            (<span class="num"></span>) <div class="info-icon small-header-info" data-trans="data-tip#amount#party"></div>
+            (<span class="num"></span>)
         </div>
         <div class="list"></div>
         <!--<div class="exp-info">-->
@@ -4887,7 +4887,7 @@ TEMPLATES['relogger'] = `<div class="relogger">
                 <div class="relogger__header mt-2 mb-2" data-trans="#select_world#change_player"></div>
                 <div class="scroll-wrapper">
                     <div class="scroll-pane">
-                        <div class="relogger__worlds"></div>
+                        <div class="relogger__worlds pt-1 pb-1"></div>
                     </div>
                 </div>
                 <div class="c-line mt-0"></div>
@@ -4920,9 +4920,8 @@ TEMPLATES['relogger'] = `<div class="relogger">
 TEMPLATES['who-is-here'] = `<div class="who-is-here">
         <div class="open-edit-panel"></div>
         <div class="players-number">
-            (<span class="num"></span>) <div class="info-icon small-header-info" data-tip=""></div>
+            (<span class="num"></span>)
         </div>
-        <div class="header"></div>
         <div class="scroll-wrapper">
             <div class="scroll-pane">
                 <div class="empty">----</div>
@@ -5260,7 +5259,7 @@ TEMPLATES['one-other'] = `<div class="one-other tw-list-item">
 
 
 TEMPLATES['great-merchamp-menu'] = `<div class="great-merchamp-menu">
-        <div class="header"></div>
+        <div class="header mt-2"></div>
         <div class="info"></div>
         <div class="checkbox-list">
             <div class="one-group">
@@ -5291,7 +5290,6 @@ TEMPLATES['great-merchamp-menu'] = `<div class="great-merchamp-menu">
     </div>`;
 */
 TEMPLATES['details-progress'] = `<div class="details-progress">
-        <div class="details-header"></div>
         <div class="details-txt"></div>
     </div>`;
 
@@ -6269,7 +6267,6 @@ TEMPLATES['divide-list-group'] = `<div class="divide-list-group">
 //<!-- default window with list !-->
 TEMPLATES['window-list'] = `<div class="window-list">
         <div class="open-edit-panel"></div>
-        <div class="header"></div>
         <div class="scroll-wrapper">
             <div class="scroll-pane">
                 <div class="empty">----</div>
@@ -6281,7 +6278,6 @@ TEMPLATES['window-list'] = `<div class="window-list">
 //<!-- default edit window with list !-->
 TEMPLATES['window-list-edit'] = `<div class="window-list-edit">
         <div class="all-options"></div>
-        <div class="buttons mt-3"></div>
     </div>`;
 
 TEMPLATES['loot-preview'] = `<div class="loot-preview">
@@ -6501,7 +6497,7 @@ TEMPLATES['new-chat-message'] = `
 TEMPLATES['copy-btn'] = `<div class="copy-btn"></div>`;
 
 TEMPLATES['ln-content'] = `<div class="ln-content">
-    <div class="ln_presets mt-1">
+    <div class="ln_presets">
       <div class="ln-control">
             <div class="ln-label" data-trans="#preset#legendary-notificator"></div>
             <div id="ln-presets"></div>
@@ -6553,7 +6549,7 @@ TEMPLATES['lf-content'] = `<div class="lf-content">
 <!--        <div class="do-action-cursor" data-trans="#group#loot-filter" data-tab="group"></div>-->
     </div>
     <div class="c-line mb-0"></div>
-    <div class="scroll-wrapper classic-bar">
+    <div class="scroll-wrapper">
         <div class="scroll-pane">
             <div class="lf-fields-container"></div>
         </div>

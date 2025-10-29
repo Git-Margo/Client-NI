@@ -50,21 +50,6 @@ module.exports = function() {
     });
 
     function initWindow() {
-        //hwnd = new API.Window({
-        //	title: addonName,
-        //	name: addonKey,
-        //	content: $(`<div id="${addonKey}"></div>`),
-        //	type: 'transparent',
-        //	manageOpacity: 3,
-        //	managePosition: {x: '251', y: '60'},
-        //	closeable: false
-        //});
-        //hwnd.$[0].classList.add("window-clock");
-        //hwnd.updatePos();
-        //Engine.interface.$aLayer.append(hwnd.$);
-        //
-        //const component = document.getElementById(addonKey);
-        //app.$mount(component);
 
         hwnd = Engine.windowManager.add({
             content: $(`<div id="${addonKey}"></div>`),
@@ -130,16 +115,13 @@ module.exports = function() {
 		<style id="${addonKey}-style">
 			.border-window.transparent.window-clock{
 				min-width: auto;
-				width: 70px;
+				width: 122px;
 				font-size: 1em;
 			}
-			.window-clock .content{
-				margin-top: -10px;
-				margin-bottom: -13px;
+			.window-clock .content {
 				color: white;
 			}
 			.window-clock .clock {
-				padding-top: 5px;
 				text-align: center;
 			}
 		</style>

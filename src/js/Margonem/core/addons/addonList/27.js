@@ -64,9 +64,9 @@ module.exports = function() {
             <div>
                 <div class="item-frames__content">
                     <tw-tabs @changeTab="changeTab">
-                        <div class="c-line mt-1 mb-1"></div>
+                        <div class="c-line mt-1 mb-0"></div>
                         <tw-tab title="${_t(tabs.frames, null, 'item_frames')}" slug="${tabs.frames}" selected>
-                          <div class="scroll-wrapper classic-bar">
+                          <div class="scroll-wrapper">
                             <div class="scroll-pane">
                                 <div class="scroll-pane-content">
                                     <div class="item-frames__list">
@@ -544,19 +544,9 @@ module.exports = function() {
     };
 
     const style = () => `
-        <style id="${addonKey}-style">
+        <style id='${addonKey}-style'>
             .item-frames {
                 
-            }
-            .item-frames .content {
-                margin-top: -15px;
-                margin-left: -23px;
-                margin-right: -23px;
-                margin-bottom: -18px;
-            }
-            .item-frames__content {
-                margin-top: 10px;
-                position: relative;
             }
             .item-frames__list {
             
@@ -610,25 +600,14 @@ module.exports = function() {
             }
             .item-frames .scroll-wrapper .scroll-pane {
                 max-height: 50vh;
-                padding: 0 3px;
             }
             .item-frames .scroll-wrapper.scrollable .scroll-pane {
-                margin-right: 15px;
-                padding-right: 3px;
-            }
-            .item-frames .scroll-wrapper.scrollable .scrollbar-wrapper {
-                right: 0;
-                top: 0;
-                bottom: 1px;
+                /*margin-right: 15px;*/
             }
             .item-frames .row {
                 font-size: 11px;
                 height: 22px;
                 color: white;
-            }
-            .item-frames .window-controlls {
-                margin-top: 2px;
-                padding: 0 3px;
             }
             .item-frames .window-controlls .add {
                 overflow: hidden;
@@ -650,14 +629,14 @@ module.exports = function() {
             .bottomItem .highlight.h-exist, 
             .item .icon.h-exist, 
             .bottomItem .icon.h-exist {
-                ${ bgPosY !== '' ? `background-position-y: ${bgPosY} !important;` : ''}
-                ${ bgUrl !== '' ? `background-image: url(${bgUrl});` : ''}
+                ${bgPosY !== '' ? `background-position-y: ${bgPosY} !important;` : ''}
+                ${bgUrl !== '' ? `background-image: url(${bgUrl});` : ''}
                 &::after {
                   content: '';
                   position: absolute;
                   left: 0; top: 0; right: 0; bottom: 0;
                   z-index: 1;
-                  ${ overlayUrl !== '' ? `background-image: url(${overlayUrl});` : ''}
+                  ${overlayUrl !== '' ? `background-image: url(${overlayUrl});` : ''}
                 }
                 [data-upgrade="0"] &::after { background-position-y: -32px; }
                 [data-upgrade="1"] &::after { background-position-y: -64px; }

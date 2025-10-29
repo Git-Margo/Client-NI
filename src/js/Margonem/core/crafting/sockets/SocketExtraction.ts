@@ -245,16 +245,16 @@ export default class SocketExtraction {
     }
 
     private dimStart() {
-        this.engine.disableItemsManager.startSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_EXTRACTION);
+        this.engine.disableItemsManager.startSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_EXTRACTION);
     }
 
     private dimRestart() {
         this.dimEnd();
-        this.engine.disableItemsManager.startSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_EXTRACTION);
+        this.engine.disableItemsManager.startSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_EXTRACTION);
     }
 
     private dimEnd() {
-        this.engine.disableItemsManager.endSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_EXTRACTION);
+        this.engine.disableItemsManager.endSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_EXTRACTION);
     }
 
     private resetCounter() {

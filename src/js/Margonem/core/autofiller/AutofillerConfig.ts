@@ -163,6 +163,7 @@ export default class AutofillerConfig {
                 y: '65'
             },
             addClass: this.options.cssClass + ' autofiller-window',
+            twPadding: 'md',
             onclose: () => {
                 this.close();
             },

@@ -29,6 +29,7 @@ module.exports = function() {
             nameRefInParent: 'wnd',
             objParent: this,
             addClass: 'show-miniature-window',
+            twPadding: 'md',
             onclose: () => {
                 this.close();
             }

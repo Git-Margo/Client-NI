@@ -132,6 +132,7 @@ module.exports = class ShowItemDetails {
             addClass: 'item-details-wnd',
             objParent: this,
             nameRefInParent: 'wnd',
+            twPadding: 'md',
             onclose: () => {
                 this.close();
             },

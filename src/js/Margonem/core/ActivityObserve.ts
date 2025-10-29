@@ -44,7 +44,6 @@ export default class ActivityObserve {
 
     constructor() {
         this.initWindow();
-        this.initMargin();
         this.listEl = this.wndEl.querySelector('.activity-observe__list') as HTMLElement;
     };
 
@@ -64,6 +63,7 @@ export default class ActivityObserve {
                 x: '251',
                 y: '60'
             },
+            twPadding: 'md',
             onclose: () => {
                 this.managePanelVisible();
             }
@@ -72,14 +72,6 @@ export default class ActivityObserve {
         this.wnd.addToAlertLayer();
         this.wnd.updatePos();
         this.wndEl = this.wnd.$[0];
-    };
-
-    private initMargin() {
-        const contentElement = this.wndEl.querySelector('.content') as HTMLElement;
-        contentElement.style.marginTop = '-12px';
-        contentElement.style.marginLeft = '-23px';
-        contentElement.style.marginRight = '-23px';
-        contentElement.style.marginBottom = '-20px';
     };
 
     private openPanel() {

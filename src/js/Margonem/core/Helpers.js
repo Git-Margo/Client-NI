@@ -97,8 +97,9 @@ var Helpers = new(function() {
     }
 
     window.getClickEventName = function() {
-        // return mobileCheck() ? 'touchstart' : "click";
-        return "click";
+        return mobileCheck() ? 'touchend' : "click";
+        // return mobileCheck() ? 'pointerdown' : "click";
+        // return  "click";
     }
 
     //window.createOtherContextMenu = (e, player) => {
@@ -2995,7 +2996,7 @@ var Helpers = new(function() {
         const btn = require('@core/Templates').get('button')[0];
         btn.classList.add(...classes);
         btn.querySelector('.label').innerHTML = name;
-        btn.addEventListener('click', clb);
+        btn.addEventListener(getClickEventName(), clb);
         return btn;
     };
 

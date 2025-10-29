@@ -297,23 +297,23 @@ export default class SocketEnchantment {
     }
 
     private dimItemSourceStart() {
-        this.engine.disableItemsManager.endSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER);
-        this.engine.disableItemsManager.startSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_ENCHANTMENT_SOURCE);
+        this.engine.disableItemsManager.endSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER);
+        this.engine.disableItemsManager.startSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_ENCHANTMENT_SOURCE);
     }
 
     private dimItemEnhancerStart() {
-        this.engine.disableItemsManager.endSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_ENCHANTMENT_SOURCE);
-        this.engine.disableItemsManager.startSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER);
+        this.engine.disableItemsManager.endSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_ENCHANTMENT_SOURCE);
+        this.engine.disableItemsManager.startSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER);
     }
 
     private dimRestart() {
         this.dimEnd();
-        this.engine.disableItemsManager.startSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_ENCHANTMENT_SOURCE);
+        this.engine.disableItemsManager.startSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_ENCHANTMENT_SOURCE);
     }
 
     private dimEnd() {
-        this.engine.disableItemsManager.endSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_ENCHANTMENT_SOURCE);
-        this.engine.disableItemsManager.endSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER);
+        this.engine.disableItemsManager.endSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_ENCHANTMENT_SOURCE);
+        this.engine.disableItemsManager.endSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_ENCHANTMENT_ENHANCER);
     }
 
     private clearAll() {

@@ -366,16 +366,7 @@ module.exports = function() {
     };
 
     const style = () => `
-        <style id="${addonKey}-style">
-			.items-on-ground .content{
-				margin: -10px -20px -17px;
-			}
-			.items-on-ground .search-wrapper{
-				margin-bottom: -3px;
-			}
-			.map-item {
-				margin-top: 5px;
-			}
+    <style id="${addonKey}-style">
 			.map_item_table .map_item_cell {
 				display: table-cell;
 				text-align: center;
@@ -393,13 +384,6 @@ module.exports = function() {
 			.map_item_table .map_item_cell.map_item_center_cell {
 				min-width: 118px;
 				text-align: left;
-			}
-			.items-on-ground .map-item .scrollable .scroll-pane {
-				padding-right: 15px
-			}
-			.items-on-ground .map-item .scrollable .scrollbar-wrapper {
-				top: -10px;
-				bottom: 24px;
 			}
 			.map_item_table {
 				display: table;

@@ -49,7 +49,6 @@ export default class SocketComposition {
 
     private contentEl!: HTMLElement;
     private ingredientItemGrid!: HTMLElement;
-    private enhancerItemSlot!: HTMLElement;
     private resultItemSlot!: HTMLElement;
 
     private selectedIngredientItems: number[] = [];
@@ -97,7 +96,6 @@ export default class SocketComposition {
 
     private droppableInit() {
         this.makeDroppable(this.ingredientItemGrid);
-        this.makeDroppable(this.enhancerItemSlot);
     }
 
     private decideAction(item: Item): Action {
@@ -216,8 +214,8 @@ export default class SocketComposition {
     }
 
     private removeAllIngredientItems() {
-        Engine.items.deleteAllViewsByViewName(this.engine.itemsViewData.SOCKET_COMPOSITION_SOURCE_VIEW);
-        Engine.itemsMovedManager.removeItemsByTarget(this.engine.itemsMovedData.SOCKET_COMPOSITION_SOURCE);
+        this.engine.items.deleteAllViewsByViewName(this.engine.itemsViewData.SOCKET_COMPOSITION_SOURCE_VIEW);
+        this.engine.itemsMovedManager.removeItemsByTarget(this.engine.itemsMovedData.SOCKET_COMPOSITION_SOURCE);
         this.selectedIngredientItems = [];
     }
 
@@ -267,16 +265,16 @@ export default class SocketComposition {
     }
 
     private dimStart() {
-        this.engine.disableItemsManager.startSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_COMPOSITION);
+        this.engine.disableItemsManager.startSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_COMPOSITION);
     }
 
     private dimRestart() {
         this.dimEnd();
-        this.engine.disableItemsManager.startSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_COMPOSITION);
+        this.engine.disableItemsManager.startSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_COMPOSITION);
     }
 
     private dimEnd() {
-        this.engine.disableItemsManager.endSpecificItemKindDisable(Engine.itemsDisableData.SOCKET_COMPOSITION);
+        this.engine.disableItemsManager.endSpecificItemKindDisable(this.engine.itemsDisableData.SOCKET_COMPOSITION);
     }
 
     private clearAll() {

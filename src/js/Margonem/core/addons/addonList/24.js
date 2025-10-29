@@ -390,6 +390,7 @@ module.exports = function() {
                 'x': 251,
                 'y': 60
             },
+            twPadding: 'md',
             onclose: () => {
                 closeWindow(heroObj);
             }
@@ -538,6 +539,7 @@ module.exports = function() {
                 y: '60'
             },
             addClass: 'detector-options-window',
+            twPadding: 'md',
             onclose: () => {
                 close();
             }
@@ -583,19 +585,13 @@ module.exports = function() {
 			text-align: center;
 			color: white;
 		}
-		.heros-detector .name-label {
-			margin-top: 5px;
-		}
 		.heros-detector .map-label {
 			margin-top: 5px;
 		}
 		.heros-detector .icon {
-			margin: 5px auto;
+			margin: 10px auto;
 			max-width: 100%;
 			display: block;
-		}
-		.heros-detector .btns-container {
-			margin-bottom: -10px;
 		}
 		.heros-detector .btns-container .button + .button {
 			margin-top: 3px;

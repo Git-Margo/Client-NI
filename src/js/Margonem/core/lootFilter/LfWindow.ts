@@ -27,6 +27,7 @@ export default class LootFilterWindow {
             },
             manageShow: false,
             addClass: `${LfData.SLUG}-options-window`,
+            twPadding: 'md',
             onclose: () => {
                 this.close();
             }
